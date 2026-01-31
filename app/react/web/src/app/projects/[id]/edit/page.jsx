@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
 import {
   ArrowLeft,
   Send,
@@ -12,11 +11,8 @@ import {
   Bot,
 } from "lucide-react";
 
-export default function EditProjectPage() {
-  const params = useParams();
-  const navigate = useNavigate();
-  const parsedProjectId = params.id ? Number.parseInt(params.id, 10) : null;
-  const projectId = Number.isNaN(parsedProjectId) ? null : parsedProjectId;
+export default function EditProjectPage({ params }) {
+  const projectId = parseInt(params.id);
   const [isLoadingProject, setIsLoadingProject] = useState(true);
 
   const [projectData, setProjectData] = useState({
@@ -69,10 +65,6 @@ export default function EditProjectPage() {
 
   // プロジェクトデータを取得
   useEffect(() => {
-    if (!projectId) {
-      navigate("/");
-      return;
-    }
     const fetchProject = async () => {
       try {
         const response = await fetch(`/api/projects/${projectId}`);
@@ -90,7 +82,7 @@ export default function EditProjectPage() {
     };
 
     fetchProject();
-  }, [navigate, projectId]);
+  }, [projectId]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -101,11 +93,7 @@ export default function EditProjectPage() {
   }, [messages]);
 
   const handleBack = () => {
-    if (!projectId) {
-      navigate("/");
-      return;
-    }
-    navigate(`/projects/${projectId}`);
+    window.location.href = `/projects/${projectId}`;
   };
 
   const toggleSection = (section) => {
@@ -177,10 +165,6 @@ export default function EditProjectPage() {
   };
 
   const handleSaveProject = async () => {
-    if (!projectId) {
-      navigate("/");
-      return;
-    }
     try {
       const response = await fetch(`/api/projects/${projectId}`, {
         method: "PUT",
@@ -193,7 +177,7 @@ export default function EditProjectPage() {
       }
 
       alert("プロジェクトを更新しました！");
-      navigate(`/projects/${projectId}`);
+      window.location.href = `/projects/${projectId}`;
     } catch (error) {
       console.error("Error saving project:", error);
       alert("プロジェクトの保存に失敗しました");
