@@ -1,6 +1,7 @@
 import { readdir, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import fs from 'node:fs';
 import { Hono } from 'hono';
 import type { Handler } from 'hono/types';
 import updatedFetch from '../src/__create/fetch';
@@ -9,7 +10,10 @@ const API_BASENAME = '/api';
 const api = new Hono();
 
 // Get current directory
-const __dirname = join(fileURLToPath(new URL('.', import.meta.url)), '../src/app/api');
+const baseUrlPath = fileURLToPath(new URL('.', import.meta.url));
+const apiBasePath = join(baseUrlPath, '../src/app/api');
+const fallbackApiPath = join(baseUrlPath, '../dist/server/src/app/api');
+const __dirname = fs.existsSync(apiBasePath) ? apiBasePath : fallbackApiPath;
 if (globalThis.fetch) {
   globalThis.fetch = updatedFetch;
 }
@@ -67,6 +71,9 @@ function getHonoPath(routeFile: string): { name: string; pattern: string }[] {
 async function registerRoutes() {
   const routeFiles = (
     await findRouteFiles(__dirname).catch((error) => {
+      if (error instanceof Error && 'code' in error && error.code === 'ENOENT') {
+        return [];
+      }
       console.error('Error finding route files:', error);
       return [];
     })
