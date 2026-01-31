@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   ArrowLeft,
   Edit,
@@ -347,21 +347,24 @@ const SAMPLE_PHASE_DATA = {
 
 export default function PhaseDetailPage() {
   const params = useParams();
+  const navigate = useNavigate();
   const { id: projectId, phaseId } = params;
-  const phaseData = phaseId ? SAMPLE_PHASE_DATA[phaseId] : null;
+  const phaseData = phaseId ? SAMPLE_PHASE_DATA[phaseId] ?? null : null;
 
   const handleBack = () => {
     if (!projectId) {
+      navigate("/");
       return;
     }
-    window.location.href = `/projects/${projectId}`;
+    navigate(`/projects/${projectId}`);
   };
 
   const handleEdit = () => {
     if (!projectId || !phaseId) {
+      navigate("/");
       return;
     }
-    window.location.href = `/projects/${projectId}/phases/${phaseId}/edit`;
+    navigate(`/projects/${projectId}/phases/${phaseId}/edit`);
   };
 
   if (!phaseData) {

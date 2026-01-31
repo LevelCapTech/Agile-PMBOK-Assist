@@ -31,4 +31,6 @@ if (rootElement) {
       <AppRoutes />
     </BrowserRouter>
   );
+} else {
+  throw new Error('Root element not found.');
 }
