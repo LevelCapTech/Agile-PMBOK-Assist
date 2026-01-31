@@ -29,6 +29,8 @@ jobs:
 
       - name: Build
         working-directory: app/react/web
+        env:
+          VITE_BASE_PATH: /Agile-PMBOK-Assist/
         run: npm run build
 
       - name: Prepare gh-pages artifacts

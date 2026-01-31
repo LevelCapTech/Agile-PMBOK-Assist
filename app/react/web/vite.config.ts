@@ -13,8 +13,12 @@ import { nextPublicProcessEnv } from './plugins/nextPublicProcessEnv';
 import { restart } from './plugins/restart';
 import { restartEnvFileChange } from './plugins/restartEnvFileChange';
 
+const base =
+  process.env.VITE_BASE_PATH ??
+  (process.env.GITHUB_ACTIONS === 'true' ? '/Agile-PMBOK-Assist/' : '/');
+
 export default defineConfig(({ command }) => ({
-  base: '/Agile-PMBOK-Assist/',
+  base,
   // Keep them available via import.meta.env.NEXT_PUBLIC_*
   envPrefix: 'NEXT_PUBLIC_',
   optimizeDeps: {
