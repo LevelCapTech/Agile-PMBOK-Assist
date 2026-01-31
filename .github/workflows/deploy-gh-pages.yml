@@ -31,7 +31,7 @@ jobs:
         working-directory: app/react/web
         run: npm run build
 
-      - name: Inspect dist
+      - name: Inspect dist (confirm publish dir)
         working-directory: app/react/web
         run: |
           ls -la
