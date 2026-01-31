@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   ArrowLeft,
   Send,
@@ -11,8 +12,11 @@ import {
   Bot,
 } from "lucide-react";
 
-export default function EditProjectPage({ params }) {
-  const projectId = parseInt(params.id);
+export default function EditProjectPage() {
+  const params = useParams();
+  const navigate = useNavigate();
+  const parsedProjectId = params.id ? Number.parseInt(params.id, 10) : null;
+  const projectId = Number.isNaN(parsedProjectId) ? null : parsedProjectId;
   const [isLoadingProject, setIsLoadingProject] = useState(true);
 
   const [projectData, setProjectData] = useState({
@@ -65,6 +69,10 @@ export default function EditProjectPage({ params }) {
 
   // プロジェクトデータを取得
   useEffect(() => {
+    if (!projectId) {
+      navigate("/");
+      return;
+    }
     const fetchProject = async () => {
       try {
         const response = await fetch(`/api/projects/${projectId}`);
@@ -82,7 +90,7 @@ export default function EditProjectPage({ params }) {
     };
 
     fetchProject();
-  }, [projectId]);
+  }, [navigate, projectId]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -93,7 +101,11 @@ export default function EditProjectPage({ params }) {
   }, [messages]);
 
   const handleBack = () => {
-    window.location.href = `/projects/${projectId}`;
+    if (!projectId) {
+      navigate("/");
+      return;
+    }
+    navigate(`/projects/${projectId}`);
   };
 
   const toggleSection = (section) => {
@@ -165,6 +177,10 @@ export default function EditProjectPage({ params }) {
   };
 
   const handleSaveProject = async () => {
+    if (!projectId) {
+      navigate("/");
+      return;
+    }
     try {
       const response = await fetch(`/api/projects/${projectId}`, {
         method: "PUT",
@@ -177,7 +193,7 @@ export default function EditProjectPage({ params }) {
       }
 
       alert("プロジェクトを更新しました！");
-      window.location.href = `/projects/${projectId}`;
+      navigate(`/projects/${projectId}`);
     } catch (error) {
       console.error("Error saving project:", error);
       alert("プロジェクトの保存に失敗しました");
