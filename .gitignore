@@ -161,3 +161,7 @@ cython_debug/
 
 # ログフォルダ
 /data/log/*
+
+# Node artifacts
+node_modules/
+app/react/web/dist/
