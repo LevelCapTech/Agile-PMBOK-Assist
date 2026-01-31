@@ -3,7 +3,7 @@ import type { Route } from './+types/not-found';
 import { useNavigate } from 'react-router';
 import { useCallback, useEffect, useState } from 'react';
 
-export async function loader({ params }: Route.LoaderArgs) {
+const loadNotFoundData = async ({ params }: Route.LoaderArgs) => {
   const matches = await fg('src/**/page.{js,jsx,ts,tsx}');
   return {
     path: `/${params['*']}`,
@@ -16,7 +16,9 @@ export async function loader({ params }: Route.LoaderArgs) {
         return { url, path: displayPath };
       }),
   };
-}
+};
+
+export const clientLoader = loadNotFoundData;
 
 interface ParentSitemap {
   webPages?: Array<{

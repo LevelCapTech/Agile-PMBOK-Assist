@@ -14,6 +14,7 @@ import { restart } from './plugins/restart';
 import { restartEnvFileChange } from './plugins/restartEnvFileChange';
 
 export default defineConfig({
+  base: '/Agile-PMBOK-Ops/',
   // Keep them available via import.meta.env.NEXT_PUBLIC_*
   envPrefix: 'NEXT_PUBLIC_',
   optimizeDeps: {
@@ -78,6 +79,9 @@ export default defineConfig({
     dedupe: ['react', 'react-dom'],
   },
   clearScreen: false,
+  build: {
+    target: 'es2022',
+  },
   server: {
     allowedHosts: true,
     host: '0.0.0.0',
