@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useParams } from "react-router-dom";
 import {
   ArrowLeft,
   Edit,
@@ -344,15 +345,22 @@ const SAMPLE_PHASE_DATA = {
   },
 };
 
-export default function PhaseDetailPage({ params }) {
+export default function PhaseDetailPage() {
+  const params = useParams();
   const { id: projectId, phaseId } = params;
-  const phaseData = SAMPLE_PHASE_DATA[phaseId];
+  const phaseData = phaseId ? SAMPLE_PHASE_DATA[phaseId] : null;
 
   const handleBack = () => {
+    if (!projectId) {
+      return;
+    }
     window.location.href = `/projects/${projectId}`;
   };
 
   const handleEdit = () => {
+    if (!projectId || !phaseId) {
+      return;
+    }
     window.location.href = `/projects/${projectId}/phases/${phaseId}/edit`;
   };
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useParams } from "react-router-dom";
 import {
   ArrowLeft,
   Calendar,
@@ -289,8 +290,9 @@ const SAMPLE_PROJECTS = [
   },
 ];
 
-export default function ProjectDetailPage({ params }) {
-  const projectId = parseInt(params.id);
+export default function ProjectDetailPage() {
+  const params = useParams();
+  const projectId = Number(params.id);
   const project = SAMPLE_PROJECTS.find((p) => p.id === projectId);
 
   const [expandedSections, setExpandedSections] = useState({
@@ -313,6 +315,9 @@ export default function ProjectDetailPage({ params }) {
   };
 
   const handleAddPhase = () => {
+    if (!params.id) {
+      return;
+    }
     window.location.href = `/projects/${params.id}/phases/new`;
   };
 
@@ -321,6 +326,9 @@ export default function ProjectDetailPage({ params }) {
   };
 
   const handlePhaseClick = (phaseId) => {
+    if (!params.id) {
+      return;
+    }
     window.location.href = `/projects/${params.id}/phases/${phaseId}`;
   };
 

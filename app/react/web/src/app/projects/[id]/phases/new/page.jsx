@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useRef, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import {
   ArrowLeft,
   Send,
@@ -14,7 +15,8 @@ import {
 import ReactMarkdown from "react-markdown";
 import useHandleStreamResponse from "@/utils/useHandleStreamResponse";
 
-export default function NewPhasePage({ params }) {
+export default function NewPhasePage() {
+  const params = useParams();
   const projectId = params.id;
   const [messages, setMessages] = useState([
     {
@@ -136,6 +138,9 @@ export default function NewPhasePage({ params }) {
   };
 
   const handleBack = () => {
+    if (!projectId) {
+      return;
+    }
     window.location.href = `/projects/${projectId}`;
   };
 

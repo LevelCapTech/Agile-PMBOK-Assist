@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import {
   ArrowLeft,
   Send,
@@ -11,8 +12,9 @@ import {
   Bot,
 } from "lucide-react";
 
-export default function EditProjectPage({ params }) {
-  const projectId = parseInt(params.id);
+export default function EditProjectPage() {
+  const params = useParams();
+  const projectId = Number(params.id);
   const [isLoadingProject, setIsLoadingProject] = useState(true);
 
   const [projectData, setProjectData] = useState({
