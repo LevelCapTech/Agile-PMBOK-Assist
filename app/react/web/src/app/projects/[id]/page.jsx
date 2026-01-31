@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
 import {
   ArrowLeft,
   Calendar,
@@ -290,12 +289,9 @@ const SAMPLE_PROJECTS = [
   },
 ];
 
-export default function ProjectDetailPage() {
-  const params = useParams();
-  const navigate = useNavigate();
-  const parsedProjectId = params.id ? Number.parseInt(params.id, 10) : null;
-  const projectId = Number.isNaN(parsedProjectId) ? null : parsedProjectId;
-  const project = projectId ? SAMPLE_PROJECTS.find((p) => p.id === projectId) : null;
+export default function ProjectDetailPage({ params }) {
+  const projectId = parseInt(params.id);
+  const project = SAMPLE_PROJECTS.find((p) => p.id === projectId);
 
   const [expandedSections, setExpandedSections] = useState({
     basic: true,
@@ -309,7 +305,7 @@ export default function ProjectDetailPage() {
   });
 
   const handleBack = () => {
-    navigate("/");
+    window.location.href = "/";
   };
 
   const handlePrint = () => {
@@ -317,23 +313,15 @@ export default function ProjectDetailPage() {
   };
 
   const handleAddPhase = () => {
-    if (!params.id) {
-      navigate("/");
-      return;
-    }
-    navigate(`/projects/${params.id}/phases/new`);
+    window.location.href = `/projects/${params.id}/phases/new`;
   };
 
   const handleProjectClick = (projectId) => {
-    navigate(`/projects/${projectId}`);
+    window.location.href = `/projects/${projectId}`;
   };
 
   const handlePhaseClick = (phaseId) => {
-    if (!params.id) {
-      navigate("/");
-      return;
-    }
-    navigate(`/projects/${params.id}/phases/${phaseId}`);
+    window.location.href = `/projects/${params.id}/phases/${phaseId}`;
   };
 
   if (!project) {
