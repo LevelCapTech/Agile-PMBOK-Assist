@@ -10,6 +10,7 @@ import {
   User,
   Bot,
 } from "lucide-react";
+import { withBase } from "@/utils/withBase";
 
 export default function EditProjectPage({ params }) {
   const projectId = parseInt(params.id);
@@ -93,7 +94,7 @@ export default function EditProjectPage({ params }) {
   }, [messages]);
 
   const handleBack = () => {
-    window.location.href = `/projects/${projectId}`;
+    window.location.href = withBase(`/projects/${projectId}`);
   };
 
   const toggleSection = (section) => {
@@ -177,7 +178,7 @@ export default function EditProjectPage({ params }) {
       }
 
       alert("プロジェクトを更新しました！");
-      window.location.href = `/projects/${projectId}`;
+      window.location.href = withBase(`/projects/${projectId}`);
     } catch (error) {
       console.error("Error saving project:", error);
       alert("プロジェクトの保存に失敗しました");

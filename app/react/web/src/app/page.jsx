@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { withBase } from "@/utils/withBase";
 import {
   Search,
   Bell,
@@ -318,7 +319,7 @@ export default function ProjectSelectionPage() {
   const [searchQuery, setSearchQuery] = useState("");
 
   const handleProjectClick = (projectId) => {
-    window.location.href = `/projects/${projectId}`;
+    window.location.href = withBase(`/projects/${projectId}`);
   };
 
   const filteredProjects = projects.filter((project) => {

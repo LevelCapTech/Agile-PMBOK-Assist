@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { withBase } from "@/utils/withBase";
 import {
   ArrowLeft,
   Calendar,
@@ -305,7 +306,7 @@ export default function ProjectDetailPage({ params }) {
   });
 
   const handleBack = () => {
-    window.location.href = "/";
+    window.location.href = withBase("/");
   };
 
   const handlePrint = () => {
@@ -313,15 +314,15 @@ export default function ProjectDetailPage({ params }) {
   };
 
   const handleAddPhase = () => {
-    window.location.href = `/projects/${params.id}/phases/new`;
+    window.location.href = withBase(`/projects/${params.id}/phases/new`);
   };
 
   const handleProjectClick = (projectId) => {
-    window.location.href = `/projects/${projectId}`;
+    window.location.href = withBase(`/projects/${projectId}`);
   };
 
   const handlePhaseClick = (phaseId) => {
-    window.location.href = `/projects/${params.id}/phases/${phaseId}`;
+    window.location.href = withBase(`/projects/${params.id}/phases/${phaseId}`);
   };
 
   if (!project) {

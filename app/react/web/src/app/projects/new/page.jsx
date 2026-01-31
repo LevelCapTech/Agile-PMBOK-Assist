@@ -12,6 +12,7 @@ import {
   Calendar,
   Users as UsersIcon,
 } from "lucide-react";
+import { withBase } from "@/utils/withBase";
 
 export default function NewProjectPage() {
   const [projectData, setProjectData] = useState({
@@ -71,7 +72,7 @@ export default function NewProjectPage() {
   }, [messages]);
 
   const handleBack = () => {
-    window.location.href = "/";
+    window.location.href = withBase("/");
   };
 
   const toggleSection = (section) => {
@@ -156,7 +157,7 @@ export default function NewProjectPage() {
 
       const result = await response.json();
       alert("プロジェクトを作成しました！");
-      window.location.href = `/projects/${result.id}`;
+      window.location.href = withBase(`/projects/${result.id}`);
     } catch (error) {
       console.error("Error saving project:", error);
       alert("プロジェクトの保存に失敗しました");

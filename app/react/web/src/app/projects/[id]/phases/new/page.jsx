@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import useHandleStreamResponse from "@/utils/useHandleStreamResponse";
+import { withBase } from "@/utils/withBase";
 
 export default function NewPhasePage({ params }) {
   const projectId = params.id;
@@ -136,7 +137,7 @@ export default function NewPhasePage({ params }) {
   };
 
   const handleBack = () => {
-    window.location.href = `/projects/${projectId}`;
+    window.location.href = withBase(`/projects/${projectId}`);
   };
 
   return (

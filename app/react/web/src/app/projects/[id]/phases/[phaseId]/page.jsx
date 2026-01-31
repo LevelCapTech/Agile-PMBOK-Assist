@@ -11,6 +11,7 @@ import {
   BarChart3,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
+import { withBase } from "@/utils/withBase";
 
 // サンプルフェーズデータ
 const SAMPLE_PHASE_DATA = {
@@ -349,11 +350,13 @@ export default function PhaseDetailPage({ params }) {
   const phaseData = SAMPLE_PHASE_DATA[phaseId];
 
   const handleBack = () => {
-    window.location.href = `/projects/${projectId}`;
+    window.location.href = withBase(`/projects/${projectId}`);
   };
 
   const handleEdit = () => {
-    window.location.href = `/projects/${projectId}/phases/${phaseId}/edit`;
+    window.location.href = withBase(
+      `/projects/${projectId}/phases/${phaseId}/edit`
+    );
   };
 
   if (!phaseData) {
