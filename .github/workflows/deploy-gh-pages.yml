@@ -31,13 +31,6 @@ jobs:
         working-directory: app/react/web
         run: npm run build
 
-      - name: Inspect dist (confirm publish dir)
-        working-directory: app/react/web
-        run: |
-          ls -la
-          ls -la dist || true
-          ls -la dist/client || true
-
       - name: Deploy to gh-pages
         uses: peaceiris/actions-gh-pages@v4
         with:

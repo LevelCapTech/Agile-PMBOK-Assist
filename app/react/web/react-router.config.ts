@@ -3,6 +3,6 @@ import type { Config } from '@react-router/dev/config';
 export default {
 	appDirectory: './src/app',
 	buildDirectory: 'dist',
-	ssr: false,
-	prerender: true,
+	ssr: true,
+	prerender: ['/*?'],
 } satisfies Config;
