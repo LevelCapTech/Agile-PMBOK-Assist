@@ -14,8 +14,8 @@
 ## 2. スコープと変更対象
 - 変更ファイル（新規/修正/削除）:
   - 新規: `.github/copilot/plans/17-redesign-design-mock-directory-structure.md`
-  - 将来実装候補: `app/mook/v1/web/**`（`app/react/web` から移動）
-  - 将来実装候補: `.github/workflows/deploy-gh-pages.yml`（`working-directory` / `cache-dependency-path` / `publish_dir` の更新）
+  - 実装時に新規作成: `app/mook/v1/web/**`（`app/react/web` から移動）
+  - 実装時に修正: `.github/workflows/deploy-gh-pages.yml`（`working-directory` / `cache-dependency-path` / `publish_dir` の更新）
 - 影響範囲・互換性リスク:
   - GitHub Pages 公開パスを維持するため、`VITE_BASE_PATH` と publish_dir の整合が必須。
   - ディレクトリ移動により相対パス参照（画像/フォント）に影響が出る可能性。
