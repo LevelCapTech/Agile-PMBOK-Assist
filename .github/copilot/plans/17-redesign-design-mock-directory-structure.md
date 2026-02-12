@@ -31,7 +31,7 @@
   - ビルドステップでは `${MOCK_VERSION:-v1}` を用いて
     `app/mook/${MOCK_VERSION:-v1}/web` をビルド対象に固定する。
   - 併せて `deploy-gh-pages.yml` の `working-directory`、
-    `cache-dependency-path`、`publish_dir` を `app/mook/${MOCK_VERSION:-v1}/web` へ更新する。
+    `cache-dependency-path`、`publish_dir` を `app/mook/${MOCK_VERSION:-v1}/web/dist-gh-pages` へ更新し、ビルド成果物の配置パスと `publish_dir` を明示的に一致させる。
 - エッジケース / 例外系 / リトライ方針:
   - 移動後も `dist/client/index.html`（推奨）または `dist/index.html` の
     いずれかが生成されていることを前提とし、両方存在しない場合はデプロイ失敗とする。
