@@ -28,15 +28,15 @@
   - Web モックは `app/mook/v1/web` に集約し、モック公開の唯一のソースとする。
   - `deploy-gh-pages.yml` に `workflow_dispatch` の入力 `mock_version`（省略時は `v1`）を追加し、
     workflow 全体の `env` で `MOCK_VERSION` を `inputs.mock_version` から設定する（未指定時は `v1`）。
-  - ビルドステップでは `${MOCK_VERSION:-v1}` を用いて
-    `app/mook/${MOCK_VERSION:-v1}/web` をビルド対象に固定する。
-  - 併せて `deploy-gh-pages.yml` の `working-directory` を `app/mook/${MOCK_VERSION:-v1}/web` に、
-    `cache-dependency-path` を `app/mook/${MOCK_VERSION:-v1}/web/package-lock.json` に、`publish_dir` のみ `app/mook/${MOCK_VERSION:-v1}/web/dist-gh-pages` へ更新し、`publish_dir` をビルド成果物の配置パスと明示的に一致させる。
+  - ビルドステップでは workflow レベルの `env.MOCK_VERSION` を参照し、
+    `app/mook/${MOCK_VERSION}/web` をビルド対象に固定する。
+  - 併せて `deploy-gh-pages.yml` の `working-directory` を `app/mook/${MOCK_VERSION}/web` に、
+    `cache-dependency-path` を `app/mook/${MOCK_VERSION}/web/package-lock.json` に、`publish_dir` のみ `app/mook/${MOCK_VERSION}/web/dist-gh-pages` へ更新し、`publish_dir` をビルド成果物の配置パスと明示的に一致させる。
 - エッジケース / 例外系 / リトライ方針:
   - 移動後も `dist/client/index.html`（推奨）または `dist/index.html` の
     いずれかが生成されていることを前提とし、両方存在しない場合はデプロイ失敗とする。
-  - `workflow_dispatch` の入力 `mock_version` が未指定の場合でも、ワークフロー内の `${MOCK_VERSION:-v1}`
-    により `v1` をデフォルトとして使用する。
+  - `workflow_dispatch` の入力 `mock_version` が未指定の場合でも、workflow 全体の `env` で
+    `MOCK_VERSION` に `v1` が設定されるため、それをデフォルトとして使用する。
 - ログと観測性（漏洩防止を含む）:
   - GitHub Actions のログは既存のまま維持し、Secrets を出力しない。
 
