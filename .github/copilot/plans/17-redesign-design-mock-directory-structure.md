@@ -53,9 +53,10 @@
   - `npm run build`
 
 ## 5. CI 品質ゲート
-- 実行コマンド（format / lint / typecheck / test / security、作業ディレクトリ: `app/mook/v1/web`）:
+- 実行コマンド（build / typecheck、作業ディレクトリ: `app/mook/v1/web`）:
   - `npm ci --legacy-peer-deps` → `npm run build`
   - `npm run typecheck`（現状の型エラーは別 Issue で解消するが、本リファクタリングで型エラーが増えていないことを確認）
+  - ※ `format` / `lint` / `test` / `security` 相当の npm script は現時点では未整備であり、本リファクタリングでは追加しない（別 Issue で対応）。
 - 通過基準と失敗時の対応:
   - `dist/client/index.html` または `dist/index.html` の生成を必須とし、失敗時は旧パスへロールバック。
 
