@@ -4,6 +4,15 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
+    inputs:
+      mock_version:
+        description: "Deploy target mock version"
+        required: false
+        default: "v1"
+
+env:
+  MOCK_VERSION: ${{ github.event.inputs.mock_version || 'v1' }}
 
 permissions:
   contents: write
@@ -21,20 +30,20 @@ jobs:
         with:
           node-version: 20
           cache: npm
-          cache-dependency-path: app/react/web/package-lock.json
+          cache-dependency-path: app/mook/${{ env.MOCK_VERSION }}/web/package-lock.json
 
       - name: Install dependencies
-        working-directory: app/react/web
+        working-directory: app/mook/${{ env.MOCK_VERSION }}/web
         run: npm ci --legacy-peer-deps
 
       - name: Build
-        working-directory: app/react/web
+        working-directory: app/mook/${{ env.MOCK_VERSION }}/web
         env:
           VITE_BASE_PATH: /Agile-PMBOK-Assist/
         run: npm run build
 
       - name: Prepare gh-pages artifacts
-        working-directory: app/react/web
+        working-directory: app/mook/${{ env.MOCK_VERSION }}/web
         run: |
           rm -rf dist-gh-pages
           mkdir -p dist-gh-pages
@@ -54,5 +63,5 @@ jobs:
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: app/react/web/dist-gh-pages
+          publish_dir: app/mook/${{ env.MOCK_VERSION }}/web/dist-gh-pages
           publish_branch: gh-pages
