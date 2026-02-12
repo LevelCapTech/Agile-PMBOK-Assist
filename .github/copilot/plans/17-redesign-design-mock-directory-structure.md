@@ -30,8 +30,8 @@
     workflow 全体の `env` で `MOCK_VERSION` を `inputs.mock_version` から設定する（未指定時は `v1`）。
   - ビルドステップでは `${MOCK_VERSION:-v1}` を用いて
     `app/mook/${MOCK_VERSION:-v1}/web` をビルド対象に固定する。
-  - 併せて `deploy-gh-pages.yml` の `working-directory`、
-    `cache-dependency-path`、`publish_dir` を `app/mook/${MOCK_VERSION:-v1}/web/dist-gh-pages` へ更新し、ビルド成果物の配置パスと `publish_dir` を明示的に一致させる。
+  - 併せて `deploy-gh-pages.yml` の `working-directory` を `app/mook/${MOCK_VERSION:-v1}/web` に、
+    `cache-dependency-path` を `app/mook/${MOCK_VERSION:-v1}/web/package-lock.json` に、`publish_dir` のみ `app/mook/${MOCK_VERSION:-v1}/web/dist-gh-pages` へ更新し、`publish_dir` をビルド成果物の配置パスと明示的に一致させる。
 - エッジケース / 例外系 / リトライ方針:
   - 移動後も `dist/client/index.html`（推奨）または `dist/index.html` の
     いずれかが生成されていることを前提とし、両方存在しない場合はデプロイ失敗とする。
