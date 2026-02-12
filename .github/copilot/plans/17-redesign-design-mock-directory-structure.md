@@ -26,15 +26,16 @@
 - 責務分離 / データフロー:
   - `app/react` は実装用 React アプリ専用に整理する。
   - Web モックは `app/mook/v1/web` に集約し、モック公開の唯一のソースとする。
-  - `deploy-gh-pages.yml` に環境変数 `MOCK_VERSION` を追加し、
-    ビルドステップのシェル展開 `${MOCK_VERSION:-v1}` で
+  - `deploy-gh-pages.yml` に `workflow_dispatch` の入力 `mock_version`（省略時は `v1`）を追加し、
+    workflow 全体の `env` で `MOCK_VERSION` を `inputs.mock_version` から設定する（未指定時は `v1`）。
+  - ビルドステップでは `${MOCK_VERSION:-v1}` を用いて
     `app/mook/${MOCK_VERSION:-v1}/web` をビルド対象に固定する。
   - 併せて `deploy-gh-pages.yml` の `working-directory`、
     `cache-dependency-path`、`publish_dir` を `app/mook/${MOCK_VERSION:-v1}/web` へ更新する。
 - エッジケース / 例外系 / リトライ方針:
   - 移動後も `dist/client/index.html`（推奨）または `dist/index.html` の
     いずれかが生成されていることを前提とし、両方存在しない場合はデプロイ失敗とする。
-  - `MOCK_VERSION` が未定義の場合でも、ワークフロー内の `${MOCK_VERSION:-v1}`
+  - `workflow_dispatch` の入力 `mock_version` が未指定の場合でも、ワークフロー内の `${MOCK_VERSION:-v1}`
     により `v1` をデフォルトとして使用する。
 - ログと観測性（漏洩防止を含む）:
   - GitHub Actions のログは既存のまま維持し、Secrets を出力しない。
