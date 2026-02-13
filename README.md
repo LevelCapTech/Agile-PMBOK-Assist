@@ -3,7 +3,7 @@
 ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/LevelCapTech/Agile-PMBOK-Assist)
 ![GitHub Repo stars](https://img.shields.io/github/stars/LevelCapTech/Agile-PMBOK-Assist)
 
-# python-docker-template
+# Agile-PMBOK-Assist
 Docker環境内でPythonスクリプトを実行するシンプルなテンプレート
 テンプレートからリポジトリを新規作成した場合は、[README_INIT_REPO.md](docs/README_INIT_REPO.md)を参照してください。このファイルは速やかに編集することをオススメします。
 
@@ -25,7 +25,7 @@ cd Agile-PMBOK-Assist
 ```
 python -m venv .venv
 source .venv/bin/activate  # Mac/Linux
-# .venv\\Scripts\\activate  # Windows
+# .venv\Scripts\activate  # Windows
 ```
 
 ### 3. 依存関係インストール
