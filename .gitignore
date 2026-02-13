@@ -164,4 +164,4 @@ cython_debug/
 
 # Node artifacts
 node_modules/
-app/react/web/dist/
+app/mook/v1/web/dist/
