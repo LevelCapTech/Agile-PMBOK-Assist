@@ -10,6 +10,7 @@
 
 1. VS Code でリポジトリを開き、Dev Containers 拡張を有効化する。
 2. "Reopen in Container" を実行する。
+   - workspaceFolder は nextlink の設定都合で `/workspaces/agile-pmbok-assist` 固定。
 3. `app/mook/v1/web` で依存を取得する（DevContainer の postCreateCommand でも実行される）。
    - `npm ci`
 4. 開発サーバーを起動する。
