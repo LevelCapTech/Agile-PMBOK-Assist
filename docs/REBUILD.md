@@ -1,0 +1,30 @@
+# REBUILD: 開発手順（Next.js / Node.js 24）
+
+## 前提条件
+
+- Node.js 24
+- npm
+- VS Code Dev Containers / GitHub Codespaces
+
+## DevContainer での起動手順
+
+1. VS Code でリポジトリを開き、Dev Containers 拡張を有効化する。
+2. "Reopen in Container" を実行する。
+3. `app/mook/v1/web` で依存を取得する（DevContainer の postCreateCommand でも実行される）。
+   - `npm ci`
+4. 開発サーバーを起動する。
+   - `npm run dev`
+5. ポート 3000 をフォワードして動作確認する。
+
+## ローカルでの起動手順（非 Docker）
+
+1. `app/mook/v1/web` へ移動する。
+2. `npm ci` を実行する。
+3. `npm run dev` を実行する。
+
+## CI 相当の実行コマンド
+
+- `npm run lint`
+- `npm run typecheck`
+- `npm run test`
+- `npm run build`

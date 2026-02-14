@@ -1,16 +1,20 @@
 {
-  "name": "Python 3",
-  "dockerComposeFile": "./docker-compose.yml",
-  "service": "python-app",
-  "workspaceFolder": "/app",
-  "postCreateCommand": "pip install -r requirements.txt",
-  "remoteUser": "root",
+  "name": "Next.js (Node 24)",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:24",
+  "forwardPorts": [3000],
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+  "postCreateCommand": "cd app/mook/v1/web && npm ci",
+  "remoteUser": "node",
   "customizations": {
     "vscode": {
       "settings": {
         "terminal.integrated.shell.linux": "/bin/bash"
       },
-      "extensions": ["ms-python.python"]
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "bradlc.vscode-tailwindcss"
+      ]
     }
   }
 }

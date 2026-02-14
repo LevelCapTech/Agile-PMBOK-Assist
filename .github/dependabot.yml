@@ -1,23 +1,27 @@
-# Dependabotの設定ファイル - Dockerおよびpip依存関係の自動更新
 version: 2
 updates:
-  # Docker (本番環境)
-  - package-ecosystem: "docker"
-    directory: "/docker/prod" # Dockerfileが置かれているディレクトリのパス (本番環境)
+  - package-ecosystem: "github-actions"
+    directory: "/"
     schedule:
       interval: "weekly"
+      day: "monday"
+      time: "03:00"
+      timezone: "Asia/Tokyo"
+    labels: ["dependencies", "deps-actions"]
     open-pull-requests-limit: 5
+    groups:
+      actions:
+        patterns: ["*"]
 
-  # Docker (開発環境)
-  - package-ecosystem: "docker"
-    directory: "/docker/dev" # Dockerfileが置かれているディレクトリのパス (開発環境)
+  - package-ecosystem: "npm"
+    directory: "/app/mook/v1/web"
     schedule:
       interval: "weekly"
+      day: "monday"
+      time: "03:10"
+      timezone: "Asia/Tokyo"
+    labels: ["dependencies", "deps-node", "area-web"]
     open-pull-requests-limit: 5
-
-  # pip (Python依存関係)
-  - package-ecosystem: "pip"
-    directory: "/src" # Pythonプロジェクトのディレクトリを指定
-    schedule:
-      interval: "weekly"
-    open-pull-requests-limit: 5
+    groups:
+      web-deps:
+        patterns: ["*"]

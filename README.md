@@ -4,42 +4,25 @@
 ![GitHub Repo stars](https://img.shields.io/github/stars/LevelCapTech/Agile-PMBOK-Assist)
 
 # Agile-PMBOK-Assist
-Docker環境内でPythonスクリプトを実行するシンプルなテンプレート
-テンプレートからリポジトリを新規作成した場合は、[README_INIT_REPO.md](docs/README_INIT_REPO.md)を参照してください。このファイルは速やかに編集することをオススメします。
 
-# Demo
+Node.js 24 / Next.js を前提にしたモックアプリのリポジトリです。
+メインの Web アプリは `app/mook/v1/web` に配置しています。
+テンプレートからリポジトリを新規作成した場合は、[README_INIT_REPO.md](docs/README_INIT_REPO.md)を参照してください。
+
+## Demo
+
 - GitHub Pages: https://levelcaptech.github.io/Agile-PMBOK-Assist/
 
-# Installation
+## 開発手順
+
+- 詳細は [docs/REBUILD.md](docs/REBUILD.md) を参照してください。
 
 ## 前提条件
-- Python 3.10 以上
-- pip
-- Git
 
-## 手順
-### 1. Clone
-```
-git clone https://github.com/LevelCapTech/Agile-PMBOK-Assist.git
-cd Agile-PMBOK-Assist
-```
+- Node.js 24
+- npm
+- VS Code Dev Containers / GitHub Codespaces（推奨）
 
-### 2. 仮想環境作成（推奨）
-```
-python -m venv .venv
-source .venv/bin/activate  # Mac/Linux
-# .venv\Scripts\activate  # Windows
-```
+## 本番運用
 
-### 3. 依存関係インストール
-requirements.txt が存在するため、以下を実行します。
-```
-pip install -r requirements.txt
-```
-
-### 4. 実行方法
-```
-mkdir -p logs
-export LOG_DIR="$(pwd)/logs"
-python app/python/main.py
-```
+- 本番（リリース）では Docker を使用しません。Node ホスティング / Static Hosting を前提に運用します。
