@@ -8,4 +8,4 @@ services:
     image: agile-pmbok-assist-dev:node24
     command: sleep infinity
     volumes:
-      - ..:/workspaces/Agile-PMBOK-Assist
+      - ..:/workspaces/agile-pmbok-assist
