@@ -15,7 +15,7 @@ import { restartEnvFileChange } from './plugins/restartEnvFileChange';
 
 const base =
   process.env.VITE_BASE_PATH ??
-  (process.env.GITHUB_ACTIONS === 'true' ? '/Agile-PMBOK-Assist/' : '/');
+  (process.env.GITHUB_ACTIONS === "true" ? "/agile-pmbok-assist/" : "/");
 
 export default defineConfig(({ command }) => ({
   base,

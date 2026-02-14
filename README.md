@@ -1,9 +1,9 @@
-![GitHub last commit](https://img.shields.io/github/last-commit/LevelCapTech/Agile-PMBOK-Assist)
-![GitHub repo file or directory count](https://img.shields.io/github/directory-file-count/LevelCapTech/Agile-PMBOK-Assist)
-![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/LevelCapTech/Agile-PMBOK-Assist)
-![GitHub Repo stars](https://img.shields.io/github/stars/LevelCapTech/Agile-PMBOK-Assist)
+![GitHub last commit](https://img.shields.io/github/last-commit/LevelCapTech/agile-pmbok-assist)
+![GitHub repo file or directory count](https://img.shields.io/github/directory-file-count/LevelCapTech/agile-pmbok-assist)
+![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/LevelCapTech/agile-pmbok-assist)
+![GitHub Repo stars](https://img.shields.io/github/stars/LevelCapTech/agile-pmbok-assist)
 
-# Agile-PMBOK-Assist
+# agile-pmbok-assist
 
 Node.js 24 / Next.js を前提にしたモックアプリのリポジトリです。
 メインの Web アプリは `app/mook/v1/web` に配置しています。
@@ -11,7 +11,7 @@ Node.js 24 / Next.js を前提にしたモックアプリのリポジトリで�
 
 ## Demo
 
-- GitHub Pages: https://levelcaptech.github.io/Agile-PMBOK-Assist/
+- GitHub Pages: https://levelcaptech.github.io/agile-pmbok-assist/
 
 ## 開発手順
 

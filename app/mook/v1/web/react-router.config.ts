@@ -1,7 +1,9 @@
 import type { Config } from '@react-router/dev/config';
 
 const isGitHubActions = process.env.GITHUB_ACTIONS === 'true';
-const rawBasePath = process.env.VITE_BASE_PATH ?? (isGitHubActions ? '/Agile-PMBOK-Assist/' : '/');
+const rawBasePath =
+  process.env.VITE_BASE_PATH ??
+  (isGitHubActions ? "/agile-pmbok-assist/" : "/");
 const basename = rawBasePath === '/' ? '/' : rawBasePath.replace(/\/$/, '');
 
 export default {
