@@ -4,7 +4,7 @@
   "forwardPorts": [3000],
   "workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/agile-pmbok-assist,type=bind,consistency=cached",
   "workspaceFolder": "/workspaces/agile-pmbok-assist",
-  "postCreateCommand": "cd app/mook/v1/web && npm ci",
+  "postCreateCommand": "cd mock/v1/web && npm ci",
   "remoteUser": "node",
   "customizations": {
     "vscode": {

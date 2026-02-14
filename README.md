@@ -6,7 +6,7 @@
 # agile-pmbok-assist
 
 Node.js 24 / Next.js を前提にしたモックアプリのリポジトリです。
-メインの Web アプリは `app/mook/v1/web` に配置しています。
+メインの Web アプリは `mock/v1/web` に配置しています。
 テンプレートからリポジトリを新規作成した場合は、[README_INIT_REPO.md](docs/README_INIT_REPO.md)を参照してください。
 
 ## Demo

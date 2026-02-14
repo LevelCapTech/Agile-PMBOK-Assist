@@ -14,7 +14,7 @@ updates:
         patterns: ["*"]
 
   - package-ecosystem: "npm"
-    directory: "/app/mook/v1/web"
+    directory: "/mock/v1/web"
     schedule:
       interval: "weekly"
       day: "monday"

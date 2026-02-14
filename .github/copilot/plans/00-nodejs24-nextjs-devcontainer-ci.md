@@ -20,7 +20,7 @@
   - 新規: `.github/workflows/ci-nextjs.yml`
   - 修正: `.github/dependabot.yml`
   - 修正: `.vscode/extensions.json`, `.vscode/settings.json`
-  - 修正: `app/mook/v1/web/package.json`, `app/mook/v1/web/package-lock.json`
+  - 修正: `mock/v1/web/package.json`, `mock/v1/web/package-lock.json`
   - 修正: `README.md`, `docs/README_INIT_REPO.md`
   - 新規: `docs/REBUILD.md`
 - 影響範囲・互換性リスク:
@@ -32,8 +32,8 @@
 ## 3. 設計方針
 
 - 責務分離 / データフロー:
-  - DevContainer は Node.js 24 ベースの開発環境に固定し、アプリは `app/mook/v1/web` を対象にする。
-  - CI は `appDir` を環境変数で切替可能にし、既定値は `app/mook/v1/web` とする。
+  - DevContainer は Node.js 24 ベースの開発環境に固定し、アプリは `mock/v1/web` を対象にする。
+  - CI は `appDir` を環境変数で切替可能にし、既定値は `mock/v1/web` とする。
 - エッジケース / 例外系 / リトライ方針:
   - `package-lock.json` が無い場合は即失敗させる。
   - `npm ci` が失敗した場合は依存バージョン固定を見直す。
@@ -47,7 +47,7 @@
 | 1 | `.devcontainer/devcontainer.json` | Node.js 24 ベースの DevContainer に更新 |
 | 2 | `.github/workflows/ci-nextjs.yml` | Node.js 24 CI を追加 |
 | 3 | `.github/dependabot.yml` | npm + GitHub Actions 更新に再構成 |
-| 4 | `app/mook/v1/web/package.json` | lint/test スクリプトと依存の固定 |
+| 4 | `mock/v1/web/package.json` | lint/test スクリプトと依存の固定 |
 | 5 | `README.md` | Next.js 前提の手順に更新 |
 
 ## 4. 設計UML

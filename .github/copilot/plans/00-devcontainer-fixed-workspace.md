@@ -62,7 +62,7 @@
 - モック / フィクスチャ方針:
   - なし。
 - テスト追加の実行コマンド（例: `python -m pytest`）:
-  - `npm run lint` / `npm run typecheck` / `npm run test` / `npm run build`（`app/mook/v1/web`）
+  - `npm run lint` / `npm run typecheck` / `npm run test` / `npm run build`（`mock/v1/web`）
 
 ## 7. CI 品質ゲート
 

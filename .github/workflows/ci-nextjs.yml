@@ -9,7 +9,7 @@ on:
       appDir:
         description: "App directory to build"
         required: false
-        default: "app/mook/v1/web"
+        default: "mock/v1/web"
       runTests:
         description: "Run tests"
         required: false
@@ -27,7 +27,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      APP_DIR: ${{ github.event.inputs.appDir || 'app/mook/v1/web' }}
+      APP_DIR: ${{ github.event.inputs.appDir || 'mock/v1/web' }}
       RUN_TESTS: ${{ github.event.inputs.runTests || 'true' }}
     steps:
       - name: Checkout repository

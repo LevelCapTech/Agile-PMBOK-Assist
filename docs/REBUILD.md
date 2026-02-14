@@ -12,7 +12,7 @@
 2. "Reopen in Container" を実行する。
    - workspaceFolder は Next.js の設定都合で `/workspaces/agile-pmbok-assist` 固定（devcontainer.json と docker-compose.yml のパスも同値）。
    - workspaceMount で同パスへ bind し、ディレクトリ欠落を防止する。
-3. `app/mook/v1/web` で依存を取得する（DevContainer の postCreateCommand でも実行される）。
+3. `mock/v1/web` で依存を取得する（DevContainer の postCreateCommand でも実行される）。
    - `npm ci`
 4. 開発サーバーを起動する。
    - `npm run dev`
@@ -20,7 +20,7 @@
 
 ## ローカルでの起動手順（非 Docker）
 
-1. `app/mook/v1/web` へ移動する。
+1. `mock/v1/web` へ移動する。
 2. `npm ci` を実行する。
 3. `npm run dev` を実行する。
 
