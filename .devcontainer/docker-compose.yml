@@ -1,11 +1,11 @@
 version: '3'
 
 services:
-  python-app:
+  node-app:
     build:
       context: ..
       dockerfile: ./.devcontainer/Dockerfile
-    image: my-python-app:latest
+    image: agile-pmbok-assist-dev:node24
     command: sleep infinity
     volumes:
-      - ..:/app
+      - ..:/workspaces/agile-pmbok-assist
