@@ -39,4 +39,6 @@ Next.js アプリを最も簡単にデプロイする方法は、[Vercel Platfor
 
 ### GitHub Pages へのデプロイ
 
-`main` ブランチへの push で `.github/workflows/deploy-gh-pages.yml` が実行され、`mock/v1/web` のビルド成果物が GitHub Pages に公開されます。手動実行する場合は、GitHub Actions のワークフロー名「Deploy React App to GitHub Pages」（現行の名称）を選び、必要であれば `mock_version` を指定して実行してください。
+`main` ブランチへの push で `.github/workflows/deploy-gh-pages.yml` が実行され、`mock/v1/web` のビルド成果物が GitHub Pages に公開されます。
+
+手動実行する場合は、GitHub Actions のワークフロー名「Deploy React App to GitHub Pages」（現行の名称）を選び、必要であれば `mock_version` を指定して実行してください。
