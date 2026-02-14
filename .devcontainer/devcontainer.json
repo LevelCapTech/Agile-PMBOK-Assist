@@ -2,6 +2,7 @@
   "name": "Next.js (Node 24)",
   "image": "mcr.microsoft.com/devcontainers/javascript-node:24",
   "forwardPorts": [3000],
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/agile-pmbok-assist,type=bind",
   "workspaceFolder": "/workspaces/agile-pmbok-assist",
   "postCreateCommand": "cd app/mook/v1/web && npm ci",
   "remoteUser": "node",
