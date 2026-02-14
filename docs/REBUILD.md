@@ -24,7 +24,7 @@
 
 ## CI 相当の実行コマンド
 
-- `npm run lint`
-- `npm run typecheck`
+- `npm run lint`（現状は typecheck のエイリアス）
+- `npm run typecheck`（JS/TS 混在のため一部の型チェックを緩和）
 - `npm run test`
 - `npm run build`
