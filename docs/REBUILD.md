@@ -28,3 +28,7 @@
 - `npm run typecheck`（JS/TS 混在のため一部の型チェックを緩和）
 - `npm run test`
 - `npm run build`
+
+補足:
+- JS/TS 混在のため `noImplicitAny` を一時的に無効化しており、段階的に有効化する。
+- `react-router-hono-server` は依存互換性のため `2.13.0` に固定している。
