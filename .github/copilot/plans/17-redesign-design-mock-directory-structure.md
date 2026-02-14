@@ -66,7 +66,8 @@
 
 ## 6. ロールアウト・運用
 - ロールバック方法:
-  - `deploy-gh-pages.yml` の build/publish パスを `app/react/web` へ戻す（当該コミットを `git revert` するか、ブランチを切り戻す）。
+  - Web モックのロールバック時は `deploy-gh-pages.yml` の build/publish パスを `app/react/web` へ戻す（当該コミットを `git revert` するか、ブランチを切り戻す）。
+  - Mobile モックは GitHub Pages 対象外のため、workflow の変更は不要。
   - `app/react/mobile` を削除した場合は `app/mook/v1/mobile` の移動を戻す。
   - `app/react/web` から `app/mook/v1/web` への移動完了後も、1 スプリント（例: 2 週間）を上限として main ブランチ上で旧ディレクトリを並存させ、その後はクリーンアップ用 PR で旧ディレクトリを削除する（Git の履歴上では永続的に保持される）。
 - 監視・運用上の注意:
