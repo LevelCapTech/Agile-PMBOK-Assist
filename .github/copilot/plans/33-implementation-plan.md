@@ -21,7 +21,6 @@
   - secrets は Git 管理外とし、実値は `infra/env/.env` に配置する（`sample.env` はテンプレート）。
   - root 直ログインは禁止し、sudo 可能な専用ユーザーで運用する。
 
-成果物（必須）:
 - `.github/copilot/80-templates/implementation-plan.md` に準拠した plan ドキュメントを`.github/copilot/plans/XXXXX-implementation-plan.md`に作成する(この1行は変更せずにそのまま出力する)
 
 ## 2. スコープと変更対象
@@ -391,58 +390,45 @@ flowchart TD
   - 例外: 証明書取得失敗時の再試行、Nginx 設定エラー時のロールバック。
   - 境界: rate limit のしきい値、監視 `/metrics` のアクセス制御。
   - 回帰: 再実行で既存設定が崩れない。
+  - 初期実行後の本番チェックリスト:
+    - 443/TLS でアプリが正常応答し、証明書が有効（期限・SAN が正しい）。
+    - Next.js/MySQL/Nginx/Exporters/Postfix が `systemctl` で active。
+    - `/metrics` が監視サーバー IP のみ許可され、想定メトリクスが取得できる。
+    - fail2ban が有効で `jail` が active、SSH は管理 IP のみ許可。
+    - logrotate.timer が active、Next.js ログがローテーション対象。
+    - root 宛てのテストメールが外部へ転送される。
+  - 確認コマンド例:
+    - `systemctl status nextjs mysql nginx node_exporter mysqld_exporter postfix`
+    - `curl -I https://$ACME_DOMAIN`（HTTP 200/302 を確認）
+    - `openssl s_client -connect $ACME_DOMAIN:443 -servername $ACME_DOMAIN </dev/null`
+    - `curl -s https://$ACME_DOMAIN/metrics`（監視 IP 以外では拒否されること）
+    - `fail2ban-client status`
+    - `systemctl status logrotate.timer`
+    - `echo "test" | mail -s "release-check" root`
 - モック / フィクスチャ方針:
   - DESIGN フェーズでは実施しない。IMPLEMENT フェーズで最小限のスモーク検証を追加する。
 - テスト追加の実行コマンド（例: `python -m pytest`）:
   - なし（設計のみ）。
 
-### 6.1 初期実行後の本番チェックリスト
-
-#### リリース完了の判定条件（受入基準）
-
-- 443/TLS でアプリが正常応答し、証明書が有効（期限・SAN が正しい）。
-- Next.js/MySQL/Nginx/Exporters/Postfix が `systemctl` で active。
-- `/metrics` が監視サーバー IP のみ許可され、想定メトリクスが取得できる。
-- fail2ban が有効で `jail` が active、SSH は管理 IP のみ許可。
-- logrotate.timer が active、Next.js ログがローテーション対象。
-- root 宛てのテストメールが外部へ転送される。
-
-#### 確認コマンド例（受入判定の裏付け）
-
-- `systemctl status nextjs mysql nginx node_exporter mysqld_exporter postfix`
-- `curl -I https://$ACME_DOMAIN`（HTTP 200/302 を確認）
-- `openssl s_client -connect $ACME_DOMAIN:443 -servername $ACME_DOMAIN </dev/null`
-- `curl -s https://$ACME_DOMAIN/metrics`（監視 IP 以外では拒否されること）
-- `fail2ban-client status`
-- `systemctl status logrotate.timer`
-- `echo "test" | mail -s "release-check" root`
-
 ## 7. CI 品質ゲート
 
-### 7.1 方針
-
-- 本タスクは `infra/*.sh` 追加が中心のため、アプリ（Next.js）の lint は対象外とする。
-
-### 7.2 実行コマンド（任意 / 推奨）
-
-- `shellcheck infra/bootstrap.sh infra/setup/**/*.sh`
-- `bash -n infra/bootstrap.sh` および主要 `infra/setup/**/*.sh`
-
-### 7.3 通過基準と失敗時の対応
-
-- `shellcheck` / `bash -n` が失敗した場合は該当スクリプトを修正して再実行する。
+- 実行コマンド（format / lint / typecheck / test / security）:
+  - `shellcheck infra/bootstrap.sh infra/setup/**/*.sh`
+  - `bash -n infra/bootstrap.sh` および主要 `infra/setup/**/*.sh`
+  - 本タスクは `infra/*.sh` 追加が中心のため、アプリ（Next.js）の lint は対象外とする。
+- 通過基準と失敗時の対応:
+  - `shellcheck` / `bash -n` が失敗した場合は該当スクリプトを修正して再実行する。
 
 ## 8. ロールアウト・運用
 
 - ロールバック方法:
   - `systemctl stop nextjs.service` でアプリ停止し、Nginx 設定をバックアップから戻す。
   - 証明書更新に失敗した場合は `certbot` を再実行し、TLS-ALPN-01/DNS-01 を切り替える。
-- 自動デプロイ方針:
-  - `infra/setup/40-web/deploy.sh` を用意し、`git fetch` → `git checkout $APP_BRANCH` → `npm ci` → `npm run build` → `prisma migrate deploy` → `systemctl restart nextjs` を実行する。
-  - systemd timer で 5 分〜10 分間隔のポーリングを行うか、手動実行にするかを運用で選定する。
 - 監視・運用上の注意:
   - 公開ポートは 443 のみ。SSH は管理 IP 制限。
   - `/metrics` は監視 IP のみ許可し、Basic 認証を併用する場合は secrets 管理外とする。
+  - 自動デプロイ方針: `infra/setup/40-web/deploy.sh` を用意し、`git fetch` → `git checkout $APP_BRANCH` → `npm ci` → `npm run build` → `prisma migrate deploy` → `systemctl restart nextjs` を実行する。
+  - systemd timer で 5 分〜10 分間隔のポーリングを行うか、手動実行にするかを運用で選定する。
 
 ## 9. オープンな課題 / ADR 要否
 
