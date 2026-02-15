@@ -19,6 +19,7 @@ docs/
 - `private/` ディレクトリは作成禁止。
 - `contracts/` は interface/type のみを定義し、実装は置かない。
 - `providers/public/` は public で動作する完成実装のみを置く。
+- `@company/*` は private 依存を示すため、public リポジトリでは import を禁止する。
 
 ## Dependency Injection Rule
 
