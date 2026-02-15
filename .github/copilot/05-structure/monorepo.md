@@ -16,7 +16,7 @@
 ## 2. 基本原則（パス・ビルド・多言語）
 - RULE: VPS へ `git clone` して展開する前提とし、Docker / docker-compose を利用しない。
 - RULE: `.env` は起動時に読み込む。ビルド時には混ぜない。
-- RULE: アプリごとの世界は `apps/web/<app>` に分離する（Next.js / React / TypeScript）。共通コードは `packages/<pkg>` に集約する。
+- RULE: 現行の単一アプリは `app/` を Next.js App Router のルートとして扱い、複数アプリ化する場合は `apps/web/<app>` に分離する（Next.js / React / TypeScript）。共通コードは `packages/<pkg>` に集約する。
 - RULE: 起動は `npm run <script>` に統一し、直叩きコマンドの分散を防ぐ。
 - DO NOT: `../` で apps/packages を横断する相対 import を許可しない。TypeScript paths を単一情報源にする。
 
@@ -25,6 +25,7 @@
 ## 3. 標準ディレクトリ構成（推奨テンプレ）
 
 ### 3.1 リポジトリ全体（Next.js + 共通 + env）
+- NOTE: 現行リポジトリは `app/` と `mock/v1/web` を保持する。`apps/` / `packages/` / `deploy/` の構成は将来の拡張テンプレートであり、移行時期は別 Issue で定義する。
 ```text
 repo-root/
 ├── .env

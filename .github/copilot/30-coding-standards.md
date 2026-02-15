@@ -2,7 +2,7 @@
 
 - `.github/instructions/**/*.instructions.md` のパス別ルールを優先する。
 - 互換性維持をデフォルトとし、破壊的変更は移行策・理由を plan / ADR に記載する。
-- Next.js / React / TypeScript: 厳格な型付けを前提に `any` / `unknown` の乱用を避け、型ガードや Zod などで境界を明確化する。
+- Next.js / React / TypeScript: 型安全性を優先し、`any` は型定義が事実上不可能な外部 API レスポンスなど正当な理由がある場合に限定して使用する。`unknown` は必要最小限に留め、型ガードや Zod などで境界を明確化する。
 - React: 関数コンポーネントと Hooks を基本とし、副作用は `useEffect` で明示、不要な再レンダーを防ぐために依存配列を厳密に管理する。
 - Next.js: App Router 前提で Server / Client Component の責務を分離し、`"use client"` の使用は最小限に留める。
 - 依存追加は最小限とし、バージョンをピン止めして `package.json` / `package-lock.json` に反映する。
