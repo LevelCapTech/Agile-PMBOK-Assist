@@ -308,7 +308,7 @@ deploy:
 3) 起動は `npm run <script>` に統一し、直叩きを禁止する。
 4) 共通コードは packages/ に置き、TypeScript paths を単一情報源に統一する。
 5) CI はリポジトリルートから vitest/jest を実行し、apps/web と packages を探索対象に含める。
-7) 多領域共存（Web/API/Mobile）は領域ごとに apps/<area>/ で世界を分け、CI もジョブを分ける。
+6) 多領域共存（Web/API/Mobile）は領域ごとに apps/<area>/ で世界を分け、CI もジョブを分ける。
 ```
 
 ---
