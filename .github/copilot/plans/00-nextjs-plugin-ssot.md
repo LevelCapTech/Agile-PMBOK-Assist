@@ -69,7 +69,7 @@ flowchart TD
   A[AppProvider] --> B[public createPublicDeps]
   B --> C[AppContext Provider]
   C --> D[Page/Component/Hook]
-  D --> E[依存注入完了]
+  D --> E[アプリケーション実行]
 ```
 
 ## 5. 人間が行う作業:
