@@ -1,18 +1,23 @@
-# Implementation Plan — 初回インフラ整備（SSR Next.js + MySQL + Node + Nginx + Let’s Encrypt + Monitoring）
+# Implementation Plan — 本番初回インフラ整備（SSR Next.js + MySQL + Node + Nginx + Let’s Encrypt + Exporters）
 
 ## 1. 機能要件 / 非機能要件
 
 - 機能要件:
-  - さくらVPS（Ubuntu 22.04 LTS）上で SSR 前提の Next.js（`next build` + `next start`）を systemd 管理で起動する。
-  - MySQL をローカルバインドで初期化し、アプリ用ユーザーを最小権限で発行する。
+  - さくらVPS（Ubuntu 22.04 LTS）上で **本番環境** 向けの初回インフラ整備を自動化する。
+  - OS 基本整備として `apt update/upgrade`、タイムゾーン（JST）、ロケール（`ja_JP.UTF-8`）を適用する。
+  - `.bashrc`、`/etc/issue`、`/etc/update-motd.d` を整備し、運用向けの表示・履歴設定を行う。
+  - Git を整備して GitHub からアプリ/スクリプトをクローンできるようにする。
+  - SSR 前提の Next.js（`next build` + `next start`）を systemd 管理で起動する。
+  - MySQL をローカルバインドで初期化し、`prisma migrate deploy` を実行できる状態にする。
   - Nginx によるリバースプロキシ、rate limit、fail2ban 連携を設定する。
-  - Let’s Encrypt による HTTPS 証明書取得と自動更新を構成する。
-  - Prometheus + Grafana を導入し、node_exporter（必要に応じて mysqld_exporter）を監視する。
-  - 初回整備専用の `infra/` ディレクトリ構造と bootstrap 手順を定義する。
+  - Let’s Encrypt 証明書取得と自動更新を構成する（443 のみ公開、TLS-ALPN-01 または DNS-01）。
+  - 監視対象サーバーとして node_exporter / mysqld_exporter を導入し、監視サーバーから取得できるようにする。
+  - postfix を整備し、root 宛て通知をさくら SMTP 経由で外部メールに転送する。
 - 非機能要件:
   - Docker は使用しない。
   - Node LTS を使用する（NodeSource などで導入）。
-  - 外部公開ポートは 80/443 のみとし、監視 UI は IP 制限または Basic 認証を必須とする。
+  - 外部公開ポートは 443 のみ。SSH は管理 IP のみ許可する。
+  - 監視 UI（Prometheus/Grafana）は **別サーバー** 側に設置し、本サーバーには設置しない。
   - secrets は Git 管理外とし、`infra/env/*.env` はテンプレートのみ（実値は配置しない）。
   - root 直ログインは禁止し、sudo 可能な専用ユーザーで運用する。
 
@@ -26,29 +31,68 @@
 - 影響範囲・互換性リスク:
   - 設計ドキュメントのみ。既存コード・設定には影響を与えない。
 - 外部依存・Secrets の扱い:
-  - Node LTS、MySQL、Nginx、Prometheus、Grafana、fail2ban、certbot を OS パッケージで導入する。
-  - secrets（MySQL パスワード、Grafana 管理者パスワード、Basic 認証情報等）は Git 管理外で、サーバー側に安全に配置する。
+  - Node LTS、MySQL、Nginx、fail2ban、certbot、postfix、node_exporter、mysqld_exporter を OS パッケージで導入する。
+  - Prometheus/Grafana は **監視サーバー側** で運用する。
+  - secrets（MySQL パスワード、SMTP 認証情報、Basic 認証、Deploy Key 等）は Git 管理外で、サーバー側に安全に配置する。
 
 ## 3. 設計方針
 
 - 責務分離 / データフロー:
-  - `infra/bootstrap.sh` が `infra/setup/*` を順序実行し、基盤 → セキュリティ → ランタイム → DB → Web → Monitoring → 検証の流れで初回整備する。
+  - `infra/bootstrap.sh` が `infra/setup/*` を順序実行し、基盤 → セキュリティ → ランタイム → DB → Web → 監視 → 検証の流れで初回整備する。
   - Next.js は `next build` の成果物を `next start` で SSR 実行し、Nginx が `localhost:4000` へプロキシする。
-  - Prometheus は exporter から `localhost` 経由でメトリクス収集し、Grafana は Prometheus をデータソースに可視化する。
+  - node_exporter / mysqld_exporter はローカルバインドし、Nginx 経由で監視サーバーにのみ公開する。
 - エッジケース / 例外系 / リトライ方針:
   - 既存設定がある場合は上書き前にバックアップを作成し、Nginx 設定は `nginx -t` で検証してから reload する。
-  - 証明書取得に失敗した場合は HTTP（80）運用にフォールバックし、再実行できるようにする。
+  - 証明書取得に失敗した場合は TLS-ALPN-01/DNS-01 の再試行を行い、失敗理由をログに残す。
   - MySQL 初期化は既存 DB/ユーザーがある場合はスキップし、冪等性を維持する。
 - ログと観測性（漏洩防止を含む）:
-  - systemd/journald に Next.js、Prometheus、Grafana を統合し、Nginx/MySQL は `/var/log` に出力する。
-  - Nginx アクセスログはレスポンスコード・レイテンシ、監査ログは fail2ban が参照する。
+  - systemd/journald に Next.js、exporter を統合し、Nginx/MySQL/postfix は `/var/log` に出力する。
   - secrets を含む環境変数や証明書内容はログに出力しない。
 
 ### 3.1 製造時の変更予定ファイル一覧
 
+#### 3.1.1 `infra/` 配下で作成するファイル
+
 | No. | パス | 変更内容 |
 | --- | -- | ---- |
-| 1 | .github/copilot/plans/33-implementation-plan.md | 初回インフラ整備の設計 plan を追加 |
+| 1 | infra/README.md | 初回整備の運用手順・再実行方法を記載 |
+| 2 | infra/bootstrap.sh | `setup` を順序実行するエントリポイント |
+| 3 | infra/env/prod.env | 本番用環境変数テンプレート |
+| 4 | infra/env/staging.env | ステージング用環境変数テンプレート |
+| 5 | infra/setup/00-base/00-packages.sh | `apt update/upgrade` と必須パッケージ導入 |
+| 6 | infra/setup/00-base/10-locale.sh | タイムゾーン/ロケール設定 |
+| 7 | infra/setup/00-base/20-shell.sh | `.bashrc` の履歴/alias 設定 |
+| 8 | infra/setup/00-base/30-motd.sh | `/etc/issue` と `/etc/update-motd.d` の整備 |
+| 9 | infra/setup/10-security/10-ssh.sh | root ログイン禁止と sshd 設定 |
+| 10 | infra/setup/10-security/20-ufw.sh | 443 のみ公開、SSH は管理 IP 制限 |
+| 11 | infra/setup/10-security/30-fail2ban.sh | fail2ban jail の配置 |
+| 12 | infra/setup/20-runtime/10-node.sh | Node LTS の導入 |
+| 13 | infra/setup/20-runtime/20-git.sh | Git 導入と clone 用設定 |
+| 14 | infra/setup/30-db/10-mysql.sh | MySQL セキュア初期化 |
+| 15 | infra/setup/30-db/20-prisma.sh | `prisma migrate deploy` 用の準備 |
+| 16 | infra/setup/40-web/10-nginx.sh | Nginx reverse proxy / rate limit 設定 |
+| 17 | infra/setup/40-web/20-certbot.sh | TLS-ALPN-01/DNS-01 で証明書取得 |
+| 18 | infra/setup/40-web/30-nextjs-service.sh | `nextjs.service` 配置 |
+| 19 | infra/setup/50-monitoring/10-exporters.sh | node_exporter / mysqld_exporter 導入 |
+| 20 | infra/setup/50-monitoring/20-metrics-proxy.sh | Nginx の metrics 逆プロキシ |
+| 21 | infra/setup/60-mail/10-postfix.sh | postfix + さくら SMTP 設定 |
+| 22 | infra/setup/90-verify/10-healthcheck.sh | 起動/疎通の検証 |
+
+#### 3.1.2 サーバー上で配置・更新する設定ファイル
+
+| No. | パス | 変更内容 |
+| --- | -- | ---- |
+| 1 | /etc/systemd/system/nextjs.service | SSR 用 systemd ユニット |
+| 2 | /etc/nginx/sites-available/app.conf | 443 専用リバースプロキシ |
+| 3 | /etc/nginx/conf.d/metrics.conf | `/metrics` を監視 IP のみに公開 |
+| 4 | /etc/fail2ban/jail.d/nginx-http-auth.conf | Nginx 認証失敗検知 |
+| 5 | /etc/postfix/main.cf | さくら SMTP リレー設定 |
+| 6 | /etc/postfix/generic | From 変換マップ |
+| 7 | /etc/aliases | root 宛て通知の外部転送 |
+| 8 | /etc/issue | ログイン前メッセージ |
+| 9 | /etc/update-motd.d/99-custom | ログイン後のカスタム表示 |
+| 10 | /etc/default/locale | LANG/LC_ALL 設定 |
+| 11 | /etc/logrotate.d/nextjs | Next.js ログのローテーション |
 
 ### 3.2 初回整備専用ディレクトリ構造
 
@@ -66,10 +110,104 @@ infra/
     ├── 30-db/
     ├── 40-web/
     ├── 50-monitoring/
+    ├── 60-mail/
     └── 90-verify/
 ```
 
-### 3.3 SSR 前提 Next.js 実行設計
+### 3.3 事前に準備する環境値一覧
+
+| 変数名 | 用途 | 例（ダミー） |
+| --- | --- | --- |
+| APP_REPO_URL | Next.js リポジトリ URL | git@github.com:example/app.git |
+| APP_BRANCH | デプロイ対象ブランチ | main |
+| APP_DIR | 配置先ディレクトリ | /var/www/app |
+| APP_USER | 実行ユーザー | appuser |
+| NODE_VERSION | Node LTS バージョン | 20.x |
+| MYSQL_ROOT_PASSWORD | MySQL root パスワード | `***` |
+| MYSQL_APP_DB | アプリ用 DB 名 | app_db |
+| MYSQL_APP_USER | アプリ用 DB ユーザー | app_user |
+| MYSQL_APP_PASSWORD | アプリ用 DB パスワード | `***` |
+| MYSQL_BIND_ADDRESS | MySQL bind | 127.0.0.1 |
+| ACME_DOMAIN | 証明書対象ドメイン | app.example.com |
+| ACME_CHALLENGE | ACME 方式 | tls-alpn-01 / dns-01 |
+| METRICS_ALLOW_IPS | 監視サーバーの IP | 203.0.113.10 |
+| POSTFIX_RELAY_HOST | さくら SMTP | smtp.sakura.ne.jp |
+| POSTFIX_RELAY_PORT | SMTP ポート | 587 |
+| POSTFIX_RELAY_USER | SMTP ユーザー | user@example.com |
+| POSTFIX_RELAY_PASS | SMTP パスワード | `***` |
+| ALERT_FROM | From アドレス | root@app01.example.local |
+| ALERT_TO | 転送先メール | alert@your-domain |
+| TIMEZONE | タイムゾーン | Asia/Tokyo |
+| LANG | ロケール | ja_JP.UTF-8 |
+
+### 3.4 ベースOS整備（本番向け）
+
+- パッケージ更新: `apt update && apt upgrade -y` を実行する（Ubuntu のため `dnf` は使用しない）。
+- タイムゾーン: `timedatectl set-timezone Asia/Tokyo`。
+- ロケール: `locale-gen ja_JP.UTF-8` と `localectl set-locale LANG=ja_JP.UTF-8 LC_ALL=ja_JP.UTF-8`。
+- logrotate: `systemctl status logrotate.timer` で有効化を確認する。
+- `.bashrc` に以下を追記する。
+
+```
+export HISTTIMEFORMAT='%F %T '
+alias ll='ls -alF'
+export HISTCONTROL=ignoreboth
+export HISTSIZE=10000
+export HISTFILESIZE=20000
+```
+
+- `/etc/issue` に以下を設定する。
+
+```
+        _-_
+     /`     `\
+   |   🌸  sakura  🌸   |
+     \_       _/
+         `-_-' 
+
+ Welcome, sakura.
+ This server is managed with care.
+```
+
+- `/etc/update-motd.d/99-custom` を作成し、以下を出力する。
+
+```
+#!/bin/bash
+
+echo "----------------------------------------"
+echo " System Status ($(date '+%Y-%m-%d %H:%M:%S'))"
+echo "----------------------------------------"
+
+# Host / OS
+echo " Hostname : $(hostname)"
+echo " OS       : $(. /etc/os-release; echo ${PRETTY_NAME})"
+
+# Uptime / Load
+echo " Uptime   : $(uptime -p)"
+echo " LoadAvg  : $(cut -d ' ' -f1-3 /proc/loadavg)"
+
+# CPU
+CPU_IDLE=$(top -bn1 | grep "Cpu(s)" | awk '{print $8}')
+echo " CPU Idle : ${CPU_IDLE}%"
+
+# Memory
+free -h | awk '
+/Mem:/ {
+  printf " Memory   : %s / %s used (%.1f%%)\n", $3, $2, $3/$2*100
+}'
+
+# Disk
+df -h / | awk '
+NR==2 {
+  printf " Disk /   : %s used (%s)\n", $5, $4
+}'
+
+echo "----------------------------------------"
+```
+
+- Git を導入し、deploy key/SSH 設定が完了していることを前提にクローンを実行する。
+
+### 3.5 SSR 前提 Next.js 実行設計
 
 - `next build` はデプロイ時に実行し、`next start` を systemd で起動する。
 - Node 実行ユーザーは `appuser` を想定し、`/var/www/app` 配下に配置する。
@@ -96,24 +234,26 @@ StandardError=journal
 WantedBy=multi-user.target
 ```
 
-### 3.4 systemd ユニット詳細設計
+### 3.6 systemd ユニット詳細設計
 
 - `nextjs.service` を `systemctl enable --now` で常駐させる。
-- `prometheus.service`、`grafana-server.service`、`node_exporter.service` を追加し、`After=network.target` で起動順を担保する。
+- exporter 用に `node_exporter.service`、`mysqld_exporter.service` を追加し、`After=network.target` で起動順を担保する。
 - ログは journald に集約し、エラー時は `journalctl -u <service>` で確認可能にする。
 
-### 3.5 MySQL セキュア初期構成
+### 3.7 MySQL セキュア初期構成
 
 - `bind-address = 127.0.0.1` とし、外部アクセスは禁止する。
 - `mysql_secure_installation` 相当の設定を自動化（root リモートログイン禁止、匿名ユーザー削除、test DB 削除）。
 - アプリ用ユーザーを `localhost` 限定で作成し、最小権限（対象 DB のみ）を付与する。
+- `prisma migrate deploy` を `APP_DIR` で実行できるように `DATABASE_URL` を設定する。
 
-### 3.6 Nginx リバースプロキシ設計
+### 3.8 Nginx リバースプロキシ設計
 
-- `server` ブロックは `listen 80/443` に限定し、`proxy_pass http://127.0.0.1:4000` を設定する。
-- `proxy_set_header` に `Host`、`X-Forwarded-For`、`X-Forwarded-Proto` を設定し、SSR での URL 判定に利用する。
+- `server` ブロックは `listen 443 ssl http2` のみに限定する。
+- `proxy_pass http://127.0.0.1:4000` を設定し、`proxy_set_header` に `Host`、`X-Forwarded-For`、`X-Forwarded-Proto` を指定する。
+- 443 以外の外部公開は行わず、80 は閉じる（ACME は TLS-ALPN-01 / DNS-01 を利用）。
 
-### 3.7 Nginx rate limit 設計
+### 3.9 Nginx rate limit 設計
 
 ```
 limit_req_zone $binary_remote_addr zone=one:10m rate=10r/s;
@@ -121,7 +261,7 @@ limit_req_zone $binary_remote_addr zone=one:10m rate=10r/s;
 
 - `location /` で `limit_req zone=one burst=20 nodelay;` を適用し、DoS を緩和する。
 
-### 3.8 fail2ban 連携設計
+### 3.10 fail2ban 連携設計
 
 ```
 [nginx-http-auth]
@@ -134,36 +274,49 @@ maxretry = 5
 
 - SSH 用 `sshd` jail も有効化し、ログイン試行を制限する。
 
-### 3.9 Let’s Encrypt 証明書取得・自動更新設計
+### 3.11 Let’s Encrypt 証明書取得・自動更新設計
 
-- `certbot --nginx` で取得し、`systemd` タイマー（`certbot.timer`）で自動更新する。
-- 更新時は `--deploy-hook "systemctl reload nginx"` を設定し、証明書更新後に自動反映する。
+- 443 のみ公開するため TLS-ALPN-01 または DNS-01 を利用する。
+- `certbot --nginx --preferred-challenges tls-alpn-01 -d $ACME_DOMAIN` を基本とし、DNS-01 が可能なら DNS プラグインを利用する。
+- `certbot.timer` により自動更新し、更新後に `systemctl reload nginx` を実行する。
 
-### 3.10 Prometheus + Grafana 監視構成
+### 3.12 監視（node_exporter / mysqld_exporter）設計
 
-- `node_exporter` は `:9100`、`mysqld_exporter` は `127.0.0.1` バインド（必要時）とする。
-- Prometheus は `localhost:9090` バインドで、Nginx を経由して IP 制限または Basic 認証を付与する。
-- Grafana は `localhost:3000` バインドで、Nginx 経由の認証を通す。
-- `prometheus.yml` には `node_exporter` と `mysqld_exporter` をターゲット登録する。
+- 本サーバーには Prometheus/Grafana を設置しない。
+- exporter は `127.0.0.1` にバインドし、Nginx を経由して `/metrics` を 443 で公開する。
+- `/metrics` は `allow $METRICS_ALLOW_IPS; deny all;` で監視サーバーのみ許可する。
 
-### 3.11 冪等性設計
+### 3.13 postfix アラートメール設計
+
+- さくら SMTP を relayhost とし、SMTP AUTH を有効化する。
+- `smtp_generic_maps = hash:/etc/postfix/generic` を `main.cf` に設定する。
+- `/etc/postfix/generic` に以下を設定し、`postmap /etc/postfix/generic` を実行する。
+
+```
+root@app01.example.local alert@your-domain
+```
+
+- `/etc/aliases` に `root: alert@your-domain` を設定し、`newaliases` を実行する。
+
+### 3.14 冪等性設計
 
 - スクリプトは「存在チェック → 作成/変更」を基本とし、再実行で同一結果になるようにする。
 - `useradd`/`groupadd` は `id -u` で判定、`systemctl enable` は再実行可能であることを前提にする。
 - `nginx -t` を通過した場合のみ `systemctl reload nginx` を実行する。
 
-### 3.12 SSH ロックアウト回避戦略
+### 3.15 SSH ロックアウト回避戦略
 
 - 新しい sudo ユーザーと SSH 公開鍵を登録した後に `PermitRootLogin no` を適用する。
 - `ufw allow OpenSSH` を先に実行し、`ufw enable` は最後に行う。
 - 変更前後で `sshd -t` を実行し、設定の有効性を確認する。
 
-### 3.13 ログ設計
+### 3.16 ログ設計
 
 - Next.js: `journalctl -u nextjs.service` で確認（`StandardOutput/StandardError` を journal）。
 - Nginx: `/var/log/nginx/access.log`、`/var/log/nginx/error.log`。
 - MySQL: `/var/log/mysql/error.log`（必要に応じて slow query log を有効化）。
-- Prometheus/Grafana: journald に集約し、ログローテーションは OS の既定ポリシーに従う。
+- postfix: `/var/log/mail.log`。
+- logrotate の有効化を `logrotate.timer` で確認し、必要に応じて Next.js 用のポリシーを追加する。
 
 ## 4. 設計UML
 
@@ -176,12 +329,13 @@ sequenceDiagram
   participant NG as Nginx
   participant NX as Next.js
   participant DB as MySQL
-  participant Mon as Prometheus/Grafana
+  participant Mon as Monitoring Server
   Ops->>VPS: bootstrap.sh 実行
   VPS->>DB: MySQL 初期化 (local bind)
   VPS->>NX: next build & next start (systemd)
   VPS->>NG: Nginx reverse proxy 設定
-  VPS->>Mon: exporter/監視基盤構築
+  VPS->>VPS: node_exporter / mysqld_exporter 起動
+  Mon->>NG: /metrics 取得
   NG-->>Ops: HTTPS 応答
 ```
 
@@ -195,36 +349,50 @@ flowchart TD
   D --> E[30-db]
   E --> F[40-web]
   F --> G[50-monitoring]
-  G --> H[90-verify]
+  G --> H[60-mail]
+  H --> I[90-verify]
 ```
 
 ## 5. 人間が行う作業:
 
 | 手順ID | 作業名 | 作業の目的 | 具体的な作業内容（人間がやることを詳細に書く） | 判断・確認ポイント | 完了条件（チェック可能な状態） |
 | ---- | --- | ----- | ----------------------- | --------- | --------------- |
+| H-00 | VPS 初期リセット | 新規 VPS の確保 | さくら VPS コンソールからサーバーリセットを依頼する | 初期化完了通知の確認 | 新規 VPS にログイン可能 |
 | H-01 | VPS 事前準備 | セキュアな初期状態を整える | DNS 設定（A レコード）、新規 sudo ユーザー作成、SSH 公開鍵登録、root 直ログイン禁止を計画する | SSH で sudo ユーザーがログインできること | root 無効化前に新規ユーザーでログイン可能 |
-| H-02 | Bootstrap 実行 | 自動整備の開始 | `infra/bootstrap.sh` を実行し、各 `setup/*` が完走することを確認する | `nginx -t` と `systemctl status` の確認 | Next.js/MySQL/Nginx/Prometheus/Grafana が起動 |
-| H-03 | Secrets 配置 | 秘密情報の安全な配置 | `.env.production`、MySQL パスワード、Grafana 管理者パスワード、Basic 認証ファイルをサーバーに配置する | Git 管理外であること | 起動後に認証が必要な UI が保護されている |
-| H-04 | 監視/HTTPS 確認 | 受入条件の確認 | https アクセス、/metrics、Grafana へのアクセスを確認する | 有効証明書・IP 制限・Basic 認証 | 受入条件の全項目を満たす |
+| H-02 | Git/Clone 準備 | アプリと整備スクリプトを取得する | Git をインストールし、Deploy Key で `APP_REPO_URL` と `infra` リポジトリをクローンする | `git clone` が成功すること | `/var/www/app` と `/opt/infra` に配置済み |
+| H-03 | 環境値/Secrets 配置 | 秘密情報の安全な配置 | `infra/env/prod.env` を用意し、`.env.production`、MySQL パスワード、SMTP 認証情報、Basic 認証ファイルをサーバーに配置する | Git 管理外であること | secrets がサーバーにのみ存在 |
+| H-04 | Bootstrap 実行 | 自動整備の開始 | `infra/bootstrap.sh` を実行し、各 `setup/*` が完走することを確認する | `nginx -t` と `systemctl status` の確認 | Next.js/MySQL/Nginx/Exporters/Postfix が起動 |
+| H-05 | アプリ初期化 | DB と SSR を同期 | `npm ci` → `npm run build` → `prisma migrate deploy` を実行し、`systemctl restart nextjs` | migrate の成功 | SSR が 443 で応答 |
+| H-06 | 監視疎通確認 | 監視対象として登録 | 監視サーバーから `/metrics` を取得し、IP 制限が有効か確認 | 監視 IP のみ取得可能 | node_exporter 値が取得可能 |
+| H-07 | 通知メール確認 | アラート転送の検証 | `mail` で root 宛てを送信し、外部メールへ転送されることを確認 | SMTP 認証成功 | 外部メールで受信できる |
 
 ### 5.1 使用する情報・資料
 
 - 作業に必要な資料:
   - `.github/copilot/00-index.md` 〜 `60-ci-quality-gates.md`
   - `infra/README.md`（運用手順書）
-  - 対象ドメイン、IP 制限用の許可リスト、Basic 認証用アカウント情報
+  - 対象ドメイン、IP 制限用の許可リスト、SMTP 認証情報
 
 ## 6. テスト戦略
 
 - テスト観点（正常 / 例外 / 境界 / 回帰）:
-  - 正常: bootstrap 実行後に Next.js/MySQL/Nginx/監視が起動する。
+  - 正常: bootstrap 実行後に Next.js/MySQL/Nginx/Exporters/Postfix が起動する。
   - 例外: 証明書取得失敗時の再試行、Nginx 設定エラー時のロールバック。
-  - 境界: rate limit のしきい値、監視 UI のアクセス制御。
+  - 境界: rate limit のしきい値、監視 `/metrics` のアクセス制御。
   - 回帰: 再実行で既存設定が崩れない。
 - モック / フィクスチャ方針:
   - DESIGN フェーズでは実施しない。IMPLEMENT フェーズで最小限のスモーク検証を追加する。
 - テスト追加の実行コマンド（例: `python -m pytest`）:
   - なし（設計のみ）。
+
+### 6.1 初期実行後の本番チェックリスト
+
+- `systemctl status nextjs mysql nginx node_exporter mysqld_exporter postfix` が active。
+- 443 で SSR 応答、証明書が有効（ACME 期限が確認できる）。
+- `/metrics` が監視サーバー IP からのみ取得可能。
+- fail2ban が有効で `jail` が active。
+- logrotate.timer が有効、`/var/log` がローテーションされる。
+- root 宛てメールが外部に転送される。
 
 ## 7. CI 品質ゲート
 
@@ -237,15 +405,18 @@ flowchart TD
 
 - ロールバック方法:
   - `systemctl stop nextjs.service` でアプリ停止し、Nginx 設定をバックアップから戻す。
-  - 証明書更新に失敗した場合は `certbot` を再実行し、HTTP に一時フォールバックする。
+  - 証明書更新に失敗した場合は `certbot` を再実行し、TLS-ALPN-01/DNS-01 を切り替える。
+- 自動デプロイ方針:
+  - `infra/setup/40-web/deploy.sh` を用意し、`git fetch` → `git checkout $APP_BRANCH` → `npm ci` → `npm run build` → `prisma migrate deploy` → `systemctl restart nextjs` を実行する。
+  - systemd timer で 5 分〜10 分間隔のポーリングを行うか、手動実行にするかを運用で選定する。
 - 監視・運用上の注意:
-  - 監視 UI は IP 制限または Basic 認証必須。
-  - `journalctl` と `/var/log/*` を定期確認し、容量逼迫時は logrotate を適用する。
+  - 公開ポートは 443 のみ。SSH は管理 IP 制限。
+  - `/metrics` は監視 IP のみ許可し、Basic 認証を併用する場合は secrets 管理外とする。
 
 ## 9. オープンな課題 / ADR 要否
 
 - 未確定事項:
-  - 監視 UI の公開方式（IP 制限 or Basic 認証）の最終決定。
+  - 自動デプロイをポーリングにするか、手動実行にするかの選定。
   - MySQL バックアップ（スナップショット/論理バックアップ）の方式。
 - ADR に残すべき判断:
-  - MySQL backup 方式、監視 UI の公開制限方針を ADR 化するか検討。
+  - 自動デプロイ方針、バックアップ方式、監視 `/metrics` の公開方法。
