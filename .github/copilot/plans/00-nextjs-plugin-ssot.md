@@ -43,11 +43,12 @@
 - app/providers/public/createPublicDeps.ts に public 完成実装を置く。
 - app/providers/AppProvider.tsx / AppContext.ts を DI ルートとして構成する。
 - app/layout.tsx で AppProvider を適用する。
-- docs/architecture.md と eslint.config.mjs の更新は別 Issue で扱う。
+- docs/architecture.md と eslint.config.mjs は別 Issue で再作成・更新する前提とする。
 
 ## 4. 設計UML
 
 - シーケンス図:
+  - 将来実装時の依存注入フローを示す参考図。
 
 ```mermaid
 sequenceDiagram
