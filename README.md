@@ -14,7 +14,7 @@ pnpm dev
 bun dev
 ```
 
-ブラウザで [http://localhost:4000](http://localhost:4000) を開くと結果を確認できます。詳細な開発手順は [docs/REBUILD.md](docs/REBUILD.md) を参照してください。
+ブラウザで [http://localhost:4000](http://localhost:4000) を開くと結果を確認できます。
 
 `app/page.tsx` を編集するとページが自動的に更新されます。
 
