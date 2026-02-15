@@ -18,7 +18,7 @@
   - Node LTS を使用する（NodeSource などで導入）。
   - 外部公開ポートは 443 のみ。SSH は管理 IP のみ許可する。
   - 監視 UI（Prometheus/Grafana）は **別サーバー** 側に設置し、本サーバーには設置しない。
-  - secrets は Git 管理外とし、実値は `infra/env/.env` に配置する（`sample.emv` はテンプレート）。
+  - secrets は Git 管理外とし、実値は `infra/env/.env` に配置する（`sample.env` はテンプレート）。
   - root 直ログインは禁止し、sudo 可能な専用ユーザーで運用する。
 
 ## 2. スコープと変更対象
