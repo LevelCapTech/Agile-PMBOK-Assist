@@ -135,7 +135,7 @@ infra/
 | POSTFIX_RELAY_PORT | SMTP ポート | 587 |
 | POSTFIX_RELAY_USER | SMTP ユーザー | user@example.com |
 | POSTFIX_RELAY_PASS | SMTP パスワード | `***` |
-| ALERT_FROM | From アドレス | root@app01.example.local |
+| ALERT_FROM | From アドレス | root@app01.example.com |
 | ALERT_TO | 転送先メール | alert@your-domain |
 | TIMEZONE | タイムゾーン | Asia/Tokyo |
 | LANG | ロケール | ja_JP.UTF-8 |
@@ -143,6 +143,7 @@ infra/
 ### 3.4 ベースOS整備（本番向け）
 
 - パッケージ更新: `apt update && apt upgrade -y` を実行する（Ubuntu のため `dnf` は使用しない）。
+- `sysstat` を導入し、`mpstat` を motd で利用できるようにする。
 - タイムゾーン: `timedatectl set-timezone Asia/Tokyo`。
 - ロケール: `locale-gen ja_JP.UTF-8` と `localectl set-locale LANG=ja_JP.UTF-8 LC_ALL=ja_JP.UTF-8`。
 - logrotate: `systemctl status logrotate.timer` で有効化を確認する。
@@ -190,7 +191,7 @@ echo " Uptime   : $(uptime -p)"
 echo " LoadAvg  : $(cut -d ' ' -f1-3 /proc/loadavg)"
 
 # CPU
-CPU_IDLE=$(awk '/^cpu / {idle=$5; total=0; for (i=2;i<=8;i++) total+=$i; printf "%.1f", idle*100/total}' /proc/stat)
+CPU_IDLE=$(mpstat 1 1 | awk '/Average:.*all/ {print $12}')
 echo " CPU Idle : ${CPU_IDLE}%"
 
 # Memory
@@ -298,11 +299,11 @@ maxretry = 5
 - `/etc/postfix/generic` に以下を設定し、`postmap /etc/postfix/generic` を実行する。
 
 ```
-root@app01.example.local alert@your-domain
+root@app01.example.com alert@your-domain
 ```
 
 - `/etc/aliases` に `root: alert@your-domain` を設定し、`newaliases` を実行する。
-- `ALERT_FROM` はサーバーの FQDN に合わせ、DNS/rDNS と整合するようにする。
+- `ALERT_FROM` はサーバーの FQDN に合わせ、DNS/rDNS と整合するようにする（不整合は迷惑メール判定や SPF/DKIM の失敗要因になる）。
 
 ### 3.14 冪等性設計
 
