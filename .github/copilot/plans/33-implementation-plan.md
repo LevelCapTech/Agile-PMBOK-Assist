@@ -427,8 +427,15 @@ flowchart TD
 - 監視・運用上の注意:
   - 公開ポートは 443 のみ。SSH は管理 IP 制限。
   - `/metrics` は監視 IP のみ許可し、Basic 認証を併用する場合は secrets 管理外とする。
-  - 自動デプロイ方針: `infra/setup/40-web/deploy.sh` を用意し、`git fetch` → `git checkout $APP_BRANCH` → `npm ci` → `npm run build` → `prisma migrate deploy` → `systemctl restart nextjs` を実行する。
-  - systemd timer で 5 分〜10 分間隔のポーリングを行うか、手動実行にするかを運用で選定する。
+  - 自動デプロイ方針:
+    - `infra/setup/40-web/deploy.sh` を用意し、以下の手順を実行する。
+      - `git fetch`
+      - `git checkout $APP_BRANCH`
+      - `npm ci`
+      - `npm run build`
+      - `prisma migrate deploy`
+      - `systemctl restart nextjs`
+    - systemd timer で 5 分〜10 分間隔のポーリングを行うか、手動実行にするかを運用で選定する。
 
 ## 9. オープンな課題 / ADR 要否
 
