@@ -21,15 +21,9 @@
   - secrets は Git 管理外とし、`infra/env/*.env` はテンプレートのみ（実値は配置しない）。
   - root 直ログインは禁止し、sudo 可能な専用ユーザーで運用する。
 
-成果物（必須）:
-- `.github/copilot/80-templates/implementation-plan.md` に準拠した plan ドキュメントを`.github/copilot/plans/XXXXX-implementation-plan.md`に作成する(この1行は変更せずにそのまま出力する)
-
 ## 2. スコープと変更対象
 
-- 変更ファイル（新規/修正/削除）:
-  - 新規: `.github/copilot/plans/33-implementation-plan.md`
-- 影響範囲・互換性リスク:
-  - 設計ドキュメントのみ。既存コード・設定には影響を与えない。
+- 変更ファイル（新規/修正/削除）: 「3.1 製造時の変更予定ファイル一覧」を参照
 - 外部依存・Secrets の扱い:
   - Node LTS、MySQL、Nginx、fail2ban、certbot、postfix、node_exporter、mysqld_exporter を OS パッケージで導入する。
   - Prometheus/Grafana は **監視サーバー側** で運用する。
@@ -384,7 +378,7 @@ flowchart TD
 ## 6. テスト戦略
 
 - テスト観点（正常 / 例外 / 境界 / 回帰）:
-  - 正常: bootstrap 実行後に Next.js/MySQL/Nginx/Exporters/Postfix が起動する。
+  - 正常: bootstrap 実行後に「本番リリース確認（受入）」の判定条件を満たす。
   - 例外: 証明書取得失敗時の再試行、Nginx 設定エラー時のロールバック。
   - 境界: rate limit のしきい値、監視 `/metrics` のアクセス制御。
   - 回帰: 再実行で既存設定が崩れない。
@@ -395,19 +389,39 @@ flowchart TD
 
 ### 6.1 初期実行後の本番チェックリスト
 
-- `systemctl status nextjs mysql nginx node_exporter mysqld_exporter postfix` が active。
-- 443 で SSR 応答、証明書が有効（ACME 期限が確認できる）。
-- `/metrics` が監視サーバー IP からのみ取得可能。
-- fail2ban が有効で `jail` が active。
-- logrotate.timer が有効、`/var/log` がローテーションされる。
-- root 宛てメールが外部に転送される。
+#### リリース完了の判定条件（受入基準）
+
+- 443/TLS でアプリが正常応答し、証明書が有効（期限・SAN が正しい）。
+- Next.js/MySQL/Nginx/Exporters/Postfix が `systemctl` で active。
+- `/metrics` が監視サーバー IP のみ許可され、想定メトリクスが取得できる。
+- fail2ban が有効で `jail` が active、SSH は管理 IP のみ許可。
+- logrotate.timer が active、Next.js ログがローテーション対象。
+- root 宛てのテストメールが外部へ転送される。
+
+#### 確認コマンド例（受入判定の裏付け）
+
+- `systemctl status nextjs mysql nginx node_exporter mysqld_exporter postfix`
+- `curl -I https://$ACME_DOMAIN`（HTTP 200/302 を確認）
+- `openssl s_client -connect $ACME_DOMAIN:443 -servername $ACME_DOMAIN </dev/null`
+- `curl -s https://$ACME_DOMAIN/metrics`（監視 IP 以外では拒否されること）
+- `fail2ban-client status`
+- `systemctl status logrotate.timer`
+- `echo "test" | mail -s "release-check" root`
 
 ## 7. CI 品質ゲート
 
-- 実行コマンド（format / lint / typecheck / test / security）:
-  - `npm run lint`（既存の Next.js フロントの品質チェック）。
-- 通過基準と失敗時の対応:
-  - lint が失敗した場合は差分の関連箇所を修正し、再実行する。
+### 7.1 方針
+
+- 本タスクは `infra/*.sh` 追加が中心のため、アプリ（Next.js）の lint は対象外とする。
+
+### 7.2 実行コマンド（任意 / 推奨）
+
+- `shellcheck infra/bootstrap.sh infra/setup/**/*.sh`
+- `bash -n infra/bootstrap.sh` および主要 `infra/setup/**/*.sh`
+
+### 7.3 通過基準と失敗時の対応
+
+- `shellcheck` / `bash -n` が失敗した場合は該当スクリプトを修正して再実行する。
 
 ## 8. ロールアウト・運用
 
