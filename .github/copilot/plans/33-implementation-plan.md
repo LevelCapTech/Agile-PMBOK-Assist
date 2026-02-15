@@ -3,8 +3,8 @@
 ## 1. 機能要件 / 非機能要件
 
 - 機能要件:
-  - さくらVPS（Ubuntu 22.04 LTS）上で **本番環境** 向けの初回インフラ整備を自動化する。
-  - OS 基本整備として `apt update/upgrade`、タイムゾーン（JST）、ロケール（`ja_JP.UTF-8`）を適用する。
+- さくらVPS（Ubuntu 22.04 LTS）上で **本番環境** 向けの初回インフラ整備を自動化する。
+- OS 基本整備として `apt update/upgrade`、タイムゾーン（JST）、ロケール（`ja_JP.UTF-8`）を適用する。
   - `.bashrc`、`/etc/issue`、`/etc/update-motd.d` を整備し、運用向けの表示・履歴設定を行う。
   - Git を整備して GitHub からアプリ/スクリプトをクローンできるようにする。
   - SSR 前提の Next.js（`next build` + `next start`）を systemd 管理で起動する。
@@ -18,7 +18,7 @@
   - Node LTS を使用する（NodeSource などで導入）。
   - 外部公開ポートは 443 のみ。SSH は管理 IP のみ許可する。
   - 監視 UI（Prometheus/Grafana）は **別サーバー** 側に設置し、本サーバーには設置しない。
-  - secrets は Git 管理外とし、`infra/env/*.env` はテンプレートのみ（実値は配置しない）。
+  - secrets は Git 管理外とし、実値は `infra/env/.env` に配置する（`sample.emv` はテンプレート）。
   - root 直ログインは禁止し、sudo 可能な専用ユーザーで運用する。
 
 ## 2. スコープと変更対象
@@ -51,8 +51,8 @@
 | --- | -- | ---- |
 | 1 | infra/README.md | 初回整備の運用手順・再実行方法を記載 |
 | 2 | infra/bootstrap.sh | `setup` を順序実行するエントリポイント |
-| 3 | infra/env/prod.env | 本番用環境変数テンプレート |
-| 4 | infra/env/staging.env | ステージング用環境変数テンプレート |
+| 3 | infra/env/sample.emv | 環境変数テンプレート（雛形） |
+| 4 | infra/env/.env | 実運用の環境変数（Git 管理外） |
 | 5 | infra/setup/00-base/00-packages.sh | `apt update/upgrade` と必須パッケージ導入 |
 | 6 | infra/setup/00-base/10-locale.sh | タイムゾーン/ロケール設定 |
 | 7 | infra/setup/00-base/20-shell.sh | `.bashrc` の履歴/alias 設定 |
@@ -95,8 +95,8 @@ infra/
 ├── README.md
 ├── bootstrap.sh
 ├── env/
-│   ├── prod.env
-│   └── staging.env
+│   ├── sample.emv
+│   └── .env
 └── setup/
     ├── 00-base/
     ├── 10-security/
@@ -134,6 +134,11 @@ infra/
 | TIMEZONE | タイムゾーン | Asia/Tokyo |
 | LANG | ロケール | ja_JP.UTF-8 |
 
+#### 取り込み方法（推奨）
+
+- `infra/env/.env` に実値を記載し、`source infra/env/.env` で一括読み込みする（個別 `export` は不要）。
+- `infra/env/.env` は `.gitignore` で除外する。
+
 ### 3.4 ベースOS整備（本番向け）
 
 - パッケージ更新: `apt update && apt upgrade -y` を実行する（Ubuntu のため `dnf` は使用しない）。
@@ -156,7 +161,7 @@ export HISTFILESIZE=20000
 ```
         _-_
      /`     `\
-   |   🌸  sakura  🌸   |
+   |   *  sakura  *   |
      \_       _/
          `-_-' 
 
@@ -362,7 +367,7 @@ flowchart TD
 | H-00 | VPS 初期リセット | 新規 VPS の確保 | さくら VPS コンソールからサーバーリセットを依頼する | 初期化完了通知の確認 | 新規 VPS にログイン可能 |
 | H-01 | VPS 事前準備 | セキュアな初期状態を整える | DNS 設定（A レコード）、新規 sudo ユーザー作成、SSH 公開鍵登録、root 直ログイン禁止を計画する | SSH で sudo ユーザーがログインできること | root 無効化前に新規ユーザーでログイン可能 |
 | H-02 | Git/Clone 準備 | アプリと整備スクリプトを取得する | Git をインストールし、Deploy Key で `APP_REPO_URL` と `infra` リポジトリをクローンする | `git clone` が成功すること | `/var/www/app` と `/opt/infra` に配置済み |
-| H-03 | 環境値/Secrets 配置 | 秘密情報の安全な配置 | `infra/env/prod.env` を用意し、`.env.production`、MySQL パスワード、SMTP 認証情報、Basic 認証ファイルをサーバーに配置する | Git 管理外であること | secrets がサーバーにのみ存在 |
+| H-03 | 環境値/Secrets 配置 | 秘密情報の安全な配置 | `infra/env/.env` を用意し、`.env.production`、MySQL パスワード、SMTP 認証情報、Basic 認証ファイルをサーバーに配置する | Git 管理外であること | secrets がサーバーにのみ存在 |
 | H-04 | Bootstrap 実行 | 自動整備の開始 | `infra/bootstrap.sh` を実行し、各 `setup/*` が完走することを確認する | `nginx -t` と `systemctl status` の確認 | Next.js/MySQL/Nginx/Exporters/Postfix が起動 |
 | H-05 | アプリ初期化 | DB と SSR を同期 | `npm ci` → `npm run build` → `prisma migrate deploy` を実行し、`systemctl restart nextjs` | migrate の成功 | SSR が 443 で応答 |
 | H-06 | 監視疎通確認 | 監視対象として登録 | 監視サーバーから `/metrics` を取得し、IP 制限が有効か確認 | 監視 IP のみ取得可能 | node_exporter 値が取得可能 |
