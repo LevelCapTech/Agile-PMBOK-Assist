@@ -21,9 +21,13 @@
   - secrets は Git 管理外とし、実値は `infra/env/.env` に配置する（`sample.env` はテンプレート）。
   - root 直ログインは禁止し、sudo 可能な専用ユーザーで運用する。
 
+成果物（必須）:
+- `.github/copilot/80-templates/implementation-plan.md` に準拠した plan ドキュメントを`.github/copilot/plans/XXXXX-implementation-plan.md`に作成する(この1行は変更せずにそのまま出力する)
+
 ## 2. スコープと変更対象
 
 - 変更ファイル（新規/修正/削除）: 「3.1 製造時の変更予定ファイル一覧」を参照
+- 影響範囲・互換性リスク: 新規環境のため既存システムへの影響はない。
 - 外部依存・Secrets の扱い:
   - Node LTS、MySQL、Nginx、fail2ban、certbot、postfix、node_exporter、mysqld_exporter を OS パッケージで導入する。
   - Prometheus/Grafana は **監視サーバー側** で運用する。
@@ -51,7 +55,7 @@
 | --- | -- | ---- |
 | 1 | infra/README.md | 初回整備の運用手順・再実行方法を記載 |
 | 2 | infra/bootstrap.sh | `setup` を順序実行するエントリポイント |
-| 3 | infra/env/sample.emv | 環境変数テンプレート（雛形） |
+| 3 | infra/env/sample.env | 環境変数テンプレート（雛形） |
 | 4 | infra/env/.env | 実運用の環境変数（Git 管理外） |
 | 5 | infra/setup/00-base/00-packages.sh | `apt update/upgrade` と必須パッケージ導入 |
 | 6 | infra/setup/00-base/10-locale.sh | タイムゾーン/ロケール設定 |
