@@ -95,7 +95,7 @@ infra/
 ├── README.md
 ├── bootstrap.sh
 ├── env/
-│   ├── sample.emv
+│   ├── sample.env
 │   └── .env
 └── setup/
     ├── 00-base/
