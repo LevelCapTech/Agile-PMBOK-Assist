@@ -163,11 +163,11 @@ export HISTFILESIZE=20000
 - `/etc/issue` に以下を設定する。
 
 ```
-        _-_
-     /`     `\
-   |   *  sakura  *   |
-     \_       _/
-         `-_-' 
+       _-_
+    /`     `\
+  |   *  sakura  *   |
+    \_       _/
+        `-_-'
 
  Welcome, sakura.
  This server is managed with care.
