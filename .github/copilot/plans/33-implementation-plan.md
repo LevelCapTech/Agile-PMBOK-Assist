@@ -191,7 +191,7 @@ echo " Uptime   : $(uptime -p)"
 echo " LoadAvg  : $(cut -d ' ' -f1-3 /proc/loadavg)"
 
 # CPU
-CPU_IDLE=$(mpstat 1 1 | awk '/Average:.*all/ {print $12}')
+CPU_IDLE=$(mpstat 1 1 | awk '/Average:.*all/ {print $NF}')
 echo " CPU Idle : ${CPU_IDLE}%"
 
 # Memory
@@ -297,6 +297,7 @@ maxretry = 5
 - さくら SMTP を relayhost とし、SMTP AUTH を有効化する。
 - `smtp_generic_maps = hash:/etc/postfix/generic` を `main.cf` に設定する。
 - `/etc/postfix/generic` に以下を設定し、`postmap /etc/postfix/generic` を実行する。
+  - 1 行あたり「送信元 送信先」をスペース区切りで記載する。
 
 ```
 root@app01.example.com alert@your-domain
