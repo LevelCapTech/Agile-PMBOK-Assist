@@ -169,11 +169,14 @@ export HISTFILESIZE=20000
  This server is managed with care.
 ```
 
+- 端末幅で崩れる場合はスペース量を調整する。
+
 - `/etc/update-motd.d/99-custom` を作成し、以下を出力する。
 
 ```
 #!/bin/bash
 
+LANG=C
 echo "----------------------------------------"
 echo " System Status ($(date '+%Y-%m-%d %H:%M:%S'))"
 echo "----------------------------------------"
@@ -187,13 +190,14 @@ echo " Uptime   : $(uptime -p)"
 echo " LoadAvg  : $(cut -d ' ' -f1-3 /proc/loadavg)"
 
 # CPU
-CPU_IDLE=$(top -bn1 | grep "Cpu(s)" | awk '{print $8}')
+CPU_IDLE=$(awk '/^cpu / {idle=$5; total=0; for (i=2;i<=8;i++) total+=$i; printf "%.1f", idle*100/total}' /proc/stat)
 echo " CPU Idle : ${CPU_IDLE}%"
 
 # Memory
-free -h | awk '
+free -b | awk '
 /Mem:/ {
-  printf " Memory   : %s / %s used (%.1f%%)\n", $3, $2, $3/$2*100
+  used=$3; total=$2;
+  printf " Memory   : %.1f%% used (%.1fGiB/%.1fGiB)\n", used/total*100, used/1024/1024/1024, total/1024/1024/1024
 }'
 
 # Disk
@@ -251,7 +255,8 @@ WantedBy=multi-user.target
 
 - `server` ブロックは `listen 443 ssl http2` のみに限定する。
 - `proxy_pass http://127.0.0.1:4000` を設定し、`proxy_set_header` に `Host`、`X-Forwarded-For`、`X-Forwarded-Proto` を指定する。
-- 443 以外の外部公開は行わず、80 は閉じる（ACME は TLS-ALPN-01 / DNS-01 を利用）。
+- 443 以外の外部公開は行わず、80 は閉じる（HTTP リダイレクトは行わない）。
+- ACME は TLS-ALPN-01 / DNS-01 を利用し、80 を開放しない。
 
 ### 3.9 Nginx rate limit 設計
 
@@ -297,6 +302,7 @@ root@app01.example.local alert@your-domain
 ```
 
 - `/etc/aliases` に `root: alert@your-domain` を設定し、`newaliases` を実行する。
+- `ALERT_FROM` はサーバーの FQDN に合わせ、DNS/rDNS と整合するようにする。
 
 ### 3.14 冪等性設計
 
