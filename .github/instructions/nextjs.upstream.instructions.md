@@ -11,3 +11,4 @@ applyTo:
 - contracts から providers などの実装を import しない。
 - providers/public は public で完結する完成実装のみを置く。
 - public リポジトリに private 実装や `private/` ディレクトリを追加しない。
+- 上記の規約は ESLint の `no-restricted-imports` で `private/` への import を禁止することで技術的に担保する。

@@ -43,7 +43,7 @@
 - app/providers/public/createPublicDeps.ts に public 完成実装を置く。
 - app/providers/AppProvider.tsx / AppContext.ts を DI ルートとして構成する。
 - app/layout.tsx で AppProvider を適用する。
-- docs/architecture.md と eslint.config.mjs は別 Issue で再作成・更新する前提とする。
+- docs/architecture.md と eslint.config.mjs は別 Issue で再作成・更新する前提とする（Issue の Done 定義と整合するよう、別 Issue 化または Done 更新が必要）。
 
 ## 4. 設計UML
 
@@ -69,13 +69,14 @@ flowchart TD
   A[AppProvider] --> B[public createPublicDeps]
   B --> C[AppContext Provider]
   C --> D[Page/Component/Hook]
+  D --> E[End]
 ```
 
 ## 5. 人間が行う作業:
 
 | 手順ID | 作業名 | 作業の目的 | 具体的な作業内容（人間がやることを詳細に書く） | 判断・確認ポイント | 完了条件（チェック可能な状態） |
 | ---- | --- | ----- | ----------------------- | --------- | --------------- |
-| H-01 | 規約確認 | SSOT 規範の整合性確認 | instructions の内容が Issue 要件と一致していることを確認する | 規約の抜け/重複 | 要件が満たされている |
+| H-01 | 規約確認 | SSOT 規範の整合性確認 | instructions の内容が Issue 要件と一致していることを確認する | 規約の抜け/重複 / AppProvider が唯一の DI ポイントとして明文化されている / contracts が interface のみで構成されることが明示されている / ESLint による技術的制約が記載されているか、または別 Issue 化の方針が明確である | 要件が満たされている |
 
 ### 5.1 使用する情報・資料
 
@@ -108,6 +109,6 @@ flowchart TD
 ## 9. オープンな課題 / ADR 要否
 
 - 未確定事項:
-  - なし。
+  - Issue の Done 定義と本 PR のスコープ差分（architecture.md/ESLint）は別 Issue で解消する前提。
 - ADR に残すべき判断:
   - なし。
