@@ -6,4 +6,15 @@ export type AppDependencies = {
   ganttDataSource: GanttDataSource;
 };
 
-export const AppContext = createContext<AppDependencies | null>(null);
+const missingDependencyError = () => {
+  throw new Error("AppProvider is required to access dependencies.");
+};
+
+const missingDependencies: AppDependencies = {
+  ganttDataSource: {
+    fetchTasks: missingDependencyError,
+    updateTask: missingDependencyError,
+  },
+};
+
+export const AppContext = createContext<AppDependencies>(missingDependencies);
