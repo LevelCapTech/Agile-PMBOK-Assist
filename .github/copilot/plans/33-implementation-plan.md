@@ -167,7 +167,7 @@ export HISTFILESIZE=20000
 ```
        _-_
     /`     `\
-  |   🌸  sakura  🌸   |
+  |   *  sakura  *   |
     \_       _/
         `-_-'
 
@@ -309,7 +309,7 @@ maxretry = 5
 - さくら SMTP を relayhost とし、SMTP AUTH を有効化する。
 - `smtp_generic_maps = hash:/etc/postfix/generic` を `main.cf` に設定する。
 - `/etc/postfix/generic` に以下を設定し、`postmap /etc/postfix/generic` を実行する。
-  - 1 行あたり「送信元アドレス 変換先アドレス」をスペースまたはタブ区切りで記載する。
+  - 1 行あたり「送信元アドレス 変換先アドレス」をタブ区切り（スペースも可）で記載する。
 
 ```
 root@app01.example.com alert@your-domain
