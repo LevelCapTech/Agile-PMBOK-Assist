@@ -70,10 +70,11 @@
 | 16 | infra/setup/40-web/10-nginx.sh | Nginx reverse proxy / rate limit 設定 |
 | 17 | infra/setup/40-web/20-certbot.sh | TLS-ALPN-01/DNS-01 で証明書取得 |
 | 18 | infra/setup/40-web/30-nextjs-service.sh | `nextjs.service` 配置 |
-| 19 | infra/setup/50-monitoring/10-exporters.sh | node_exporter / mysqld_exporter 導入 |
-| 20 | infra/setup/50-monitoring/20-metrics-proxy.sh | Nginx の metrics 逆プロキシ |
-| 21 | infra/setup/60-mail/10-postfix.sh | postfix + さくら SMTP 設定 |
-| 22 | infra/setup/90-verify/10-healthcheck.sh | 起動/疎通の検証 |
+| 19 | infra/setup/40-web/deploy.sh | Next.js 更新用のデプロイ処理 |
+| 20 | infra/setup/50-monitoring/10-exporters.sh | node_exporter / mysqld_exporter 導入 |
+| 21 | infra/setup/50-monitoring/20-metrics-proxy.sh | Nginx の metrics 逆プロキシ |
+| 22 | infra/setup/60-mail/10-postfix.sh | postfix + さくら SMTP 設定 |
+| 23 | infra/setup/90-verify/10-healthcheck.sh | 起動/疎通の検証 |
 
 #### 3.1.2 サーバー上で配置・更新する設定ファイル
 
@@ -141,6 +142,7 @@ infra/
 
 - `infra/env/.env` に実値を記載し、`source infra/env/.env` で一括読み込みする（個別 `export` は不要）。
 - `infra/env/.env` は `.gitignore` で除外する。
+- `infra/env/.env` のパーミッションは `chmod 600`、所有者は `appuser` など最小権限で保持する。
 
 ### 3.4 ベースOS整備（本番向け）
 
@@ -149,6 +151,7 @@ infra/
 - タイムゾーン: `timedatectl set-timezone Asia/Tokyo`。
 - ロケール: `locale-gen ja_JP.UTF-8` と `localectl set-locale LANG=ja_JP.UTF-8 LC_ALL=ja_JP.UTF-8`。
 - logrotate: `systemctl status logrotate.timer` で有効化を確認する。
+- Node LTS は NodeSource の手順で導入する（`curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -` → `apt install -y nodejs`）。
 - `.bashrc` に以下を追記する。
 
 ```
@@ -164,7 +167,7 @@ export HISTFILESIZE=20000
 ```
        _-_
     /`     `\
-  |   *  sakura  *   |
+  |   🌸  sakura  🌸   |
     \_       _/
         `-_-'
 
@@ -212,7 +215,7 @@ NR==2 {
 echo "----------------------------------------"
 ```
 
-- Git を導入し、deploy key/SSH 設定が完了していることを前提にクローンを実行する。
+- Git 導入は `infra/setup/20-runtime/20-git.sh` で自動化し、詳細は H-02 の手順に従う。
 
 ### 3.5 SSR 前提 Next.js 実行設計
 
@@ -246,11 +249,14 @@ WantedBy=multi-user.target
 - `nextjs.service` を `systemctl enable --now` で常駐させる。
 - exporter 用に `node_exporter.service`、`mysqld_exporter.service` を追加し、`After=network.target` で起動順を担保する。
 - ログは journald に集約し、エラー時は `journalctl -u <service>` で確認可能にする。
+- `nextjs.service` には `Wants=network-online.target` と `After=network-online.target mysql.service` を追加し、`Requires=mysql.service` の付与を検討する。
 
 ### 3.7 MySQL セキュア初期構成
 
 - `bind-address = 127.0.0.1` とし、外部アクセスは禁止する。
 - `mysql_secure_installation` 相当の設定を自動化（root リモートログイン禁止、匿名ユーザー削除、test DB 削除）。
+  - `ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '$MYSQL_ROOT_PASSWORD';`
+  - `DELETE FROM mysql.user WHERE User='';`、`DROP DATABASE IF EXISTS test;`
 - アプリ用ユーザーを `localhost` 限定で作成し、最小権限（対象 DB のみ）を付与する。
 - `prisma migrate deploy` を `APP_DIR` で実行できるように `DATABASE_URL` を設定する。
 
@@ -259,7 +265,7 @@ WantedBy=multi-user.target
 - `server` ブロックは `listen 443 ssl http2` のみに限定する。
 - `proxy_pass http://127.0.0.1:4000` を設定し、`proxy_set_header` に `Host`、`X-Forwarded-For`、`X-Forwarded-Proto` を指定する。
 - 443 以外の外部公開は行わず、80 は閉じる（HTTP リダイレクトは行わない）。
-- ACME は TLS-ALPN-01 / DNS-01 を利用し、80 を開放しない。
+- ACME は TLS-ALPN-01 / DNS-01 を利用し、80 を開放しない（要件により 443 のみ公開）。
 
 ### 3.9 Nginx rate limit 設計
 
@@ -268,13 +274,14 @@ limit_req_zone $binary_remote_addr zone=one:10m rate=10r/s;
 ```
 
 - `location /` で `limit_req zone=one burst=20 nodelay;` を適用し、DoS を緩和する。
+- `zone=one:10m` は IP を約 16 万件保持する前提で設定し、`burst` はピーク許容値として調整する。
 
 ### 3.10 fail2ban 連携設計
 
 ```
 [nginx-http-auth]
 enabled = true
-port = http,https
+port = https
 filter = nginx-http-auth
 logpath = /var/log/nginx/error.log
 maxretry = 5
@@ -286,27 +293,30 @@ maxretry = 5
 
 - 443 のみ公開するため TLS-ALPN-01 または DNS-01 を利用する。
 - `certbot --nginx --preferred-challenges tls-alpn-01 -d $ACME_DOMAIN` を基本とし、DNS-01 が可能なら DNS プラグインを利用する。
-- `certbot.timer` により自動更新し、更新後に `systemctl reload nginx` を実行する。
+- `certbot.timer` により自動更新し、`/etc/letsencrypt/renewal-hooks/deploy/reload-nginx.sh` で `systemctl reload nginx` を実行する。
 
 ### 3.12 監視（node_exporter / mysqld_exporter）設計
 
 - 本サーバーには Prometheus/Grafana を設置しない。
 - exporter は `127.0.0.1` にバインドし、Nginx を経由して `/metrics` を 443 で公開する。
-- `/metrics` は `allow $METRICS_ALLOW_IPS; deny all;` で監視サーバーのみ許可する。
+- `/metrics/node` は `proxy_pass http://127.0.0.1:9100/metrics`、`/metrics/mysql` は `proxy_pass http://127.0.0.1:9104/metrics` を設定する。
+- `/metrics` 配下は `allow $METRICS_ALLOW_IPS; deny all;` で監視サーバーのみ許可する。
+- mysqld_exporter 用に `exporter` ユーザーを作成し、`PROCESS, REPLICATION CLIENT, SELECT` を付与する。
+- mysqld_exporter は `/etc/.mysqld_exporter.cnf` に認証情報を置き、`--web.listen-address=127.0.0.1:9104` で起動する。
 
 ### 3.13 postfix アラートメール設計
 
 - さくら SMTP を relayhost とし、SMTP AUTH を有効化する。
 - `smtp_generic_maps = hash:/etc/postfix/generic` を `main.cf` に設定する。
 - `/etc/postfix/generic` に以下を設定し、`postmap /etc/postfix/generic` を実行する。
-  - 1 行あたり「送信元 送信先」をスペースまたはタブ区切りで記載する。
+  - 1 行あたり「送信元アドレス 変換先アドレス」をスペースまたはタブ区切りで記載する。
 
 ```
 root@app01.example.com alert@your-domain
 ```
 
 - `/etc/aliases` に `root: alert@your-domain` を設定し、`newaliases` を実行する。
-- `ALERT_FROM` はサーバーの FQDN に合わせ、DNS/rDNS と整合するようにする（不整合は迷惑メール判定や SPF/DKIM の失敗要因になる）。
+- `ALERT_FROM` は `smtp_generic_maps` により envelope sender を書き換えるため、使用するドメインで SPF/DKIM が有効なものを選定する。
 
 ### 3.14 冪等性設計
 
@@ -319,6 +329,7 @@ root@app01.example.com alert@your-domain
 - 新しい sudo ユーザーと SSH 公開鍵を登録した後に `PermitRootLogin no` を適用する。
 - `ufw allow OpenSSH` を先に実行し、`ufw enable` は最後に行う。
 - 変更前後で `sshd -t` を実行し、設定の有効性を確認する。
+- UFW 例: `ufw default deny incoming`、`ufw allow 443/tcp`、`ufw allow from <ADMIN_IP> to any port 22`。
 
 ### 3.16 ログ設計
 
@@ -390,6 +401,12 @@ flowchart TD
   - 例外: 証明書取得失敗時の再試行、Nginx 設定エラー時のロールバック。
   - 境界: rate limit のしきい値、監視 `/metrics` のアクセス制御。
   - 回帰: 再実行で既存設定が崩れない。
+  - Given/When/Then 受入条件:
+    - Given: 新規VPS, When: bootstrap実行, Then: Next.js/MySQL/Nginx が起動する。
+    - Given: HTTPSアクセス, When: httpsアクセス, Then: 有効証明書で接続できる。
+    - Given: DoS的連続アクセス, When: 高頻度リクエスト, Then: rate limit で制御される。
+    - Given: VPS再起動, When: 再起動後, Then: nextjs.service が自動起動する。
+    - Given: Prometheus, When: /metrics確認, Then: node_exporter 値が取得できる。
   - 初期実行後の本番チェックリスト:
     - 443/TLS でアプリが正常応答し、証明書が有効（期限・SAN が正しい）。
     - Next.js/MySQL/Nginx/Exporters/Postfix が `systemctl` で active。
