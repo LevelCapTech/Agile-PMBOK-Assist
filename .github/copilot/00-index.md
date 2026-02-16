@@ -23,7 +23,7 @@
 - PR作成時は、`80-templates/pr-checklist.md`の品質ゲートを通過させること。
 - PR種別に応じて対応するテンプレートを必ず使用する：
   - DESIGN PR → [.github/PULL_REQUEST_TEMPLATE/design.md](../PULL_REQUEST_TEMPLATE/design.md)
-  - IMPLEMENT PR → [.github/PULL_REQUEST_TEMPLATE/PULL_REQUEST_TEMPLATE.md](../PULL_REQUEST_TEMPLATE/PULL_REQUEST_TEMPLATE.md)
+  - IMPLEMENT PR → [.github/PULL_REQUEST_TEMPLATE/implement.md](../PULL_REQUEST_TEMPLATE/implement.md)
   - RESEARCH PR → [.github/PULL_REQUEST_TEMPLATE/research.md](../PULL_REQUEST_TEMPLATE/research.md)
   - BLIND PR → [.github/PULL_REQUEST_TEMPLATE/blind.md](../PULL_REQUEST_TEMPLATE/blind.md)
 - **設計フェーズ (Phase A)**: `80-templates/implementation-plan.md` に沿って plan を作成し、`10-60` の仕様を満たすこと。
