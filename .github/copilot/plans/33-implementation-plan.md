@@ -219,7 +219,6 @@ NR==2 {
 echo "----------------------------------------"
 ```
 
-- Git 導入は `infra/setup/20-runtime/20-git.sh` で自動化し、詳細は H-02 の手順に従う。
 
 ### 3.5 SSR 前提 Next.js 実行設計
 
@@ -291,6 +290,7 @@ limit_req_zone $binary_remote_addr zone=one:10m rate=10r/s;
 - `location /` で `limit_req zone=one burst=20 nodelay;` を適用し、DoS を緩和する。
 - `zone=one:10m` は IP を約 16 万件保持する前提で設定し、`burst` はピーク許容値として調整する。
 - `rate=10r/s` は 1 クライアント IP あたりの許容リクエスト数として運用に合わせて見直す。
+- `burst=20` と `nodelay` は短時間スパイクを許容し、超過分は即時拒否する前提で調整する。
 
 ### 3.10 fail2ban 連携設計
 
@@ -304,11 +304,13 @@ maxretry = 5
 ```
 
 - SSH 用 `sshd` jail も有効化し、ログイン試行を制限する。
+- 80/TCP は閉塞するため、`port = https` のみに限定する。
 
 ### 3.11 Let’s Encrypt 証明書取得・自動更新設計
 
 - 443 のみ公開するため TLS-ALPN-01 または DNS-01 を利用する。
 - `certbot --nginx --preferred-challenges tls-alpn-01 -d $ACME_DOMAIN` を基本とし、DNS-01 が可能なら DNS プラグインを利用する。
+- `apt install -y certbot python3-certbot-nginx` を前提とし、`systemctl list-timers | grep certbot` でタイマーの有効化を確認する。
 - `systemctl enable --now certbot.timer` で更新タイマーを有効化する。
 - `certbot.timer` により自動更新し、`/etc/letsencrypt/renewal-hooks/deploy/reload-nginx.sh` で `systemctl reload nginx` を実行する。
 
@@ -317,9 +319,11 @@ maxretry = 5
 - 本サーバーには Prometheus/Grafana を設置しない。
 - exporter は `127.0.0.1` にバインドし、Nginx を経由して `/metrics` を 443 で公開する。
 - `/metrics/node` は `proxy_pass http://127.0.0.1:9100/metrics`、`/metrics/mysql` は `proxy_pass http://127.0.0.1:9104/metrics` を設定する。
+- `/metrics` は用途別に `/metrics/node` と `/metrics/mysql` に分割し、単一パスで混在させない。
 - `/metrics` 配下は `allow $METRICS_ALLOW_IPS; deny all;` で監視サーバーのみ許可する。
 - mysqld_exporter 用に `exporter` ユーザーを作成し、`PROCESS, REPLICATION CLIENT, SELECT` を付与する。
 - mysqld_exporter は `/etc/.mysqld_exporter.cnf` に認証情報を置き、`--web.listen-address=127.0.0.1:9104` で起動する。
+- `/etc/.mysqld_exporter.cnf` は `[client]` で `user`/`password` を記載し、`chmod 600` を適用する。
 
 ### 3.13 postfix アラートメール設計
 
@@ -327,14 +331,14 @@ maxretry = 5
 - `smtp_generic_maps = hash:/etc/postfix/generic` を `main.cf` に設定する。
 - `/etc/postfix/generic` に以下を設定し、`postmap /etc/postfix/generic` を実行する。
   - 1 行あたり「送信元アドレス 変換先アドレス」をタブ区切りで記載する（スペースでも動作するがタブを推奨）。
-  - 左側: 実際の送信元アドレス（例: `root@app01.example.com`）、右側: 変換先アドレス（例: `alert@your-domain`）。
+  - 左側: 実際の送信元アドレス（例: `root@app01.example.com`）、右側: 変換後の送信元アドレス（From/Return-Path）。
 
 ```
 root@app01.example.com alert@your-domain
 ```
 
 - `/etc/aliases` に `root: alert@your-domain` を設定し、`newaliases` を実行する。
-- `ALERT_FROM` は `smtp_generic_maps` により envelope sender とヘッダアドレスが書き換えられるため、使用するドメインで SPF/DKIM が有効なものを選定する（リレー要件に合わせて rDNS も整合させる）。
+- `ALERT_FROM` は `smtp_generic_maps` により送信元（From/Return-Path）が書き換えられるため、SPF/DKIM が有効なドメインを選定する（必要に応じて `sender_canonical_maps` も検討する）。
 
 ### 3.14 冪等性設計
 
@@ -425,21 +429,8 @@ flowchart TD
     - Given: DoS的連続アクセス, When: 高頻度リクエスト, Then: rate limit で制御される。
     - Given: VPS再起動, When: 再起動後, Then: nextjs.service が自動起動する。
     - Given: Prometheus, When: /metrics確認, Then: node_exporter 値が取得できる。
-  - 初期実行後の本番チェックリスト:
-    - 443/TLS でアプリが正常応答し、証明書が有効（期限・SAN が正しい）。
-    - Next.js/MySQL/Nginx/Exporters/Postfix が `systemctl` で active。
-    - `/metrics` が監視サーバー IP のみ許可され、想定メトリクスが取得できる。
-    - fail2ban が有効で `jail` が active、SSH は管理 IP のみ許可。
-    - logrotate.timer が active、Next.js ログがローテーション対象。
-    - root 宛てのテストメールが外部へ転送される。
-  - 確認コマンド例:
-    - `systemctl status nextjs mysql nginx node_exporter mysqld_exporter postfix`
-    - `curl -I https://$ACME_DOMAIN`（HTTP 200/302 を確認）
-    - `openssl s_client -connect $ACME_DOMAIN:443 -servername $ACME_DOMAIN </dev/null`
-    - `curl -s https://$ACME_DOMAIN/metrics`（監視 IP 以外では拒否されること）
-    - `fail2ban-client status`
-    - `systemctl status logrotate.timer`
-    - `echo "test" | mail -s "release-check" root`
+    - Given: logrotate, When: timer 状態確認, Then: logrotate.timer が active。
+    - Given: メール転送, When: root 宛て送信, Then: 外部宛てに転送される。
 - モック / フィクスチャ方針:
   - DESIGN フェーズでは実施しない。IMPLEMENT フェーズで最小限のスモーク検証を追加する。
 - テスト追加の実行コマンド（例: `python -m pytest`）:
