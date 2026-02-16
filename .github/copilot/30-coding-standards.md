@@ -2,8 +2,10 @@
 
 - `.github/instructions/**/*.instructions.md` のパス別ルールを優先する。
 - 互換性維持をデフォルトとし、破壊的変更は移行策・理由を plan / ADR に記載する。
-- Python: 型ヒント必須、例外は無視せずログを記録して再送出し、`print` ではなく構造化ログを使う。
-- 依存追加は最小限とし、バージョンをピン止めして `requirements.txt` / `constraints` に反映する。
+- Next.js / React / TypeScript: 型安全性を優先し、`any` は型定義が事実上不可能な外部 API レスポンスなど正当な理由がある場合に限定して使用する。`unknown` は必要最小限に留め、型ガードや Zod などで境界を明確化する。
+- React: 関数コンポーネントと Hooks を基本とし、副作用は `useEffect` で明示、不要な再レンダーを防ぐために依存配列を厳密に管理する。
+- Next.js: App Router 前提で Server / Client Component の責務を分離し、`"use client"` の使用は最小限に留める。
+- 依存追加は最小限とし、バージョンをピン止めして `package.json` / `package-lock.json` に反映する。
 - ログ/コメント/Doc は簡潔に。秘密情報・個人情報をログやコメントに残さない。
 - テスト可能な構造（副作用を分離、関数・メソッドを小さく）を心掛ける。
 - コミットメッセージ:

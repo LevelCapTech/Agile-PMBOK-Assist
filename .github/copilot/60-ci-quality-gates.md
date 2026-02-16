@@ -1,11 +1,11 @@
 # 60 CI Quality Gates — 必須ジョブと基準
 
 ## 必須ジョブ（例）
-- **format**: `black .`（またはプロジェクト指定のフォーマッタ）
-- **lint**: `ruff check .` など静的解析を実行
-- **typecheck**: `mypy .` で型整合性を確認
-- **test**: `python -m pytest` でユニット/回帰テストを実行
-- **security**: `pip-audit -r requirements.txt` など依存脆弱性スキャン
+- **format**: `prettier .`（またはプロジェクト指定のフォーマッタ）
+- **lint**: `eslint .` など静的解析を実行
+- **typecheck**: `tsc --noEmit` で型整合性を確認
+- **test**: `vitest run` / `jest` でユニット/回帰テストを実行
+- **security**: `npm audit` など依存脆弱性スキャン
 
 ## 運用ルール
 - すべての必須ジョブをブランチ保護の required status checks に設定し、失敗時はマージ不可。
