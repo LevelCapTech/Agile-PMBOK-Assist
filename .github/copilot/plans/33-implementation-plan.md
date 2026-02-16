@@ -254,7 +254,12 @@ WantedBy=multi-user.target
 ### 3.7 MySQL セキュア初期構成
 
 - `bind-address = 127.0.0.1` とし、外部アクセスは禁止する。
-- `mysql_secure_installation` 相当の設定を自動化（root リモートログイン禁止、匿名ユーザー削除、test DB 削除）。
+- `infra/setup/30-db/10-mysql.sh` にて、`mysql_secure_installation` 相当の設定を**対話なしで自動化**する（Section 3.1.1 (No.14) で詳細を記載）:
+  - root パスワードは **環境変数**（例: `MYSQL_ROOT_PASSWORD`）から読み込み、`mysql` クライアントに標準入力で SQL を流し込む方式で設定する（パスワードをコマンドライン引数や履歴に残さない）。
+  - MySQL 8.0 以降を前提とし、初回パスワード設定は `ALTER USER 'root'@'localhost' IDENTIFIED BY '********';` を用いて行う。
+  - 匿名ユーザー削除、`test` DB 削除、root のリモートログイン禁止などの処理は、`mysql_secure_installation` と同等の内容を **個別の SQL コマンド** で実行する（必要に応じて `DROP DATABASE test;`、不必要な `mysql.user` レコードの削除など）。
+  - ルート接続用には `/root/.my.cnf` を用意し、`[client]` セクションに `user=root` と `password=********` を記載しておくことで、運用時にパスワードをコマンドラインに渡さず接続できるようにする（ファイルパーミッションは 600 を前提とする）。
+  - アプリ用ユーザー用のパスワードも環境変数（例: `MYSQL_APP_PASSWORD`）から読み込み、SQL でユーザー作成・権限付与を行う。
   - `ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '$MYSQL_ROOT_PASSWORD';`
   - `DELETE FROM mysql.user WHERE User='';`、`DROP DATABASE IF EXISTS test;`
 - アプリ用ユーザーを `localhost` 限定で作成し、最小権限（対象 DB のみ）を付与する。
