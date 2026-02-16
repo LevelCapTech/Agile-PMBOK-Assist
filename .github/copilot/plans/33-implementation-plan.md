@@ -278,6 +278,8 @@ WantedBy=multi-user.target
 - `server` ブロックは `listen 443 ssl http2` のみに限定する。
 - `proxy_pass http://127.0.0.1:4000` を設定し、`proxy_set_header` に `Host`、`X-Forwarded-For`、`X-Forwarded-Proto` を指定する。
 - 443 以外の外部公開は行わず、80 は閉じる（HTTP リダイレクトは行わない）。
+  - セキュリティポリシー上、インターネット公開ポートは 443/TCP のみに限定し、80/TCP は L4 ファイアウォールと Nginx の両方で閉塞する。
+  - 利用者向けドキュメントおよび運用手順に「必ず https:// でアクセスすること（http:// でのアクセスは不可）」を明記する。
 - ACME は TLS-ALPN-01 / DNS-01 を利用し、80 を開放しない（要件により 443 のみ公開）。
 
 ### 3.9 Nginx rate limit 設計
