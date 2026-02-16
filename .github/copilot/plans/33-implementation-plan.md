@@ -331,14 +331,14 @@ maxretry = 5
 - `smtp_generic_maps = hash:/etc/postfix/generic` を `main.cf` に設定する。
 - `/etc/postfix/generic` に以下を設定し、`postmap /etc/postfix/generic` を実行する。
   - 1 行あたり「送信元アドレス 変換先アドレス」をタブ区切りで記載する（スペースでも動作するがタブを推奨）。
-  - 左側: 実際の送信元アドレス（例: `root@app01.example.com`）、右側: 変換後の送信元アドレス（From/Return-Path）。
+  - 左側: 実際の送信元アドレス（例: `root@app01.example.com`）、右側: envelope sender（Return-Path）の変換先（From ヘッダの変更は別設定で行う）。
 
 ```
 root@app01.example.com alert@your-domain
 ```
 
 - `/etc/aliases` に `root: alert@your-domain` を設定し、`newaliases` を実行する。
-- `ALERT_FROM` は `smtp_generic_maps` により送信元（From/Return-Path）が書き換えられるため、SPF/DKIM が有効なドメインを選定する（必要に応じて `sender_canonical_maps` も検討する）。
+- `ALERT_FROM` は `smtp_generic_maps` により envelope sender（Return-Path）が書き換えられるため、SPF/DKIM が有効なドメインを選定する（From ヘッダを変える場合は `header_checks` 等で別途対応する）。
 
 ### 3.14 冪等性設計
 
