@@ -251,7 +251,11 @@ WantedBy=multi-user.target
 ### 3.6 systemd ユニット詳細設計
 
 - `nextjs.service` を `systemctl enable --now` で常駐させる。
-- exporter 用に `node_exporter.service`、`mysqld_exporter.service` を追加し、`After=network.target` で起動順を担保する。
+  - `[Unit]` では `After=network.target mysql.service` に加えて `Wants=mysql.service`（より強く縛る場合は `Requires=mysql.service`）を指定し、MySQL を前提とすることを明示する。
+  - アプリ側は Prisma の接続リトライにより MySQL 起動待ちを行う前提とし、より厳密に行う場合は `ExecStartPre` で MySQL への接続確認（例: `mysqladmin ping`）を実施する。
+- exporter 用に `node_exporter.service`、`mysqld_exporter.service` を追加し、以下のように依存関係を設計する。
+  - `node_exporter.service`: `After=network.target` のみを指定し、ネットワーク有効化後に起動させる。
+  - `mysqld_exporter.service`: `After=network.target mysql.service` とし、`Wants=mysql.service`（または `Requires=mysql.service`）を指定して MySQL サービスとの依存関係を明確にする。
 - ログは journald に集約し、エラー時は `journalctl -u <service>` で確認可能にする。
 - `nextjs.service` には `Wants=network-online.target` と `After=network-online.target mysql.service` を追加し、`Requires=mysql.service` の付与を検討する。
 
