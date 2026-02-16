@@ -15,7 +15,7 @@
   - postfix を整備し、root 宛て通知をさくら SMTP 経由で外部メールに転送する。
 - 非機能要件:
   - Docker は使用しない。
-  - Node LTS を使用する（NodeSource などで導入）。
+  - Node LTS を使用し、NodeSource の手順で導入する。
   - 外部公開ポートは 443 のみ。SSH は管理 IP のみ許可する。
   - 監視 UI（Prometheus/Grafana）は **別サーバー** 側に設置し、本サーバーには設置しない。
   - secrets は Git 管理外とし、実値は `infra/env/.env` に配置する（`sample.env` はテンプレート）。
@@ -82,7 +82,7 @@
 | --- | -- | ---- |
 | 1 | /etc/systemd/system/nextjs.service | SSR 用 systemd ユニット |
 | 2 | /etc/nginx/sites-available/app.conf | 443 専用リバースプロキシ |
-| 3 | /etc/nginx/conf.d/metrics.conf | `/metrics` を監視 IP のみに公開 |
+| 3 | /etc/nginx/conf.d/metrics.conf | `/metrics/node` `/metrics/mysql` を監視 IP のみに公開 |
 | 4 | /etc/fail2ban/jail.d/nginx-http-auth.conf | Nginx 認証失敗検知 |
 | 5 | /etc/postfix/main.cf | さくら SMTP リレー設定 |
 | 6 | /etc/postfix/generic | From 変換マップ |
@@ -170,8 +170,8 @@ export HISTFILESIZE=20000
 
 ```
        _-_
-    /`     `\
-  |   *  sakura  *   |
+    /~~     ~~\
+  |   *  sakura  *  |
     \_       _/
         `-_-'
 
@@ -290,6 +290,7 @@ limit_req_zone $binary_remote_addr zone=one:10m rate=10r/s;
 
 - `location /` で `limit_req zone=one burst=20 nodelay;` を適用し、DoS を緩和する。
 - `zone=one:10m` は IP を約 16 万件保持する前提で設定し、`burst` はピーク許容値として調整する。
+- `rate=10r/s` は 1 クライアント IP あたりの許容リクエスト数として運用に合わせて見直す。
 
 ### 3.10 fail2ban 連携設計
 
@@ -308,6 +309,7 @@ maxretry = 5
 
 - 443 のみ公開するため TLS-ALPN-01 または DNS-01 を利用する。
 - `certbot --nginx --preferred-challenges tls-alpn-01 -d $ACME_DOMAIN` を基本とし、DNS-01 が可能なら DNS プラグインを利用する。
+- `systemctl enable --now certbot.timer` で更新タイマーを有効化する。
 - `certbot.timer` により自動更新し、`/etc/letsencrypt/renewal-hooks/deploy/reload-nginx.sh` で `systemctl reload nginx` を実行する。
 
 ### 3.12 監視（node_exporter / mysqld_exporter）設計
@@ -325,13 +327,14 @@ maxretry = 5
 - `smtp_generic_maps = hash:/etc/postfix/generic` を `main.cf` に設定する。
 - `/etc/postfix/generic` に以下を設定し、`postmap /etc/postfix/generic` を実行する。
   - 1 行あたり「送信元アドレス 変換先アドレス」をタブ区切りで記載する（スペースでも動作するがタブを推奨）。
+  - 左側: 送信元アドレス（例: `root@app01.example.com`）、右側: 変換先アドレス（例: `alert@your-domain`）。
 
 ```
 root@app01.example.com alert@your-domain
 ```
 
 - `/etc/aliases` に `root: alert@your-domain` を設定し、`newaliases` を実行する。
-- `ALERT_FROM` は `smtp_generic_maps` により envelope sender を書き換えるため、使用するドメインで SPF/DKIM が有効なものを選定する。
+- `ALERT_FROM` は `smtp_generic_maps` により envelope sender とヘッダアドレスが書き換えられるため、使用するドメインで SPF/DKIM が有効なものを選定する。
 
 ### 3.14 冪等性設計
 
