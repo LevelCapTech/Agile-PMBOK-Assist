@@ -3,8 +3,8 @@
 ## 1. 機能要件 / 非機能要件
 
 - 機能要件:
-- さくらVPS（Ubuntu 22.04 LTS）上で **本番環境** 向けの初回インフラ整備を自動化する。
-- OS 基本整備として `apt update/upgrade`、タイムゾーン（JST）、ロケール（`ja_JP.UTF-8`）を適用する。
+  - さくらVPS（Ubuntu 22.04 LTS）上で **本番環境** 向けの初回インフラ整備を自動化する。
+  - OS 基本整備として `apt update/upgrade`、タイムゾーン（JST）、ロケール（`ja_JP.UTF-8`）を適用する。
   - `.bashrc`、`/etc/issue`、`/etc/update-motd.d` を整備し、運用向けの表示・履歴設定を行う。
   - Git を整備して GitHub からアプリ/スクリプトをクローンできるようにする。
   - SSR 前提の Next.js（`next build` + `next start`）を systemd 管理で起動する。
@@ -137,7 +137,7 @@ infra/
 | TIMEZONE | タイムゾーン | Asia/Tokyo |
 | LANG | ロケール | ja_JP.UTF-8 |
 
-#### 取り込み方法（推奨）
+#### 3.3.1 取り込み方法（推奨）
 
 - `infra/env/.env` に実値を記載し、`source infra/env/.env` で一括読み込みする（個別 `export` は不要）。
 - `infra/env/.env` は `.gitignore` で除外する。
