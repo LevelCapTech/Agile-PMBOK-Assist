@@ -70,6 +70,7 @@ flowchart TD
   B --> C[AppContext Provider]
   C --> D[Page/Component/Hook]
   D --> E[アプリケーション実行]
+  E --> F[終了]
 ```
 
 ## 5. 人間が行う作業:
