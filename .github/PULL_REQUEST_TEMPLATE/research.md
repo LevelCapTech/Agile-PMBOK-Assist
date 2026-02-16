@@ -225,18 +225,19 @@ diffの目次（ファイル×変更概要）を下記のテーブルに記載�
 
 | 区分 | タスク（何をする） | 対象（どのサイト/システム） | 実行場所（URL/画面/コマンド） | 証跡（ログ/URL/スクショ等） |
 | -- | --------- | -------------- | ----------------- | ---------------- |
-| AI | <<task>>  | <<target>>     | <<where>>         | <<how>>     | <<inputs>> | <<outputs>>    | <<evidence>>     |
-| AI | <<task>>  | <<target>>     | <<where>>         | <<how>>     | <<inputs>> | <<outputs>>    | <<evidence>>     |
-| AI | <<task>>  | <<target>>     | <<where>>         | <<how>>     | <<inputs>> | <<outputs>>    | <<evidence>>     |
-| 人間 | <<task>>  | <<target>>     | <<where>>         | <<how>>     | <<inputs>> | <<outputs>>    | <<evidence>>     |
-| 人間 | <<task>>  | <<target>>     | <<where>>         | <<how>>     | <<inputs>> | <<outputs>>    | <<evidence>>     |
-| 人間 | <<task>>  | <<target>>     | <<where>>         | <<how>>     | <<inputs>> | <<outputs>>    | <<evidence>>     |
-| 人間 | <<task>>  | <<target>>     | <<where>>         | <<how>>     | <<inputs>> | <<outputs>>    | <<evidence>>     |
-| 人間 | <<task>>  | <<target>>     | <<where>>         | <<how>>     | <<inputs>> | <<outputs>>    | <<evidence>>     |
-| 人間 | <<task>>  | <<target>>     | <<where>>         | <<how>>     | <<inputs>> | <<outputs>>    | <<evidence>>     |
-| 人間 | <<task>>  | <<target>>     | <<where>>         | <<how>>     | <<inputs>> | <<outputs>>    | <<evidence>>     |
-| 人間 | <<task>>  | <<target>>     | <<where>>         | <<how>>     | <<inputs>> | <<outputs>>    | <<evidence>>     |
-| 人間 | <<task>>  | <<target>>     | <<where>>         | <<how>>     | <<inputs>> | <<outputs>>    | <<evidence>>     |
+| AI | <<task>>  | <<target>>     | <<where>>       | <<evidence>>     |
+| AI | <<task>>  | <<target>>     | <<where>>         | <<evidence>>     |
+| AI | <<task>>  | <<target>>     | <<where>>         | <<evidence>>     |
+| 人間 | <<task>>  | <<target>>     | <<where>>         | <<evidence>>     |
+| 人間 | <<task>>  | <<target>>     | <<where>>         | <<evidence>>     |
+| 人間 | <<task>>  | <<target>>     | <<where>>         | <<evidence>>     |
+| 人間 | <<task>>  | <<target>>     | <<where>>         | <<evidence>>     |
+| 人間 | <<task>>  | <<target>>     | <<where>>         | <<evidence>>     |
+| 人間 | <<task>>  | <<target>>     | <<where>>         | <<evidence>>     |
+| 人間 | <<task>>  | <<target>>     | <<where>>         | <<evidence>>     |
+| 人間 | <<task>>  | <<target>>     | <<where>>         | <<evidence>>     |
+| 人間 | <<task>>  | <<target>>     | <<where>>         | <<evidence>>     |
+| 人間 | <<task>>  | <<target>>     | <<where>>         | <<evidence>>     |
 
 ---
 
