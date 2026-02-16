@@ -328,7 +328,6 @@ maxretry = 5
 - `/etc/postfix/generic` に以下を設定し、`postmap /etc/postfix/generic` を実行する。
   - 1 行あたり「送信元アドレス 変換先アドレス」をタブ区切りで記載する（スペースでも動作するがタブを推奨）。
   - 左側: 実際の送信元アドレス（例: `root@app01.example.com`）、右側: 変換先アドレス（例: `alert@your-domain`）。
-  - 左側: 送信元アドレス（例: `root@app01.example.com`）、右側: 変換先アドレス（例: `alert@your-domain`）。
 
 ```
 root@app01.example.com alert@your-domain
