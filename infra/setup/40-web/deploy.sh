@@ -26,9 +26,7 @@ fi
 
 DATABASE_URL_VALUE="$(build_database_url)"
 
-sudo -u "$APP_USER" -- bash -c "cd '$APP_DIR' && git fetch --prune"
-sudo -u "$APP_USER" -- bash -c "cd '$APP_DIR' && git checkout '$APP_BRANCH'"
-sudo -u "$APP_USER" -- bash -c "cd '$APP_DIR' && git pull --ff-only origin '$APP_BRANCH'"
+sudo -u "$APP_USER" -- bash -c "cd '$APP_DIR' && git fetch --prune && git checkout '$APP_BRANCH' && git pull --ff-only origin '$APP_BRANCH'"
 
 sudo -u "$APP_USER" -- bash -c "cd '$APP_DIR' && npm ci"
 sudo -u "$APP_USER" -- bash -c "cd '$APP_DIR' && npm run build"

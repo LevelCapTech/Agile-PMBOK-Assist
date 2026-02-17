@@ -27,10 +27,14 @@ postconf -e "smtp_use_tls = yes"
 postconf -e "smtp_tls_security_level = encrypt"
 postconf -e "smtp_generic_maps = hash:/etc/postfix/generic"
 
-cat <<SASL > /etc/postfix/sasl_passwd
+sasl_tmp=$(mktemp)
+trap 'rm -f "$sasl_tmp"' EXIT
+cat <<SASL > "$sasl_tmp"
 [${POSTFIX_RELAY_HOST}]:${POSTFIX_RELAY_PORT} ${POSTFIX_RELAY_USER}:${POSTFIX_RELAY_PASS}
 SASL
-chmod 600 /etc/postfix/sasl_passwd
+install -m 600 "$sasl_tmp" /etc/postfix/sasl_passwd
+rm -f "$sasl_tmp"
+trap - EXIT
 postmap /etc/postfix/sasl_passwd
 
 cat <<GENERIC > /etc/postfix/generic

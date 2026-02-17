@@ -10,7 +10,8 @@ fi
 : "${METRICS_ALLOW_IPS:?METRICS_ALLOW_IPS が未設定です}"
 
 allow_block=""
-for ip in $METRICS_ALLOW_IPS; do
+IFS=' ' read -r -a metrics_ips <<< "$METRICS_ALLOW_IPS"
+for ip in "${metrics_ips[@]}"; do
   allow_block+=$'  allow '"${ip}"$';\n'
 done
 

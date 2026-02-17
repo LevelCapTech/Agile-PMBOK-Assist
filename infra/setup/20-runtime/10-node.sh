@@ -18,5 +18,10 @@ if [ -x /usr/bin/node ]; then
   fi
 fi
 
-curl -fsSL "https://deb.nodesource.com/${node_setup}" | bash -
+temp_script=$(mktemp)
+trap 'rm -f "$temp_script"' EXIT
+curl -fsSL "https://deb.nodesource.com/${node_setup}" -o "$temp_script"
+bash "$temp_script"
+rm -f "$temp_script"
+trap - EXIT
 apt-get install -y nodejs
