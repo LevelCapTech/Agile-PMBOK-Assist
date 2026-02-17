@@ -28,7 +28,7 @@ sudo bash infra/setup/90-verify/10-healthcheck.sh
 - Nginx は 443 のみ公開し、80 は閉じたままです（TLS-ALPN-01 を使用）。
 - `/metrics` は `METRICS_ALLOW_IPS` で指定した監視サーバーの IP のみ許可します。
 - SSH は全 IP 許可のため、fail2ban と鍵認証を前提に運用してください（`setup/10-security/30-fail2ban.sh`、`setup/10-security/10-ssh.sh` を参照）。
-- `10-ssh.sh` は初期設定済みの前提で確認のみ実行します（PermitRootLogin/PubkeyAuthentication を検証）。
+- `10-ssh.sh` は初期設定済み（PermitRootLogin no 前提）の確認のみ実行します（鍵認証が無効化されていないことを検証）。
 
 ## ディレクトリ構成
 
