@@ -95,10 +95,10 @@ need sudo
 b64url() { openssl base64 -e -A | tr '+/' '-_' | tr -d '='; }
 
 CLOCK_SKEW_SECONDS=60
-JWT_EXPIRY_SECONDS=540 # 9分
+JWT_EXPIRY_SECONDS=540 # 9分間
 
 now="$(date +%s)"
-# 1分の時計ずれを吸収し、JWT の有効期限は約9分にする。
+# CLOCK_SKEW_SECONDS の秒数ぶん時計ずれを吸収し、JWT の有効期限は約9分間にする。
 iat=$((now-CLOCK_SKEW_SECONDS))
 exp=$((now+JWT_EXPIRY_SECONDS))
 
@@ -138,7 +138,7 @@ EOF
 chown "$APP_USER":"$APP_USER" "$git_config"
 chmod 600 "$git_config"
 unset token basic
-# unset はベストエフォートで、メモリ上の残留は完全には防げない。高セキュリティ環境では追加対策も検討する。
+# unset はベストエフォートで、メモリ上の残留は完全には防げない。高セキュリティ環境では tmpfs 配置やメモリ保護ツールの導入も検討する。
 
 if [ ! -d "$APP_DIR/.git" ]; then
   mkdir -p "$APP_DIR"
