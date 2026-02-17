@@ -18,17 +18,18 @@ allow_block=$(printf '%s\n' "${allow_lines[@]}")
 
 mkdir -p /etc/nginx/snippets
 
-cat <<METRICS > /etc/nginx/snippets/metrics.conf
-  location /metrics/node {
-    proxy_pass http://127.0.0.1:9100/metrics;
-${allow_block}    deny all;
-  }
-
-  location /metrics/mysql {
-    proxy_pass http://127.0.0.1:9104/metrics;
-${allow_block}    deny all;
-  }
-METRICS
+{
+  printf "  location /metrics/node {\\n"
+  printf "    proxy_pass http://127.0.0.1:9100/metrics;\\n"
+  printf "%s" "$allow_block"
+  printf "    deny all;\\n"
+  printf "  }\\n\\n"
+  printf "  location /metrics/mysql {\\n"
+  printf "    proxy_pass http://127.0.0.1:9104/metrics;\\n"
+  printf "%s" "$allow_block"
+  printf "    deny all;\\n"
+  printf "  }\\n"
+} > /etc/nginx/snippets/metrics.conf
 
 if ! nginx -t; then
   echo "[20-metrics-proxy] nginx 設定の検証に失敗しました。" >&2

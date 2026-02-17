@@ -9,23 +9,20 @@ fi
 
 : "${NODE_VERSION:?NODE_VERSION が未設定です}"
 
-if [[ "$NODE_VERSION" == *".x" ]]; then
-  node_setup="setup_${NODE_VERSION}"
-else
-  node_setup="setup_${NODE_VERSION}.x"
-fi
+node_major=$(echo "$NODE_VERSION" | cut -d. -f1)
+node_repo="node_${node_major}.x"
 if [ -x /usr/bin/node ]; then
   current_major=$(node -v | sed 's/v//' | cut -d. -f1)
-  target_major=$(echo "$NODE_VERSION" | cut -d. -f1)
+  target_major="$node_major"
   if [ "$current_major" = "$target_major" ]; then
     exit 0
   fi
 fi
 
-temp_script=$(mktemp)
-trap 'rm -f "$temp_script"' EXIT
-curl -fsSL "https://deb.nodesource.com/${node_setup}" -o "$temp_script"
-bash "$temp_script"
-rm -f "$temp_script"
-trap - EXIT
+install -m 0755 -d /etc/apt/keyrings
+if [ ! -f /etc/apt/keyrings/nodesource.gpg ]; then
+  curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
+fi
+echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/${node_repo} nodistro main" > /etc/apt/sources.list.d/nodesource.list
+apt-get update -y
 apt-get install -y nodejs

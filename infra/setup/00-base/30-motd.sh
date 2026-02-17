@@ -12,7 +12,7 @@ cat <<'ISSUE' > /etc/issue
     /~~     ~~\
   |   *  sakura  *   |
     \_       _/
-        `-_-' 
+        `-_-'
 
  Welcome, sakura.
  This server is managed with care.
