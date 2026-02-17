@@ -27,15 +27,17 @@ if [ ! -f "$APP_ENV_FILE" ]; then
   echo "[deploy] APP_ENV_FILE が見つかりません: $APP_ENV_FILE" >&2
   exit 1
 fi
-npm_bin=$(command -v npm || true)
-npx_bin=$(command -v npx || true)
-node_bin=$(command -v node || true)
-flock_bin=$(command -v flock || true)
-for cmd in "$npm_bin" "$npx_bin" "$node_bin" "$flock_bin"; do
+for name in npm npx node flock; do
+  cmd=$(command -v "$name" || true)
   if [ -z "$cmd" ] || [ ! -x "$cmd" ]; then
-    echo "[deploy] 必要コマンドが見つかりません。" >&2
+    echo "[deploy] 必要コマンドが見つかりません: $name" >&2
     exit 1
   fi
+  case "$name" in
+    npm) npm_bin=$cmd ;;
+    npx) npx_bin=$cmd ;;
+    flock) flock_bin=$cmd ;;
+  esac
 done
 
 DATABASE_URL_VALUE="$(build_database_url)"
