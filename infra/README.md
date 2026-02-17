@@ -41,6 +41,7 @@ sudo bash infra/setup/90-verify/10-healthcheck.sh
 - `10-ssh.sh` は初期設定済み（PermitRootLogin no 前提）の確認のみ実行します（PubkeyAuthentication yes を検証）。
 - GitHub App の Installation Token を使って HTTPS で pull します。`GITHUB_APP_ID`、`GITHUB_INSTALLATION_ID`、`GITHUB_APP_PEM_PATH` を `.env` に設定し、`APP_REPO_URL` は HTTPS 形式にしてください。
 - `agile-pmbok-assist-pull.timer` は 5 分間隔で pull します。不要な場合は `systemctl disable --now agile-pmbok-assist-pull.timer` で停止してください。
+- GitHub App の短命トークンはメモリ上の残留を完全には防げないため、高セキュリティ環境では tmpfs 配置やメモリ保護ツールの導入を検討してください。
 
 ## ディレクトリ構成
 
