@@ -48,7 +48,7 @@ log_output = FILE
 slow_query_log = ON
 slow_query_log_file = /var/log/mysql/slow.log
 long_query_time = 0.5
-# log_queries_not_using_indexes は long_query_time 超過時のみ記録
+# log_queries_not_using_indexes は OFF にして短時間クエリの過剰記録を避ける
 log_queries_not_using_indexes = OFF
 general_log = OFF
 general_log_file = /var/log/mysql/general.log
