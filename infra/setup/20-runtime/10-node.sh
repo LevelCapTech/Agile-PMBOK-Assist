@@ -14,7 +14,7 @@ node_repo="node_${node_major}.x"
 if [ -x /usr/bin/node ]; then
   current_major=$(node -v | sed 's/v//' | cut -d. -f1)
   target_major="$node_major"
-  if [ "$current_major" -eq "$target_major" ]; then
+  if [[ "$current_major" =~ ^[0-9]+$ ]] && [ "$current_major" -eq "$target_major" ]; then
     exit 0
   fi
 fi

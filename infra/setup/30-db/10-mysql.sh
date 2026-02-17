@@ -70,6 +70,7 @@ if [ -f /root/.my.cnf ]; then
 fi
 
 $MYSQL_CMD <<SQL
+-- caching_sha2_password を前提とする（旧クライアント互換が必要な場合は要調整）
 ALTER USER 'root'@'localhost' IDENTIFIED BY '${MYSQL_ROOT_PASSWORD}';
 DELETE FROM mysql.user WHERE User='';
 DROP DATABASE IF EXISTS test;

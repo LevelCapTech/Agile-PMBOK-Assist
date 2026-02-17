@@ -25,12 +25,15 @@ GRANT PROCESS, REPLICATION CLIENT, SELECT ON *.* TO '${MYSQL_EXPORTER_USER}'@'lo
 FLUSH PRIVILEGES;
 SQL
 
+original_umask=$(umask)
+umask 077
 cat <<CNF > /etc/mysqld_exporter.cnf
 [client]
 user=${MYSQL_EXPORTER_USER}
 password=${MYSQL_EXPORTER_PASSWORD}
 CNF
 chmod 600 /etc/mysqld_exporter.cnf
+umask "$original_umask"
 
 node_override_dir="/etc/systemd/system/prometheus-node-exporter.service.d"
 mkdir -p "$node_override_dir"
