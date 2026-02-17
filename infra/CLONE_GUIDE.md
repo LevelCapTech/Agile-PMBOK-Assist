@@ -23,11 +23,11 @@ GitHub App を対象リポジトリにインストールしてから、VPS で�
 
 ```bash
 sudo install -d -m 700 /etc/agile-pmbok-assist
-sudo install -m 600 ~/Downloads/downloaded-app-name-YYYY-MM-DD-HH-MM.pem /etc/agile-pmbok-assist/github-app.pem
+sudo install -m 600 ~/Downloads/app-name.2024-01-15.private-key.pem /etc/agile-pmbok-assist/github-app.pem
 sudo chown root:root /etc/agile-pmbok-assist/github-app.pem
 ```
 
-※ PEM のファイル名はダウンロードした実ファイル名に合わせて置き換えてください（タイムスタンプ付きの名前になる場合があります）。
+※ PEM のファイル名はダウンロードした実ファイル名に合わせて置き換えてください（`app-name.YYYY-MM-DD.private-key.pem` 形式の名前になります）。
 
 ## 3. infra/.env に GitHub App 情報を設定
 
