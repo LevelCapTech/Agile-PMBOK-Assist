@@ -43,7 +43,7 @@ DATABASE_URL_VALUE="$(build_database_url)"
 
 # JWT issued-at offset in seconds (clock skew tolerance)
 JWT_IAT_OFFSET=60
-# JWT expiration duration in seconds (GitHubの上限10分に1分余裕)
+# JWT expiration duration in seconds (GitHub上限10分に対して9分)
 JWT_EXP_DURATION=540
 
 now=$(date +%s)
@@ -104,7 +104,8 @@ case "\$1" in
 *) cat "\$token_file" ;;
 esac
 ASKPASS
-chmod 755 "$askpass_script"
+chown "$APP_USER":"$APP_USER" "$askpass_script"
+chmod 700 "$askpass_script"
 
 if [ ! -d "$APP_DIR/.git" ]; then
   sudo -u "$APP_USER" -- bash -c "mkdir -p '$APP_DIR'"
