@@ -27,7 +27,7 @@ if [ ! -f "$APP_ENV_FILE" ]; then
   echo "[deploy] APP_ENV_FILE が見つかりません: $APP_ENV_FILE" >&2
   exit 1
 fi
-for cmd in /usr/bin/npm /usr/bin/node /usr/bin/flock; do
+for cmd in /usr/bin/npm /usr/bin/npx /usr/bin/node /usr/bin/flock; do
   if [ ! -x "$cmd" ]; then
     echo "[deploy] 必要コマンドが見つかりません: $cmd" >&2
     exit 1
@@ -52,7 +52,7 @@ sudo -u "$APP_USER" -- bash -c "cd '$APP_DIR' && /usr/bin/npm ci"
 sudo -u "$APP_USER" -- bash -c "cd '$APP_DIR' && /usr/bin/npm run build"
 
 if [ -f "$APP_DIR/prisma/schema.prisma" ]; then
-  sudo -u "$APP_USER" -- env DATABASE_URL="$DATABASE_URL_VALUE" bash -c "cd '$APP_DIR' && npx prisma migrate deploy"
+  sudo -u "$APP_USER" -- env DATABASE_URL="$DATABASE_URL_VALUE" bash -c "cd '$APP_DIR' && /usr/bin/npx prisma migrate deploy"
 fi
 
 systemctl restart nextjs.service
