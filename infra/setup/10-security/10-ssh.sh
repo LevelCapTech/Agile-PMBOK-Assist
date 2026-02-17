@@ -20,19 +20,7 @@ if [ ! -f "$user_home/.ssh/authorized_keys" ]; then
   exit 1
 fi
 
-sshd_dropin="/etc/ssh/sshd_config.d/99-infra-hardening.conf"
-if [ -f "$sshd_dropin" ]; then
-  cp "$sshd_dropin" "${sshd_dropin}.bak.$(date +%s)"
-fi
-
-cat <<'SSHCONF' > "$sshd_dropin"
-PermitRootLogin no
-PubkeyAuthentication yes
-SSHCONF
-
 if ! sshd -t; then
   echo "[10-ssh] sshd 設定の検証に失敗しました。" >&2
   exit 1
 fi
-
-systemctl reload ssh
