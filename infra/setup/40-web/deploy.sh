@@ -41,9 +41,9 @@ done
 
 DATABASE_URL_VALUE="$(build_database_url)"
 
-# JWT issued-at offset in seconds (60s before now)
+# JWT issued-at offset in seconds (clock skew tolerance)
 JWT_IAT_OFFSET=60
-# JWT expiration duration in seconds (9 minutes)
+# JWT expiration duration in seconds (GitHubの上限10分に1分余裕)
 JWT_EXP_DURATION=540
 
 now=$(date +%s)
@@ -62,7 +62,7 @@ jwt="${unsigned}.${signature}"
 token_response_file=$(mktemp -t github-app-token-response.XXXXXX)
 askpass_script=$(mktemp -t github-app-askpass.XXXXXX)
 token_file=$(mktemp -t github-app-token.XXXXXX)
-chmod 600 "$token_response_file" "$token_file"
+chmod 600 "$token_response_file" "$token_file" "$askpass_script"
 trap 'rm -f "$askpass_script" "$token_file" "$token_response_file"' EXIT
 
 if ! token_status=$(curl -sS -o "$token_response_file" -w '%{http_code}' -X POST \
@@ -75,7 +75,11 @@ if ! token_status=$(curl -sS -o "$token_response_file" -w '%{http_code}' -X POST
 fi
 
 if [ "$token_status" -lt 200 ] || [ "$token_status" -ge 300 ]; then
-  error_message=$(jq -r '.message // empty' "$token_response_file" 2>/dev/null || true)
+  if jq -e . >/dev/null 2>&1 < "$token_response_file"; then
+    error_message=$(jq -r '.message // empty' "$token_response_file" 2>/dev/null || true)
+  else
+    error_message="レスポンス形式が不正です"
+  fi
   echo "[deploy] GitHub App token の取得に失敗しました。HTTP ${token_status}${error_message:+ ($error_message)}" >&2
   exit 1
 fi
