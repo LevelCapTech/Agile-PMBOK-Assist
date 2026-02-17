@@ -33,9 +33,6 @@ if [ -f "$service_file" ]; then
   cp "$service_file" "${service_file}.bak.$(date +%s)"
 fi
 
-# shellcheck disable=SC2016
-port_placeholder='${PORT}'
-
 cat <<SERVICE > "$service_file"
 [Unit]
 Description=Next.js SSR Application
@@ -48,7 +45,7 @@ User=${APP_USER}
 WorkingDirectory=${APP_DIR}
 Environment=NODE_ENV=production
 EnvironmentFile=${APP_ENV_FILE}
-ExecStart=/usr/bin/node ${APP_DIR}/node_modules/next/dist/bin/next start -p ${port_placeholder}
+ExecStart=/usr/bin/node ${APP_DIR}/node_modules/next/dist/bin/next start -p \${PORT}
 Restart=always
 RestartSec=5
 LimitNOFILE=65535

@@ -21,9 +21,34 @@ ufw default allow outgoing
 
 # HTTPS のみ公開し、HTTP 80/tcp は開けない（TLS-ALPN-01 を利用）
 ufw allow 443/tcp
+is_valid_ip() {
+  local ip="$1"
+  local host="${ip%%/*}"
+  local mask=""
+  if [[ "$ip" == */* ]]; then
+    mask="${ip#*/}"
+    if ! [[ "$mask" =~ ^[0-9]{1,2}$ ]] || [ "$mask" -gt 32 ]; then
+      return 1
+    fi
+  fi
+  if ! [[ "$host" =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}$ ]]; then
+    return 1
+  fi
+  IFS='.' read -r -a octets <<< "$host"
+  for octet in "${octets[@]}"; do
+    if [ "$octet" -lt 0 ] || [ "$octet" -gt 255 ]; then
+      return 1
+    fi
+  done
+  return 0
+}
 if [ -n "${SSH_ALLOW_IPS:-}" ]; then
   IFS=' ' read -r -a ssh_ips <<< "$SSH_ALLOW_IPS"
   for ip in "${ssh_ips[@]}"; do
+    if ! is_valid_ip "$ip"; then
+      echo "[20-ufw] SSH_ALLOW_IPS の形式が不正です: $ip" >&2
+      exit 1
+    fi
     ufw allow from "$ip" to any port 22 proto tcp
   done
 else

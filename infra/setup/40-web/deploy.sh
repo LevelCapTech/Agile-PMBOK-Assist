@@ -77,17 +77,19 @@ fi
 
 lock_file="/var/lock/nextjs-build.lock"
 exec 9>"$lock_file"
+lock_acquired=false
 cleanup_lock() {
-  if { true >&9; } 2>/dev/null; then
+  if [ "$lock_acquired" = true ]; then
     exec 9>&-
+    rm -f "$lock_file"
   fi
-  rm -f "$lock_file"
 }
 trap cleanup_lock EXIT
 if ! "$flock_bin" -n 9; then
   echo "[deploy] 既にビルドが実行中です。" >&2
   exit 1
 fi
+lock_acquired=true
 
 if ! sudo -u "$APP_USER" -- bash -c "cd '$APP_DIR' && $npm_bin ci"; then
   echo "[deploy] npm ci に失敗しました。デプロイを中止します。" >&2
