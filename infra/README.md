@@ -22,6 +22,8 @@
 4. `infra/setup/40-web/deploy.sh` を実行する
 5. `infra/setup/90-verify/10-healthcheck.sh` で起動確認する
 
+GitHub App からの初回 clone 手順は [CLONE_GUIDE.md](CLONE_GUIDE.md) を参照してください。
+
 ```bash
 cp infra/.env.sample infra/.env
 chmod 600 infra/.env
