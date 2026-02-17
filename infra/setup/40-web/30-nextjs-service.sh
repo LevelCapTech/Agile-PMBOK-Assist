@@ -29,7 +29,7 @@ if [ -f "$service_file" ]; then
   cp "$service_file" "${service_file}.bak.$(date +%s)"
 fi
 
-port_placeholder="\$PORT"
+port_env_var_ref="\$PORT"
 
 cat <<SERVICE > "$service_file"
 [Unit]
@@ -43,7 +43,7 @@ User=${APP_USER}
 WorkingDirectory=${APP_DIR}
 Environment=NODE_ENV=production
 EnvironmentFile=${APP_ENV_FILE}
-ExecStart=/usr/bin/node ${APP_DIR}/node_modules/next/dist/bin/next start -p ${port_placeholder}
+ExecStart=/usr/bin/node ${APP_DIR}/node_modules/next/dist/bin/next start -p ${port_env_var_ref}
 Restart=always
 RestartSec=5
 LimitNOFILE=65535

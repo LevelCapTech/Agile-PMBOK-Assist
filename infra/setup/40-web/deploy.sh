@@ -27,9 +27,13 @@ if [ ! -f "$APP_ENV_FILE" ]; then
   echo "[deploy] APP_ENV_FILE が見つかりません: $APP_ENV_FILE" >&2
   exit 1
 fi
-for cmd in /usr/bin/npm /usr/bin/npx /usr/bin/node /usr/bin/flock; do
-  if [ ! -x "$cmd" ]; then
-    echo "[deploy] 必要コマンドが見つかりません: $cmd" >&2
+npm_bin=$(command -v npm || true)
+npx_bin=$(command -v npx || true)
+node_bin=$(command -v node || true)
+flock_bin=$(command -v flock || true)
+for cmd in "$npm_bin" "$npx_bin" "$node_bin" "$flock_bin"; do
+  if [ -z "$cmd" ] || [ ! -x "$cmd" ]; then
+    echo "[deploy] 必要コマンドが見つかりません。" >&2
     exit 1
   fi
 done
@@ -42,22 +46,23 @@ source "$APP_ENV_FILE"
 set +a
 
 if [ -n "${APP_PORT:-}" ] && [ -n "${PORT:-}" ] && [ "$APP_PORT" != "$PORT" ]; then
-  echo "[deploy] APP_PORT と PORT が一致していません: ${APP_PORT} / ${PORT}" >&2
+  echo "[deploy] APP_PORT と APP_ENV_FILE の PORT が一致していません: ${APP_PORT} / ${PORT}" >&2
+  echo "[deploy] Nginx の proxy 先ポートとアプリの PORT を一致させてください。" >&2
   exit 1
 fi
 
 lock_file="/var/lock/nextjs-build.lock"
 exec 9>"$lock_file"
-if ! flock -n 9; then
+if ! "$flock_bin" -n 9; then
   echo "[deploy] 既にビルドが実行中です。" >&2
   exit 1
 fi
 
-sudo -u "$APP_USER" -- bash -c "cd '$APP_DIR' && /usr/bin/npm ci"
-sudo -u "$APP_USER" -- bash -c "cd '$APP_DIR' && /usr/bin/npm run build"
+sudo -u "$APP_USER" -- bash -c "cd '$APP_DIR' && $npm_bin ci"
+sudo -u "$APP_USER" -- bash -c "cd '$APP_DIR' && $npm_bin run build"
 
 if [ -f "$APP_DIR/prisma/schema.prisma" ]; then
-  sudo -u "$APP_USER" -- env DATABASE_URL="$DATABASE_URL_VALUE" bash -c "cd '$APP_DIR' && /usr/bin/npx prisma migrate deploy"
+  sudo -u "$APP_USER" -- env DATABASE_URL="$DATABASE_URL_VALUE" bash -c "cd '$APP_DIR' && $npx_bin prisma migrate deploy"
 fi
 
 systemctl restart nextjs.service
