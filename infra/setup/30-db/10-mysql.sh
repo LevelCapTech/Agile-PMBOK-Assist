@@ -70,7 +70,7 @@ if [ -f /root/.my.cnf ]; then
 fi
 
 $MYSQL_CMD <<SQL
--- MySQL 専用のバッククォートを利用する
+-- MySQL 専用のバッククォートは DB 名で使用する
 ALTER USER 'root'@'localhost' IDENTIFIED BY '${MYSQL_ROOT_PASSWORD}';
 DELETE FROM mysql.user WHERE User='';
 DROP DATABASE IF EXISTS test;

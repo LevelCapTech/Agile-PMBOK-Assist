@@ -19,8 +19,8 @@ fi
 ufw default deny incoming
 ufw default allow outgoing
 
-ufw allow 443/tcp
 # HTTPS のみ公開し、HTTP 80/tcp は開けない（TLS-ALPN-01 を利用）
+ufw allow 443/tcp
 if [ -n "${SSH_ALLOW_IPS:-}" ]; then
   IFS=' ' read -r -a ssh_ips <<< "$SSH_ALLOW_IPS"
   for ip in "${ssh_ips[@]}"; do
