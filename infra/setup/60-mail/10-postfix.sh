@@ -14,8 +14,10 @@ fi
 : "${ALERT_FROM:?ALERT_FROM が未設定です}"
 : "${ALERT_TO:?ALERT_TO が未設定です}"
 
+POSTFIX_MAILNAME_VALUE="${POSTFIX_MAILNAME:-${ACME_DOMAIN:-$(hostname -f)}}"
+
 export DEBIAN_FRONTEND=noninteractive
-echo "postfix postfix/mailname string ${POSTFIX_RELAY_HOST}" | debconf-set-selections
+echo "postfix postfix/mailname string ${POSTFIX_MAILNAME_VALUE}" | debconf-set-selections
 echo "postfix postfix/main_mailer_type string 'Internet Site'" | debconf-set-selections
 apt-get install -y postfix mailutils
 

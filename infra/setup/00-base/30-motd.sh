@@ -10,7 +10,7 @@ fi
 cat <<'ISSUE' > /etc/issue
        _-_
     /~~     ~~\
-  |   *  sakura  *   |
+  |   * sakura *   |
     \_       _/
         `-_-'
 
