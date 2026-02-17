@@ -15,6 +15,10 @@ if ! id -u "$APP_USER" >/dev/null 2>&1; then
   echo "[30-nextjs-service] APP_USER が存在しません。先にユーザーを作成してください。" >&2
   exit 1
 fi
+if [ ! -x /usr/bin/node ]; then
+  echo "[30-nextjs-service] /usr/bin/node が見つかりません。Node.js を先に導入してください。" >&2
+  exit 1
+fi
 if [ ! -f "$APP_ENV_FILE" ]; then
   echo "[30-nextjs-service] APP_ENV_FILE が見つかりません: $APP_ENV_FILE" >&2
   exit 1
@@ -41,7 +45,7 @@ User=${APP_USER}
 WorkingDirectory=${APP_DIR}
 Environment=NODE_ENV=production
 EnvironmentFile=${APP_ENV_FILE}
-ExecStart=/usr/bin/node ${APP_DIR}/node_modules/next/dist/bin/next start -p \$PORT
+ExecStart=/usr/bin/node ${APP_DIR}/node_modules/next/dist/bin/next start -p \${PORT}
 Restart=always
 RestartSec=5
 LimitNOFILE=65535

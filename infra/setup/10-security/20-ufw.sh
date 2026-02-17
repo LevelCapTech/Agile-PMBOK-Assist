@@ -20,7 +20,15 @@ ufw default deny incoming
 ufw default allow outgoing
 
 ufw allow 443/tcp
-ufw allow 22/tcp
+# HTTPS のみ公開し、HTTP 80/tcp は開けない（TLS-ALPN-01 を利用）
+if [ -n "${SSH_ALLOW_IPS:-}" ]; then
+  IFS=' ' read -r -a ssh_ips <<< "$SSH_ALLOW_IPS"
+  for ip in "${ssh_ips[@]}"; do
+    ufw allow from "$ip" to any port 22 proto tcp
+  done
+else
+  ufw allow 22/tcp
+fi
 
 metrics_ports=(9100 9104)
 metrics_ips=()

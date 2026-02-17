@@ -27,6 +27,7 @@ steps=(
   "setup/00-base/10-locale.sh"
   "setup/00-base/20-shell.sh"
   "setup/00-base/30-motd.sh"
+  # セキュリティ関連は依存関係の都合で 10-ssh -> 30-fail2ban -> 20-ufw の順で実行する
   "setup/10-security/10-ssh.sh"
   "setup/10-security/30-fail2ban.sh"
   "setup/10-security/20-ufw.sh"
@@ -50,5 +51,9 @@ for step in "${steps[@]}"; do
     exit 1
   fi
   echo "[bootstrap] 実行: $step"
-  bash "$step_path"
+  bash "$step_path" || {
+    status=$?
+    echo "[bootstrap] 失敗: $step (exit code: $status)" >&2
+    exit "$status"
+  }
 done

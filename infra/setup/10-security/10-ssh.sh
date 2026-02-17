@@ -34,3 +34,5 @@ if ! echo "$sshd_dump" | grep -Eq '^pubkeyauthentication[[:space:]]+yes$'; then
   echo "[10-ssh] PubkeyAuthentication が yes ではありません。" >&2
   exit 1
 fi
+
+# 既存の sshd 設定を検証するのみで、再読み込みは行わない

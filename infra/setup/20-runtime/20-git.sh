@@ -7,4 +7,5 @@ if [ "$(id -u)" -ne 0 ]; then
   exit 1
 fi
 
+# GitHub App 連携に必要な curl/jq は 00-packages.sh で導入済み
 apt-get install -y git

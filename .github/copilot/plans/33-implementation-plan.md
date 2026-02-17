@@ -121,6 +121,7 @@ infra/
 | APP_USER | 実行ユーザー | appuser |
 | APP_ENV_FILE | アプリ環境変数ファイル | /opt/agile-pmbok-assist_repo/app.env |
 | APP_PORT | Nginx からの proxy 先ポート | 4000 |
+| SSH_ALLOW_IPS | SSH 許可 IP（未指定なら全IP許可） | 203.0.113.10 |
 | NODE_VERSION | Node LTS バージョン | 20 |
 | GITHUB_APP_ID | GitHub App ID | 123456 |
 | GITHUB_INSTALLATION_ID | GitHub App Installation ID | 12345678 |

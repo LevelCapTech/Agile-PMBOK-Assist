@@ -35,8 +35,12 @@ echo " Uptime   : $(uptime -p)"
 echo " LoadAvg  : $(cut -d ' ' -f1-3 /proc/loadavg)"
 
 # CPU
-CPU_IDLE=$(mpstat 1 1 | awk '/Average:.*all/ {print $NF}')
-echo " CPU Idle : ${CPU_IDLE}%"
+if command -v mpstat >/dev/null 2>&1; then
+  CPU_IDLE=$(mpstat 1 1 | awk '/Average:.*all/ {print $NF}')
+  echo " CPU Idle : ${CPU_IDLE}%"
+else
+  echo " CPU Idle : N/A (mpstat not available)"
+fi
 
 # Memory
 free -b | awk '

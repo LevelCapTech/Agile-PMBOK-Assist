@@ -32,7 +32,7 @@ postconf -e "smtp_generic_maps = hash:/etc/postfix/generic"
 original_umask=$(umask)
 umask 077
 sasl_tmp=$(mktemp)
-trap 'rm -f "$sasl_tmp"' EXIT
+trap 'rm -f "$sasl_tmp"' EXIT INT TERM
 cat <<SASL > "$sasl_tmp"
 [${POSTFIX_RELAY_HOST}]:${POSTFIX_RELAY_PORT} ${POSTFIX_RELAY_USER}:${POSTFIX_RELAY_PASS}
 SASL

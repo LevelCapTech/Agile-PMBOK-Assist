@@ -30,6 +30,19 @@ else
         echo "[20-certbot] DNS-01 には DNS プラグイン設定が必要です。" >&2
         exit 1
       fi
+      allowed_plugins=(cloudflare route53 digitalocean dnsimple linode rfc2136)
+      plugin_valid=false
+      for plugin in "${allowed_plugins[@]}"; do
+        if [ "$CERTBOT_DNS_PLUGIN" = "$plugin" ]; then
+          plugin_valid=true
+          break
+        fi
+      done
+      if [ "$plugin_valid" != true ]; then
+        echo "[20-certbot] 不正な CERTBOT_DNS_PLUGIN 値です: $CERTBOT_DNS_PLUGIN" >&2
+        echo "[20-certbot] 許可されている値: ${allowed_plugins[*]}" >&2
+        exit 1
+      fi
       if ! certbot certonly --non-interactive --agree-tos -m "$ACME_EMAIL" \
         --dns-"$CERTBOT_DNS_PLUGIN" \
         --dns-"$CERTBOT_DNS_PLUGIN"-credentials "$CERTBOT_DNS_CREDENTIALS" \

@@ -11,6 +11,8 @@
 - ソース配置は `/opt/agile-pmbok-assist_repo`、アプリ環境変数は `/opt/agile-pmbok-assist_repo/app.env` を想定します。
 - `app.env` の `PORT` は `APP_PORT` と同じ値にしてください。
 - GitHub App での pull 自動化は別途構築済み前提で、`deploy.sh` はビルドと再起動のみ実行します。
+- GitHub App の設定手順は GitHub 公式ドキュメントを参照してください（App ID/Installation ID/PEM の取得が必要です）。
+- SSH_ALLOW_IPS を指定した場合は、その IP のみに SSH を許可します（未指定の場合は全 IP 許可）。
 
 ## 使い方（概要）
 
@@ -31,6 +33,7 @@ sudo bash infra/setup/90-verify/10-healthcheck.sh
 - Nginx は 443 のみ公開し、80 は閉じたままです（TLS-ALPN-01 を使用）。
 - `/metrics` は `METRICS_ALLOW_IPS` で指定した監視サーバーの IP のみ許可します（未指定の場合は全 IP 許可のため明示指定を推奨）。
 - MySQL は `MYSQL_BIND_ADDRESS` に VPN 側 IP を指定し、general_log は OFF（必要時のみ ON）で運用します。
+- `app.env` に DATABASE_URL を指定しない場合は、`MYSQL_*` から自動生成される値を利用します。
 - SSH は全 IP 許可のため、IP 制限が使えない環境向けの構成です。
 - fail2ban と鍵認証を前提に運用し、ブロック状況の監視を必須としてください（`setup/10-security/30-fail2ban.sh`、`setup/10-security/10-ssh.sh` を参照）。
 - `10-ssh.sh` は初期設定済み（PermitRootLogin no 前提）の確認のみ実行します（PubkeyAuthentication yes を検証）。

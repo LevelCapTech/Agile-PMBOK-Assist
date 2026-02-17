@@ -25,12 +25,12 @@ GRANT PROCESS, REPLICATION CLIENT, SELECT ON *.* TO '${MYSQL_EXPORTER_USER}'@'lo
 FLUSH PRIVILEGES;
 SQL
 
-cat <<CNF > /etc/.mysqld_exporter.cnf
+cat <<CNF > /etc/mysqld_exporter.cnf
 [client]
 user=${MYSQL_EXPORTER_USER}
 password=${MYSQL_EXPORTER_PASSWORD}
 CNF
-chmod 600 /etc/.mysqld_exporter.cnf
+chmod 600 /etc/mysqld_exporter.cnf
 
 node_override_dir="/etc/systemd/system/prometheus-node-exporter.service.d"
 mkdir -p "$node_override_dir"
@@ -45,7 +45,7 @@ mkdir -p "$mysql_override_dir"
 cat <<'MYSQL' > "$mysql_override_dir/override.conf"
 [Service]
 ExecStart=
-ExecStart=/usr/bin/prometheus-mysqld-exporter --config.my-cnf=/etc/.mysqld_exporter.cnf --web.listen-address=0.0.0.0:9104
+ExecStart=/usr/bin/prometheus-mysqld-exporter --config.my-cnf=/etc/mysqld_exporter.cnf --web.listen-address=0.0.0.0:9104
 MYSQL
 
 systemctl daemon-reload

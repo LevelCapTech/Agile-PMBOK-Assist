@@ -25,7 +25,8 @@ mysqlx = OFF
 skip-name-resolve = ON
 character-set-server = utf8mb4
 collation-server = utf8mb4_0900_ai_ci
-sql_mode = STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION
+# MySQL 8.0 のデフォルトに近い sql_mode。アプリ要件に応じて調整すること。
+sql_mode = STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION,NO_ZERO_IN_DATE,NO_ZERO_DATE,ONLY_FULL_GROUP_BY
 innodb_buffer_pool_size = 256M
 innodb_buffer_pool_instances = 1
 innodb_flush_method = O_DIRECT
@@ -54,6 +55,13 @@ general_log = OFF
 general_log_file = /var/log/mysql/general.log
 MYSQLCONF
 
+if command -v mysqld >/dev/null 2>&1; then
+  if ! mysqld --validate-config >/dev/null 2>&1; then
+    echo "[10-mysql] MySQL 設定の検証に失敗しました。" >&2
+    exit 1
+  fi
+fi
+
 systemctl restart mysql
 
 MYSQL_CMD="mysql --protocol=socket"
@@ -62,7 +70,8 @@ if [ -f /root/.my.cnf ]; then
 fi
 
 $MYSQL_CMD <<SQL
-ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '${MYSQL_ROOT_PASSWORD}';
+-- MySQL 専用のバッククォートを利用する
+ALTER USER 'root'@'localhost' IDENTIFIED BY '${MYSQL_ROOT_PASSWORD}';
 DELETE FROM mysql.user WHERE User='';
 DROP DATABASE IF EXISTS test;
 DELETE FROM mysql.db WHERE Db='test' OR Db='test\\_%';

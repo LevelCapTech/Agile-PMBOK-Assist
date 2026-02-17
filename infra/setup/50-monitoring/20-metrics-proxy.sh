@@ -29,7 +29,7 @@ mkdir -p /etc/nginx/snippets
   location /metrics/node {
     proxy_pass http://127.0.0.1:9100/metrics;
 NODE
-  printf '%s' "$allow_block"
+  printf '%s\n' "$allow_block"
   cat <<'NODETAIL'
     deny all;
   }
@@ -37,7 +37,7 @@ NODE
   location /metrics/mysql {
     proxy_pass http://127.0.0.1:9104/metrics;
 NODETAIL
-  printf '%s' "$allow_block"
+  printf '%s\n' "$allow_block"
   cat <<'TAIL'
     deny all;
   }
