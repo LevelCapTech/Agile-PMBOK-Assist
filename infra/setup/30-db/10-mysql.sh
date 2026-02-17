@@ -21,7 +21,7 @@ cat <<MYSQLCONF > /etc/mysql/mysql.conf.d/99-custom.cnf
 [mysqld]
 bind-address = ${MYSQL_BIND_ADDRESS}
 port = 3306
-mysqlx = 0
+mysqlx = OFF
 skip-name-resolve = ON
 character-set-server = utf8mb4
 collation-server = utf8mb4_0900_ai_ci
@@ -48,6 +48,7 @@ log_output = FILE
 slow_query_log = ON
 slow_query_log_file = /var/log/mysql/slow.log
 long_query_time = 0.5
+# log_queries_not_using_indexes は long_query_time 超過時のみ記録
 log_queries_not_using_indexes = OFF
 general_log = OFF
 general_log_file = /var/log/mysql/general.log
