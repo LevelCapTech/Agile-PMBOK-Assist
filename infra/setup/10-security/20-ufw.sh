@@ -36,7 +36,7 @@ is_valid_ip() {
   fi
   IFS='.' read -r -a octets <<< "$host"
   for octet in "${octets[@]}"; do
-    if [ "$octet" -lt 0 ] || [ "$octet" -gt 255 ]; then
+    if [ "$octet" -gt 255 ]; then
       return 1
     fi
   done
