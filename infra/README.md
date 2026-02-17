@@ -29,7 +29,7 @@ sudo bash infra/setup/90-verify/10-healthcheck.sh
 - `/metrics` は `METRICS_ALLOW_IPS` で指定した監視サーバーの IP のみ許可します。
 - SSH は全 IP 許可のため、IP 制限が使えない環境向けの構成です。
 - fail2ban と鍵認証を前提に運用し、ブロック状況の監視を必須としてください（`setup/10-security/30-fail2ban.sh`、`setup/10-security/10-ssh.sh` を参照）。
-- `10-ssh.sh` は初期設定済み（PermitRootLogin no 前提）の確認のみ実行します（鍵認証が無効化されていないことを検証）。
+- `10-ssh.sh` は初期設定済み（PermitRootLogin no 前提）の確認のみ実行します（PubkeyAuthentication yes を検証）。
 
 ## ディレクトリ構成
 
