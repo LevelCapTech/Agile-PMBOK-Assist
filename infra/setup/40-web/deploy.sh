@@ -41,7 +41,9 @@ done
 
 DATABASE_URL_VALUE="$(build_database_url)"
 
+# JWT issued-at offset in seconds (60s before now)
 JWT_IAT_OFFSET=60
+# JWT expiration duration in seconds (9 minutes)
 JWT_EXP_DURATION=540
 
 now=$(date +%s)
@@ -57,9 +59,10 @@ unsigned="${header}.${payload}"
 signature=$(printf '%s' "$unsigned" | openssl dgst -sha256 -sign "$GITHUB_APP_PEM_PATH" | base64url_encode)
 jwt="${unsigned}.${signature}"
 
-token_response_file=$(mktemp)
-askpass_script=$(mktemp)
-token_file=$(mktemp)
+token_response_file=$(mktemp -t github-app-token-response.XXXXXX)
+askpass_script=$(mktemp -t github-app-askpass.XXXXXX)
+token_file=$(mktemp -t github-app-token.XXXXXX)
+chmod 600 "$token_response_file" "$token_file"
 trap 'rm -f "$askpass_script" "$token_file" "$token_response_file"' EXIT
 
 if ! token_status=$(curl -sS -o "$token_response_file" -w '%{http_code}' -X POST \
@@ -87,10 +90,10 @@ printf '%s' "$token" > "$token_file"
 chown "$APP_USER":"$APP_USER" "$token_file"
 chmod 600 "$token_file"
 
-printf -v token_file_escaped '%q' "$token_file"
+printf -v token_file_quoted '%q' "$token_file"
 cat <<ASKPASS > "$askpass_script"
 #!/usr/bin/env bash
-token_file=$token_file_escaped
+token_file=$token_file_quoted
 case "\$1" in
 *Username*) echo "x-access-token" ;;
 *Password*) cat "\$token_file" ;;
