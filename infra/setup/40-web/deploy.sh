@@ -58,7 +58,7 @@ if [ -z "${PORT:-}" ]; then
   exit 1
 fi
 is_valid_port() {
-  [[ "$1" =~ ^[0-9]+$ ]] && [ "$1" -ge 1 ] && [ "$1" -le 65535 ]
+  [[ "$1" =~ ^[0-9]+$ && "$1" -ge 1 && "$1" -le 65535 ]]
 }
 if ! is_valid_port "$APP_PORT"; then
   echo "[deploy] APP_PORT が不正です: $APP_PORT" >&2
