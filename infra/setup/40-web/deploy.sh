@@ -45,6 +45,7 @@ now=$(date +%s)
 iat=$((now - 60))
 exp=$((now + 540))
 
+# JWT 用の base64url エンコード
 b64url() { openssl base64 -e -A | tr '+/' '-_' | tr -d '='; }
 
 header=$(printf '{"alg":"RS256","typ":"JWT"}' | b64url)
@@ -53,31 +54,44 @@ unsigned="${header}.${payload}"
 signature=$(printf '%s' "$unsigned" | openssl dgst -sha256 -sign "$GITHUB_APP_PEM_PATH" | b64url)
 jwt="${unsigned}.${signature}"
 
-token=$(
+token_response=$(
   curl -fsS -X POST \
     -H "Accept: application/vnd.github+json" \
     -H "Authorization: Bearer ${jwt}" \
     -H "X-GitHub-Api-Version: 2022-11-28" \
-    "https://api.github.com/app/installations/${GITHUB_INSTALLATION_ID}/access_tokens" \
-  | jq -r .token
+    "https://api.github.com/app/installations/${GITHUB_INSTALLATION_ID}/access_tokens"
 )
+token=$(echo "$token_response" | jq -r .token)
 
 if [ -z "$token" ] || [ "$token" = "null" ]; then
-  echo "[deploy] GitHub App token の取得に失敗しました。" >&2
+  error_message=$(echo "$token_response" | jq -r '.message // empty')
+  echo "[deploy] GitHub App token の取得に失敗しました。${error_message:+ ($error_message)}" >&2
   exit 1
 fi
 
-basic=$(printf 'x-access-token:%s' "$token" | openssl base64 -A)
-git_header="Authorization: Basic ${basic}"
+askpass_script=$(mktemp)
+trap 'rm -f "$askpass_script"' EXIT
+cat <<'ASKPASS' > "$askpass_script"
+#!/usr/bin/env bash
+case "$1" in
+*Username*) echo "x-access-token" ;;
+*Password*) echo "$GIT_APP_TOKEN" ;;
+*) echo "$GIT_APP_TOKEN" ;;
+esac
+ASKPASS
+chmod 755 "$askpass_script"
 
 if [ ! -d "$APP_DIR/.git" ]; then
   sudo -u "$APP_USER" -- bash -c "mkdir -p '$APP_DIR'"
-  sudo -u "$APP_USER" -- git -c http.extraHeader="$git_header" clone "$APP_REPO_URL" "$APP_DIR"
+  sudo -u "$APP_USER" -- env GIT_APP_TOKEN="$token" GIT_ASKPASS="$askpass_script" GIT_TERMINAL_PROMPT=0 \
+    git clone "$APP_REPO_URL" "$APP_DIR"
 fi
 
-sudo -u "$APP_USER" -- git -C "$APP_DIR" -c http.extraHeader="$git_header" fetch --prune origin "$APP_BRANCH"
+sudo -u "$APP_USER" -- env GIT_APP_TOKEN="$token" GIT_ASKPASS="$askpass_script" GIT_TERMINAL_PROMPT=0 \
+  git -C "$APP_DIR" fetch --prune origin "$APP_BRANCH"
 sudo -u "$APP_USER" -- git -C "$APP_DIR" checkout "$APP_BRANCH"
-sudo -u "$APP_USER" -- git -C "$APP_DIR" -c http.extraHeader="$git_header" reset --hard "origin/$APP_BRANCH"
+sudo -u "$APP_USER" -- env GIT_APP_TOKEN="$token" GIT_ASKPASS="$askpass_script" GIT_TERMINAL_PROMPT=0 \
+  git -C "$APP_DIR" reset --hard "origin/$APP_BRANCH"
 
 sudo -u "$APP_USER" -- bash -c "cd '$APP_DIR' && npm ci"
 sudo -u "$APP_USER" -- bash -c "cd '$APP_DIR' && npm run build"
