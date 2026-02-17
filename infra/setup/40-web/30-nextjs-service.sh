@@ -37,7 +37,7 @@ User=${APP_USER}
 WorkingDirectory=${APP_DIR}
 Environment=NODE_ENV=production
 EnvironmentFile=${APP_ENV_FILE}
-ExecStart=/usr/bin/node ${APP_DIR}/node_modules/next/dist/bin/next start -p ${PORT}
+ExecStart=/usr/bin/node ${APP_DIR}/node_modules/next/dist/bin/next start -p $PORT
 Restart=always
 RestartSec=5
 LimitNOFILE=65535

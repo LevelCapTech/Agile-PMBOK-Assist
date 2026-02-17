@@ -46,7 +46,7 @@ server {
 
   location / {
     limit_req zone=one burst=20 nodelay;
-    proxy_pass http://127.0.0.1:${APP_PORT};
+    proxy_pass http://127.0.0.1:__APP_PORT__;
     proxy_set_header Host $host;
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     proxy_set_header X-Forwarded-Proto $scheme;
@@ -58,6 +58,7 @@ server {
 }
 SITE
 sed -i "s/__ACME_DOMAIN__/${ACME_DOMAIN}/" "$site_conf"
+sed -i "s/__APP_PORT__/${APP_PORT}/" "$site_conf"
 sed -i "s|__SSL_CERT__|${ssl_cert}|" "$site_conf"
 sed -i "s|__SSL_KEY__|${ssl_key}|" "$site_conf"
 
