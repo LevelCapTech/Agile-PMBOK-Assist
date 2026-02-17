@@ -17,9 +17,40 @@ export DEBIAN_FRONTEND=noninteractive
 apt-get install -y mysql-server
 systemctl enable --now mysql
 
-cat <<MYSQLCONF > /etc/mysql/mysql.conf.d/99-local-bind.cnf
+cat <<MYSQLCONF > /etc/mysql/mysql.conf.d/99-custom.cnf
 [mysqld]
 bind-address = ${MYSQL_BIND_ADDRESS}
+port = 3306
+mysqlx = 0
+skip-name-resolve = ON
+character-set-server = utf8mb4
+collation-server = utf8mb4_0900_ai_ci
+sql_mode = STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION
+innodb_buffer_pool_size = 256M
+innodb_buffer_pool_instances = 1
+innodb_flush_method = O_DIRECT
+innodb_flush_log_at_trx_commit = 1
+innodb_log_buffer_size = 16M
+max_connections = 60
+wait_timeout = 300
+interactive_timeout = 300
+table_open_cache = 400
+thread_cache_size = 16
+tmp_table_size = 32M
+max_heap_table_size = 32M
+sort_buffer_size = 1M
+join_buffer_size = 1M
+read_buffer_size = 256K
+read_rnd_buffer_size = 512K
+log_error = /var/log/mysql/error.log
+log_error_verbosity = 2
+log_output = FILE
+slow_query_log = ON
+slow_query_log_file = /var/log/mysql/slow.log
+long_query_time = 0.5
+log_queries_not_using_indexes = OFF
+general_log = OFF
+general_log_file = /var/log/mysql/general.log
 MYSQLCONF
 
 systemctl restart mysql

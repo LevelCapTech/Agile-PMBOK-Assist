@@ -8,7 +8,7 @@
   - `.bashrc`、`/etc/issue`、`/etc/update-motd.d` を整備し、運用向けの表示・履歴設定を行う。
   - Git を整備し、GitHub App の Installation Token を使って HTTPS でアプリ/スクリプトを取得できるようにする。
   - SSR 前提の Next.js（`npm ci` + `npm run build` + `next start`）を systemd 管理で起動する。
-  - MySQL をローカルバインドで初期化し、`prisma migrate deploy` を実行できる状態にする。
+  - MySQL を VPN 側 IP にバインドして初期化し、`prisma migrate deploy` を実行できる状態にする。
   - Nginx によるリバースプロキシ、rate limit、fail2ban 連携を設定する。
   - Let’s Encrypt 証明書取得と自動更新を構成する（443 のみ公開、TLS-ALPN-01 または DNS-01）。
   - 監視対象サーバーとして node_exporter / mysqld_exporter を導入し、監視サーバーから取得できるようにする。
@@ -129,7 +129,7 @@ infra/
 | MYSQL_APP_DB | アプリ用 DB 名 | app_db |
 | MYSQL_APP_USER | アプリ用 DB ユーザー | app_user |
 | MYSQL_APP_PASSWORD | アプリ用 DB パスワード | `***` |
-| MYSQL_BIND_ADDRESS | MySQL bind | 127.0.0.1 |
+| MYSQL_BIND_ADDRESS | MySQL bind（VPN 側 IP） | 10.8.0.1 |
 | ACME_DOMAIN | 証明書対象ドメイン | app.example.com |
 | ACME_CHALLENGE | ACME 方式 | tls-alpn-01 / dns-01 |
 | METRICS_ALLOW_IPS | 監視サーバーの IP（未指定なら全IP許可・明示指定推奨） | 203.0.113.10 |
@@ -265,7 +265,9 @@ WantedBy=multi-user.target
 
 ### 3.7 MySQL セキュア初期構成
 
-- `bind-address = 127.0.0.1` とし、外部アクセスは禁止する。
+- `bind-address = ${MYSQL_BIND_ADDRESS}` とし、VPN 側 IP に限定する。
+- 1GB VPS 前提で `innodb_buffer_pool_size=256M` など軽量設定にする。
+- slow_query_log は ON、general_log は OFF（必要時のみ ON）とする。
 - `infra/setup/30-db/10-mysql.sh` にて、`mysql_secure_installation` 相当の設定を**対話なしで自動化**する（Section 3.1.1 (No.14) で詳細を記載）:
   - root パスワードは **環境変数**（例: `MYSQL_ROOT_PASSWORD`）から読み込み、`mysql` クライアントに標準入力で SQL を流し込む方式で設定する（パスワードをコマンドライン引数や履歴に残さない）。
   - MySQL 8.0 以降を前提とし、初回パスワード設定は `ALTER USER 'root'@'localhost' IDENTIFIED BY '********';` を用いて行う。
