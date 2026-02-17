@@ -170,7 +170,7 @@ AIが生成したコード（生成物）の利用方法を下記のテーブル
 
 ---
 
-# セキュリティチェック(Security Self-Check)
+# セキュリティチェック (Security Self-Check)
 
 - [ ] **Secrets**: コード内にAPIキーやパスワードが含まれていないことを確認した
 - [ ] **Input Validation**: 外部からの入力値（API引数/フォーム）を検証している
