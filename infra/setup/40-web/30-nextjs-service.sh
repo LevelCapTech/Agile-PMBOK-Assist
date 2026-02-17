@@ -23,6 +23,10 @@ if [ ! -f "$APP_ENV_FILE" ]; then
   echo "[30-nextjs-service] APP_ENV_FILE が見つかりません: $APP_ENV_FILE" >&2
   exit 1
 fi
+if ! grep -q '^PORT=' "$APP_ENV_FILE"; then
+  echo "[30-nextjs-service] APP_ENV_FILE に PORT の指定がありません。" >&2
+  exit 1
+fi
 if [[ "$APP_ENV_FILE" != /* ]]; then
   echo "[30-nextjs-service] APP_ENV_FILE は絶対パスで指定してください。" >&2
   exit 1

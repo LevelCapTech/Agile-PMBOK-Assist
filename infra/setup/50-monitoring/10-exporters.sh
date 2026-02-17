@@ -36,10 +36,6 @@ then
   echo "[10-exporters] mysqld_exporter 設定ファイルの作成に失敗しました。" >&2
   exit 1
 fi
-if [ ! -f /etc/mysqld_exporter.cnf ]; then
-  echo "[10-exporters] mysqld_exporter 設定ファイルの作成に失敗しました。" >&2
-  exit 1
-fi
 chmod 600 /etc/mysqld_exporter.cnf
 umask "$original_umask"
 

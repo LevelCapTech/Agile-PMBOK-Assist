@@ -71,7 +71,7 @@ fi
 if [ "$APP_PORT" != "$PORT" ]; then
   echo "[deploy] APP_PORT と APP_ENV_FILE の PORT が一致していません: ${APP_PORT} / ${PORT}" >&2
   echo "[deploy] Nginx の proxy 先ポートとアプリの PORT を一致させてください。" >&2
-  echo "[deploy] APP_PORT を ${ENV_FILE:-infra/.env} または PORT を ${APP_ENV_FILE} で修正してください。" >&2
+  echo "[deploy] APP_PORT を infra/.env または PORT を ${APP_ENV_FILE} で修正してください。" >&2
   exit 1
 fi
 

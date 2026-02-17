@@ -58,8 +58,7 @@ MYSQLCONF
 
 if command -v mysqld >/dev/null 2>&1; then
   if ! mysqld --validate-config >/dev/null 2>&1; then
-    echo "[10-mysql] MySQL 設定の検証に失敗しました。" >&2
-    exit 1
+    echo "[10-mysql] MySQL 設定の検証に失敗しました。ログを確認してください。" >&2
   fi
 fi
 

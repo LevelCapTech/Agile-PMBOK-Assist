@@ -27,7 +27,7 @@ is_valid_ip() {
   local mask=""
   if [[ "$ip" == */* ]]; then
     mask="${ip#*/}"
-    if ! [[ "$mask" =~ ^[0-9]{1,2}$ ]] || [ "$mask" -gt 32 ]; then
+    if ! [[ "$mask" =~ ^[0-9]{1,2}$ ]] || [ "$mask" -lt 1 ] || [ "$mask" -gt 32 ]; then
       return 1
     fi
   fi
