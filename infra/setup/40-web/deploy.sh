@@ -41,6 +41,11 @@ set -a
 source "$APP_ENV_FILE"
 set +a
 
+if [ -n "${APP_PORT:-}" ] && [ -n "${PORT:-}" ] && [ "$APP_PORT" != "$PORT" ]; then
+  echo "[deploy] APP_PORT と PORT が一致していません: ${APP_PORT} / ${PORT}" >&2
+  exit 1
+fi
+
 lock_file="/var/lock/nextjs-build.lock"
 exec 9>"$lock_file"
 if ! flock -n 9; then
