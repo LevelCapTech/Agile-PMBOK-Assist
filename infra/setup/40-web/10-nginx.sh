@@ -9,6 +9,17 @@ fi
 
 : "${ACME_DOMAIN:?ACME_DOMAIN が未設定です}"
 
+cert_path="/etc/letsencrypt/live/${ACME_DOMAIN}/fullchain.pem"
+key_path="/etc/letsencrypt/live/${ACME_DOMAIN}/privkey.pem"
+if [ -f "$cert_path" ] && [ -f "$key_path" ]; then
+  ssl_cert="$cert_path"
+  ssl_key="$key_path"
+else
+  ssl_cert="/etc/ssl/certs/ssl-cert-snakeoil.pem"
+  ssl_key="/etc/ssl/private/ssl-cert-snakeoil.key"
+  echo "[10-nginx] Let’s Encrypt 証明書がないため一時的に snakeoil 証明書を使用します。" >&2
+fi
+
 export DEBIAN_FRONTEND=noninteractive
 apt-get install -y nginx
 
@@ -27,8 +38,8 @@ server {
   listen 443 ssl http2;
   server_name __ACME_DOMAIN__;
 
-  ssl_certificate /etc/ssl/certs/ssl-cert-snakeoil.pem;
-  ssl_certificate_key /etc/ssl/private/ssl-cert-snakeoil.key;
+  ssl_certificate __SSL_CERT__;
+  ssl_certificate_key __SSL_KEY__;
 
   location / {
     limit_req zone=one burst=20 nodelay;
@@ -44,6 +55,8 @@ server {
 }
 SITE
 sed -i "s/__ACME_DOMAIN__/${ACME_DOMAIN}/" "$site_conf"
+sed -i "s|__SSL_CERT__|${ssl_cert}|" "$site_conf"
+sed -i "s|__SSL_KEY__|${ssl_key}|" "$site_conf"
 
 metrics_conf="/etc/nginx/conf.d/metrics.conf"
 if [ ! -f "$metrics_conf" ]; then

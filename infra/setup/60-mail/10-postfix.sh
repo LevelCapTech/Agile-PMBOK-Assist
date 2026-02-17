@@ -34,7 +34,7 @@ chmod 600 /etc/postfix/sasl_passwd
 postmap /etc/postfix/sasl_passwd
 
 cat <<GENERIC > /etc/postfix/generic
-${ALERT_FROM} ${ALERT_TO}
+root ${ALERT_FROM}
 GENERIC
 postmap /etc/postfix/generic
 
