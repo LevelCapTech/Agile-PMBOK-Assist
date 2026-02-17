@@ -57,6 +57,17 @@ if [ -z "${PORT:-}" ]; then
   echo "[deploy] APP_ENV_FILE の PORT が未設定です。" >&2
   exit 1
 fi
+is_valid_port() {
+  [[ "$1" =~ ^[0-9]+$ ]] && [ "$1" -ge 1 ] && [ "$1" -le 65535 ]
+}
+if ! is_valid_port "$APP_PORT"; then
+  echo "[deploy] APP_PORT が不正です: $APP_PORT" >&2
+  exit 1
+fi
+if ! is_valid_port "$PORT"; then
+  echo "[deploy] APP_ENV_FILE の PORT が不正です: $PORT" >&2
+  exit 1
+fi
 if [ "$APP_PORT" != "$PORT" ]; then
   echo "[deploy] APP_PORT と APP_ENV_FILE の PORT が一致していません: ${APP_PORT} / ${PORT}" >&2
   echo "[deploy] Nginx の proxy 先ポートとアプリの PORT を一致させてください。" >&2
