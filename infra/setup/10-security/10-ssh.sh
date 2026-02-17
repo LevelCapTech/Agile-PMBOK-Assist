@@ -24,3 +24,13 @@ if ! sshd -t; then
   echo "[10-ssh] sshd 設定の検証に失敗しました。" >&2
   exit 1
 fi
+
+sshd_dump=$(sshd -T)
+if ! echo "$sshd_dump" | grep -q '^permitrootlogin no$'; then
+  echo "[10-ssh] PermitRootLogin が no ではありません。" >&2
+  exit 1
+fi
+if ! echo "$sshd_dump" | grep -q '^pubkeyauthentication yes$'; then
+  echo "[10-ssh] PubkeyAuthentication が yes ではありません。" >&2
+  exit 1
+fi
