@@ -33,6 +33,8 @@ if [ -f "$site_conf" ]; then
   cp "$site_conf" "${site_conf}.bak.$(date +%s)"
 fi
 
+mkdir -p /etc/nginx/snippets
+
 cat <<'SITE' > "$site_conf"
 server {
   listen 443 ssl http2;
@@ -51,16 +53,20 @@ server {
     proxy_set_header Connection "";
   }
 
-  include /etc/nginx/conf.d/metrics.conf;
+  include /etc/nginx/snippets/metrics.conf;
 }
 SITE
 sed -i "s/__ACME_DOMAIN__/${ACME_DOMAIN}/" "$site_conf"
 sed -i "s|__SSL_CERT__|${ssl_cert}|" "$site_conf"
 sed -i "s|__SSL_KEY__|${ssl_key}|" "$site_conf"
 
-metrics_conf="/etc/nginx/conf.d/metrics.conf"
-if [ ! -f "$metrics_conf" ]; then
-  echo "# metrics placeholder" > "$metrics_conf"
+metrics_snippet="/etc/nginx/snippets/metrics.conf"
+if [ ! -f "$metrics_snippet" ]; then
+  cat <<'METRICS' > "$metrics_snippet"
+  location /metrics {
+    return 404;
+  }
+METRICS
 fi
 
 ln -sf "$site_conf" /etc/nginx/sites-enabled/app.conf

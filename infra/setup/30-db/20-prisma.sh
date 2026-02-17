@@ -7,6 +7,10 @@ if [ "$(id -u)" -ne 0 ]; then
   exit 1
 fi
 
+SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+# shellcheck disable=SC1091
+source "${SCRIPT_DIR}/../shared.sh"
+
 : "${APP_DIR:?APP_DIR が未設定です}"
 : "${APP_USER:?APP_USER が未設定です}"
 : "${MYSQL_APP_DB:?MYSQL_APP_DB が未設定です}"
@@ -14,7 +18,7 @@ fi
 : "${MYSQL_APP_PASSWORD:?MYSQL_APP_PASSWORD が未設定です}"
 : "${MYSQL_BIND_ADDRESS:?MYSQL_BIND_ADDRESS が未設定です}"
 
-DATABASE_URL_VALUE="${DATABASE_URL:-mysql://${MYSQL_APP_USER}:${MYSQL_APP_PASSWORD}@${MYSQL_BIND_ADDRESS}:3306/${MYSQL_APP_DB}}"
+DATABASE_URL_VALUE="$(build_database_url)"
 
 if [ ! -d "$APP_DIR" ]; then
   echo "[20-prisma] APP_DIR が見つからないため migrate をスキップします。"
