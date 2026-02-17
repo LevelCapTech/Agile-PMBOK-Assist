@@ -41,9 +41,12 @@ done
 
 DATABASE_URL_VALUE="$(build_database_url)"
 
+JWT_IAT_OFFSET=60
+JWT_EXP_DURATION=540
+
 now=$(date +%s)
-iat=$((now - 60))
-exp=$((now + 540))
+iat=$((now - JWT_IAT_OFFSET))
+exp=$((now + JWT_EXP_DURATION))
 
 # JWT 用の base64url エンコード
 b64url() { openssl base64 -e -A | tr '+/' '-_' | tr -d '='; }
@@ -54,43 +57,52 @@ unsigned="${header}.${payload}"
 signature=$(printf '%s' "$unsigned" | openssl dgst -sha256 -sign "$GITHUB_APP_PEM_PATH" | b64url)
 jwt="${unsigned}.${signature}"
 
-token_response=$(
-  curl -fsS -X POST \
-    -H "Accept: application/vnd.github+json" \
-    -H "Authorization: Bearer ${jwt}" \
-    -H "X-GitHub-Api-Version: 2022-11-28" \
-    "https://api.github.com/app/installations/${GITHUB_INSTALLATION_ID}/access_tokens"
-)
-token=$(echo "$token_response" | jq -r .token)
+token_response_file=$(mktemp)
+askpass_script=$(mktemp)
+token_file=$(mktemp)
+trap 'rm -f "$askpass_script" "$token_file" "$token_response_file"' EXIT
 
-if [ -z "$token" ] || [ "$token" = "null" ]; then
-  error_message=$(echo "$token_response" | jq -r '.message // empty')
-  echo "[deploy] GitHub App token の取得に失敗しました。${error_message:+ ($error_message)}" >&2
+if ! token_status=$(curl -sS -o "$token_response_file" -w '%{http_code}' -X POST \
+  -H "Accept: application/vnd.github+json" \
+  -H "Authorization: Bearer ${jwt}" \
+  -H "X-GitHub-Api-Version: 2022-11-28" \
+  "https://api.github.com/app/installations/${GITHUB_INSTALLATION_ID}/access_tokens"); then
+  echo "[deploy] GitHub App token の取得に失敗しました（ネットワークエラー）。" >&2
   exit 1
 fi
 
-askpass_script=$(mktemp)
-trap 'rm -f "$askpass_script"' EXIT
+token=$(jq -r .token "$token_response_file")
+if [ -z "$token" ] || [ "$token" = "null" ] || [ "$token_status" -lt 200 ] || [ "$token_status" -ge 300 ]; then
+  error_message=$(jq -r '.message // empty' "$token_response_file")
+  echo "[deploy] GitHub App token の取得に失敗しました。HTTP ${token_status}${error_message:+ ($error_message)}" >&2
+  exit 1
+fi
+
+printf '%s' "$token" > "$token_file"
+chown "$APP_USER":"$APP_USER" "$token_file"
+chmod 600 "$token_file"
+
 cat <<'ASKPASS' > "$askpass_script"
 #!/usr/bin/env bash
 case "$1" in
 *Username*) echo "x-access-token" ;;
-*Password*) echo "$GIT_APP_TOKEN" ;;
-*) echo "$GIT_APP_TOKEN" ;;
+*Password*) cat "__TOKEN_FILE__" ;;
+*) cat "__TOKEN_FILE__" ;;
 esac
 ASKPASS
+sed -i "s|__TOKEN_FILE__|$token_file|" "$askpass_script"
 chmod 755 "$askpass_script"
 
 if [ ! -d "$APP_DIR/.git" ]; then
   sudo -u "$APP_USER" -- bash -c "mkdir -p '$APP_DIR'"
-  sudo -u "$APP_USER" -- env GIT_APP_TOKEN="$token" GIT_ASKPASS="$askpass_script" GIT_TERMINAL_PROMPT=0 \
+  sudo -u "$APP_USER" -- env GIT_ASKPASS="$askpass_script" GIT_TERMINAL_PROMPT=0 \
     git clone "$APP_REPO_URL" "$APP_DIR"
 fi
 
-sudo -u "$APP_USER" -- env GIT_APP_TOKEN="$token" GIT_ASKPASS="$askpass_script" GIT_TERMINAL_PROMPT=0 \
+sudo -u "$APP_USER" -- env GIT_ASKPASS="$askpass_script" GIT_TERMINAL_PROMPT=0 \
   git -C "$APP_DIR" fetch --prune origin "$APP_BRANCH"
 sudo -u "$APP_USER" -- git -C "$APP_DIR" checkout "$APP_BRANCH"
-sudo -u "$APP_USER" -- env GIT_APP_TOKEN="$token" GIT_ASKPASS="$askpass_script" GIT_TERMINAL_PROMPT=0 \
+sudo -u "$APP_USER" -- env GIT_ASKPASS="$askpass_script" GIT_TERMINAL_PROMPT=0 \
   git -C "$APP_DIR" reset --hard "origin/$APP_BRANCH"
 
 sudo -u "$APP_USER" -- bash -c "cd '$APP_DIR' && npm ci"
