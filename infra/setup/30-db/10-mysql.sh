@@ -25,7 +25,7 @@ mysqlx = OFF
 skip-name-resolve = ON
 character-set-server = utf8mb4
 collation-server = utf8mb4_0900_ai_ci
-# MySQL 8.0 のデフォルトに近い sql_mode。アプリ要件に応じて調整すること。
+# MySQL 8.0 のデフォルトに近い sql_mode。NO_ZERO_* は 0 日付を拒否、ONLY_FULL_GROUP_BY は集約の厳格化。
 sql_mode = STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION,NO_ZERO_IN_DATE,NO_ZERO_DATE,ONLY_FULL_GROUP_BY
 innodb_buffer_pool_size = 256M
 innodb_buffer_pool_instances = 1

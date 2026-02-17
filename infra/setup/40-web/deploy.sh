@@ -78,7 +78,9 @@ fi
 lock_file="/var/lock/nextjs-build.lock"
 exec 9>"$lock_file"
 cleanup_lock() {
-  exec 9>&- || true
+  if { true >&9; } 2>/dev/null; then
+    exec 9>&-
+  fi
   rm -f "$lock_file"
 }
 trap cleanup_lock EXIT

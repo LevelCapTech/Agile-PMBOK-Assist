@@ -32,6 +32,10 @@ cat <<CNF > /etc/mysqld_exporter.cnf
 user=${MYSQL_EXPORTER_USER}
 password=${MYSQL_EXPORTER_PASSWORD}
 CNF
+if [ ! -f /etc/mysqld_exporter.cnf ]; then
+  echo "[10-exporters] mysqld_exporter 設定ファイルの作成に失敗しました。" >&2
+  exit 1
+fi
 chmod 600 /etc/mysqld_exporter.cnf
 umask "$original_umask"
 
