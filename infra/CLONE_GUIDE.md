@@ -99,6 +99,8 @@ export INSTALL_TOKEN="$(
 
 ### 10) Installation Token で HTTPS clone（初回）
 
+* クローン先は `/opt/agile-pmbok-assist_repo`（`APP_DIR`）を指定する。
+
 ```bash
-git clone "https://x-access-token:${INSTALL_TOKEN}@github.com/${OWNER}/${REPO}.git"
+git clone "https://x-access-token:${INSTALL_TOKEN}@github.com/${OWNER}/${REPO}.git" /opt/agile-pmbok-assist_repo
 ```
