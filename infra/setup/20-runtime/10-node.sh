@@ -9,7 +9,11 @@ fi
 
 : "${NODE_VERSION:?NODE_VERSION が未設定です}"
 
-node_setup="setup_${NODE_VERSION}"
+if [[ "$NODE_VERSION" == *".x" ]]; then
+  node_setup="setup_${NODE_VERSION}"
+else
+  node_setup="setup_${NODE_VERSION}.x"
+fi
 if [ -x /usr/bin/node ]; then
   current_major=$(node -v | sed 's/v//' | cut -d. -f1)
   target_major=$(echo "$NODE_VERSION" | cut -d. -f1)

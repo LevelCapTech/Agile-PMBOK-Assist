@@ -33,8 +33,6 @@ cat <<SASL > "$sasl_tmp"
 [${POSTFIX_RELAY_HOST}]:${POSTFIX_RELAY_PORT} ${POSTFIX_RELAY_USER}:${POSTFIX_RELAY_PASS}
 SASL
 install -m 600 "$sasl_tmp" /etc/postfix/sasl_passwd
-rm -f "$sasl_tmp"
-trap - EXIT
 postmap /etc/postfix/sasl_passwd
 
 cat <<GENERIC > /etc/postfix/generic

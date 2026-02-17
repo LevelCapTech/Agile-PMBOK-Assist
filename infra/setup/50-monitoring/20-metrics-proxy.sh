@@ -9,11 +9,12 @@ fi
 
 : "${METRICS_ALLOW_IPS:?METRICS_ALLOW_IPS が未設定です}"
 
-allow_block=""
+allow_lines=()
 IFS=' ' read -r -a metrics_ips <<< "$METRICS_ALLOW_IPS"
 for ip in "${metrics_ips[@]}"; do
-  allow_block+=$'  allow '"${ip}"$';\n'
+  allow_lines+=("  allow ${ip};")
 done
+allow_block=$(printf '%s\n' "${allow_lines[@]}")
 
 mkdir -p /etc/nginx/snippets
 

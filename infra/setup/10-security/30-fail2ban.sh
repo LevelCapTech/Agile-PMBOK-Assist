@@ -24,7 +24,7 @@ logpath = /var/log/nginx/error.log
 maxretry = 5
 NGINXJAIL
 
-if ! fail2ban-client -d >/dev/null; then
+if ! fail2ban-client -t >/dev/null; then
   echo "[30-fail2ban] fail2ban 設定の検証に失敗しました。" >&2
   exit 1
 fi
