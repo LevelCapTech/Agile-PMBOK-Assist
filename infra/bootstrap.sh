@@ -33,6 +33,7 @@ steps=(
   "setup/10-security/20-ufw.sh"
   "setup/20-runtime/10-node.sh"
   "setup/20-runtime/20-git.sh"
+  "setup/20-runtime/30-github-app-pull.sh"
   "setup/30-db/10-mysql.sh"
   "setup/30-db/20-prisma.sh"
   "setup/40-web/10-nginx.sh"
