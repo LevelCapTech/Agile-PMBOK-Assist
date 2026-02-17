@@ -34,7 +34,7 @@ sudo bash infra/setup/90-verify/10-healthcheck.sh
 - `/metrics` は `METRICS_ALLOW_IPS` で指定した監視サーバーの IP のみ許可します（未指定の場合は全 IP 許可のため明示指定を推奨）。
 - MySQL は `MYSQL_BIND_ADDRESS` に VPN 側 IP を指定し、general_log は OFF（必要時のみ ON）で運用します。
 - `app.env` に DATABASE_URL を指定しない場合は、`MYSQL_*` から自動生成される値を利用します。
-- SSH は全 IP 許可のため、IP 制限が使えない環境向けの構成です。
+- SSH は SSH_ALLOW_IPS 指定時は許可 IP のみに制限し、未指定の場合は全 IP 許可の構成です。
 - fail2ban と鍵認証を前提に運用し、ブロック状況の監視を必須としてください（`setup/10-security/30-fail2ban.sh`、`setup/10-security/10-ssh.sh` を参照）。
 - `10-ssh.sh` は初期設定済み（PermitRootLogin no 前提）の確認のみ実行します（PubkeyAuthentication yes を検証）。
 - GitHub App の Installation Token を使って HTTPS で pull します。`GITHUB_APP_ID`、`GITHUB_INSTALLATION_ID`、`GITHUB_APP_PEM_PATH` を `.env` に設定し、`APP_REPO_URL` は HTTPS 形式にしてください。
