@@ -95,10 +95,10 @@ need sudo
 b64url() { openssl base64 -e -A | tr '+/' '-_' | tr -d '='; }
 
 CLOCK_SKEW_TOLERANCE_SECONDS=60
-JWT_EXPIRY_SECONDS=540 # 約九分
+JWT_EXPIRY_SECONDS=540 # 約9分
 
 now="$(date +%s)"
-# CLOCK_SKEW_TOLERANCE_SECONDS の秒数ぶん時計ずれを吸収し、JWT の有効期限は約九分にする。
+# CLOCK_SKEW_TOLERANCE_SECONDS の秒数ぶん時計ずれを吸収し、JWT の有効期限は約9分にする。
 iat=$((now-CLOCK_SKEW_TOLERANCE_SECONDS))
 exp=$((now+JWT_EXPIRY_SECONDS))
 
@@ -146,8 +146,8 @@ if [ ! -d "$APP_DIR/.git" ]; then
   sudo -u "$APP_USER" -- git -c "include.path=$git_config" clone "$APP_REPO_URL" "$APP_DIR"
 fi
 
-sudo -u "$APP_USER" -- git -C "$APP_DIR" -c "include.path=$git_config" fetch origin "$APP_BRANCH"
 echo "[githubapp-pull] reset --hard で最新のコミットへ合わせます（ローカル変更は破棄されます）。" >&2
+sudo -u "$APP_USER" -- git -C "$APP_DIR" -c "include.path=$git_config" fetch origin "$APP_BRANCH"
 sudo -u "$APP_USER" -- git -C "$APP_DIR" reset --hard "origin/$APP_BRANCH"
 SCRIPT
 
