@@ -7,6 +7,10 @@ if [ "$(id -u)" -ne 0 ]; then
   exit 1
 fi
 
+if ! command -v fail2ban-client >/dev/null 2>&1; then
+  apt-get install -y fail2ban
+fi
+
 cat <<'SSHJAIL' > /etc/fail2ban/jail.d/sshd.conf
 [sshd]
 enabled = true

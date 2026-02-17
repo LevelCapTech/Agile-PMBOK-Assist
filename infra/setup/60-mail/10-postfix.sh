@@ -27,7 +27,10 @@ postconf -e "smtp_use_tls = yes"
 postconf -e "smtp_tls_security_level = encrypt"
 postconf -e "smtp_generic_maps = hash:/etc/postfix/generic"
 
+original_umask=$(umask)
+umask 077
 sasl_tmp=$(mktemp)
+umask "$original_umask"
 trap 'rm -f "$sasl_tmp"' EXIT
 cat <<SASL > "$sasl_tmp"
 [${POSTFIX_RELAY_HOST}]:${POSTFIX_RELAY_PORT} ${POSTFIX_RELAY_USER}:${POSTFIX_RELAY_PASS}

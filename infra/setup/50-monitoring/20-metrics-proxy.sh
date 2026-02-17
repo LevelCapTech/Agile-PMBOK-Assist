@@ -12,23 +12,30 @@ fi
 allow_lines=()
 IFS=' ' read -r -a metrics_ips <<< "$METRICS_ALLOW_IPS"
 for ip in "${metrics_ips[@]}"; do
-  allow_lines+=("  allow ${ip};")
+  allow_lines+=("    allow ${ip};")
 done
 allow_block=$(printf '%s\n' "${allow_lines[@]}")
 
 mkdir -p /etc/nginx/snippets
 
 {
-  printf "  location /metrics/node {\\n"
-  printf "    proxy_pass http://127.0.0.1:9100/metrics;\\n"
-  printf "%s" "$allow_block"
-  printf "    deny all;\\n"
-  printf "  }\\n\\n"
-  printf "  location /metrics/mysql {\\n"
-  printf "    proxy_pass http://127.0.0.1:9104/metrics;\\n"
-  printf "%s" "$allow_block"
-  printf "    deny all;\\n"
-  printf "  }\\n"
+  cat <<'NODE'
+  location /metrics/node {
+    proxy_pass http://127.0.0.1:9100/metrics;
+NODE
+  printf '%s' "$allow_block"
+  cat <<'NODETAIL'
+    deny all;
+  }
+
+  location /metrics/mysql {
+    proxy_pass http://127.0.0.1:9104/metrics;
+NODETAIL
+  printf '%s' "$allow_block"
+  cat <<'TAIL'
+    deny all;
+  }
+TAIL
 } > /etc/nginx/snippets/metrics.conf
 
 if ! nginx -t; then

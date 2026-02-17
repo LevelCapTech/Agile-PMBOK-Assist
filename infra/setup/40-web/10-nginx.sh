@@ -63,8 +63,9 @@ sed -i "s|__SSL_KEY__|${ssl_key}|" "$site_conf"
 metrics_snippet="/etc/nginx/snippets/metrics.conf"
 if [ ! -f "$metrics_snippet" ]; then
   cat <<'METRICS' > "$metrics_snippet"
+  # /metrics/* は別スクリプトで上書き
   location /metrics {
-    return 404;
+    deny all;
   }
 METRICS
 fi
