@@ -8,6 +8,7 @@ if [ "$(id -u)" -ne 0 ]; then
 fi
 
 : "${ACME_DOMAIN:?ACME_DOMAIN が未設定です}"
+: "${APP_PORT:?APP_PORT が未設定です}"
 
 cert_path="/etc/letsencrypt/live/${ACME_DOMAIN}/fullchain.pem"
 key_path="/etc/letsencrypt/live/${ACME_DOMAIN}/privkey.pem"
@@ -45,7 +46,7 @@ server {
 
   location / {
     limit_req zone=one burst=20 nodelay;
-    proxy_pass http://127.0.0.1:4000;
+    proxy_pass http://127.0.0.1:${APP_PORT};
     proxy_set_header Host $host;
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     proxy_set_header X-Forwarded-Proto $scheme;

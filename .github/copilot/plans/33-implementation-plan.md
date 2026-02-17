@@ -7,7 +7,7 @@
   - OS 基本整備として `apt update/upgrade`、タイムゾーン（JST）、ロケール（`ja_JP.UTF-8`）を適用する。
   - `.bashrc`、`/etc/issue`、`/etc/update-motd.d` を整備し、運用向けの表示・履歴設定を行う。
   - Git を整備し、GitHub App の Installation Token を使って HTTPS でアプリ/スクリプトを取得できるようにする。
-  - SSR 前提の Next.js（`next build` + `next start`）を systemd 管理で起動する。
+  - SSR 前提の Next.js（`npm ci` + `npm run build` + `next start`）を systemd 管理で起動する。
   - MySQL をローカルバインドで初期化し、`prisma migrate deploy` を実行できる状態にする。
   - Nginx によるリバースプロキシ、rate limit、fail2ban 連携を設定する。
   - Let’s Encrypt 証明書取得と自動更新を構成する（443 のみ公開、TLS-ALPN-01 または DNS-01）。
@@ -69,8 +69,8 @@
 | 15 | infra/setup/30-db/20-prisma.sh | `prisma migrate deploy` 用の準備 |
 | 16 | infra/setup/40-web/10-nginx.sh | Nginx reverse proxy / rate limit 設定 |
 | 17 | infra/setup/40-web/20-certbot.sh | TLS-ALPN-01/DNS-01 で証明書取得 |
-| 18 | infra/setup/40-web/30-nextjs-service.sh | `nextjs.service` 配置 |
-| 19 | infra/setup/40-web/deploy.sh | Next.js 更新用のデプロイ処理 |
+| 18 | infra/setup/40-web/30-nextjs-service.sh | `nextjs.service` 配置（/etc/myapp/app.env 参照） |
+| 19 | infra/setup/40-web/deploy.sh | pull後のビルド＋再起動処理 |
 | 20 | infra/setup/50-monitoring/10-exporters.sh | node_exporter / mysqld_exporter 導入 |
 | 21 | infra/setup/50-monitoring/20-metrics-proxy.sh | Nginx の metrics 逆プロキシ |
 | 22 | infra/setup/60-mail/10-postfix.sh | postfix + さくら SMTP 設定 |
@@ -118,8 +118,10 @@ infra/
 | --- | --- | --- |
 | APP_REPO_URL | Next.js リポジトリ URL | https://github.com/example/app.git |
 | APP_BRANCH | デプロイ対象ブランチ | main |
-| APP_DIR | 配置先ディレクトリ | /var/www/app |
+| APP_DIR | 配置先ディレクトリ | /opt/myapp/repo |
 | APP_USER | 実行ユーザー | appuser |
+| APP_ENV_FILE | アプリ環境変数ファイル | /etc/myapp/app.env |
+| APP_PORT | Nginx からの proxy 先ポート | 4000 |
 | NODE_VERSION | Node LTS バージョン | 20 |
 | GITHUB_APP_ID | GitHub App ID | 123456 |
 | GITHUB_INSTALLATION_ID | GitHub App Installation ID | 12345678 |
@@ -151,6 +153,7 @@ infra/
 - バックアップやログに `infra/env/.env` の内容が含まれないようにし、ダンプ取得時はマスクや除外ルールを適用する。
 - `infra/env/.env` のパーミッションは `chmod 600`、所有者は `appuser` など最小権限で保持する。
 - GitHub App の PEM ファイルは `chmod 600`、所有者は `root` など最小権限で管理する。
+- `/etc/myapp/app.env` には `PORT` を設定し、`APP_PORT` と同じ値を指定する。
 
 ### 3.4 ベースOS整備（本番向け）
 
@@ -237,10 +240,9 @@ After=network.target mysql.service
 [Service]
 Type=simple
 User=appuser
-WorkingDirectory=/var/www/app
-Environment=NODE_ENV=production
-EnvironmentFile=/var/www/app/.env.production
-ExecStart=/usr/bin/node node_modules/.bin/next start -p 4000
+WorkingDirectory=/opt/myapp/repo
+EnvironmentFile=/etc/myapp/app.env
+ExecStart=/usr/bin/node /opt/myapp/repo/node_modules/next/dist/bin/next start -p ${PORT}
 Restart=always
 RestartSec=5
 LimitNOFILE=65535
@@ -406,10 +408,10 @@ flowchart TD
 | ---- | --- | ----- | ----------------------- | --------- | --------------- |
 | H-00 | VPS 初期リセット | 新規 VPS の確保 | さくら VPS コンソールからサーバーリセットを依頼する | 初期化完了通知の確認 | 新規 VPS にログイン可能 |
 | H-01 | VPS 事前準備 | セキュアな初期状態を整える | DNS 設定（A レコード）、新規 sudo ユーザー作成、SSH 公開鍵登録、root 直ログイン禁止を計画する | SSH で sudo ユーザーがログインできること | root 無効化前に新規ユーザーでログイン可能 |
-| H-02 | Git/Clone 準備 | アプリと整備スクリプトを取得する | Git をインストールし、GitHub App の Installation Token で `APP_REPO_URL` と `infra` リポジトリをクローンする | `git clone` が成功すること | `/var/www/app` と `/opt/infra` に配置済み |
+| H-02 | Git/Clone 準備 | アプリと整備スクリプトを取得する | GitHub App での pull 自動化を構築済みであることを確認し、`/opt/myapp/repo` と `infra` リポジトリを配置する | `git clone` が成功すること | `/opt/myapp/repo` と `/opt/infra` に配置済み |
 | H-03 | 環境値/Secrets 配置 | 秘密情報の安全な配置 | `infra/env/.env` を用意し、`.env.production`、MySQL パスワード、SMTP 認証情報、Basic 認証ファイル、GitHub App PEM をサーバーに配置する | Git 管理外であること | secrets がサーバーにのみ存在 |
 | H-04 | Bootstrap 実行 | 自動整備の開始 | `infra/bootstrap.sh` を実行し、各 `setup/*` が完走することを確認する | `nginx -t` と `systemctl status` の確認 | Next.js/MySQL/Nginx/Exporters/Postfix が起動 |
-| H-05 | アプリ初期化 | DB と SSR を同期 | `npm ci` → `npm run build` → `prisma migrate deploy` を実行し、`systemctl restart nextjs` | migrate の成功 | SSR が 443 で応答 |
+| H-05 | アプリ初期化 | DB と SSR を同期 | `infra/setup/40-web/deploy.sh` を実行し、`systemctl restart nextjs` を確認する | build の成功 | SSR が 443 で応答 |
 | H-06 | 監視疎通確認 | 監視対象として登録 | 監視サーバーから `/metrics` を取得し、IP 制限が有効か確認 | 監視 IP のみ取得可能 | node_exporter 値が取得可能 |
 | H-07 | 通知メール確認 | アラート転送の検証 | `mail` で root 宛てを送信し、外部メールへ転送されることを確認 | SMTP 認証成功 | 外部メールで受信できる |
 
