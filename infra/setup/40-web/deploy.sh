@@ -49,12 +49,12 @@ iat=$((now - JWT_IAT_OFFSET))
 exp=$((now + JWT_EXP_DURATION))
 
 # JWT 用の base64url エンコード
-b64url() { openssl base64 -e -A | tr '+/' '-_' | tr -d '='; }
+base64url_encode() { openssl base64 -e -A | tr '+/' '-_' | tr -d '='; }
 
-header=$(printf '{"alg":"RS256","typ":"JWT"}' | b64url)
-payload=$(printf '{"iat":%d,"exp":%d,"iss":"%s"}' "$iat" "$exp" "$GITHUB_APP_ID" | b64url)
+header=$(printf '{"alg":"RS256","typ":"JWT"}' | base64url_encode)
+payload=$(printf '{"iat":%d,"exp":%d,"iss":"%s"}' "$iat" "$exp" "$GITHUB_APP_ID" | base64url_encode)
 unsigned="${header}.${payload}"
-signature=$(printf '%s' "$unsigned" | openssl dgst -sha256 -sign "$GITHUB_APP_PEM_PATH" | b64url)
+signature=$(printf '%s' "$unsigned" | openssl dgst -sha256 -sign "$GITHUB_APP_PEM_PATH" | base64url_encode)
 jwt="${unsigned}.${signature}"
 
 token_response_file=$(mktemp)
@@ -71,10 +71,15 @@ if ! token_status=$(curl -sS -o "$token_response_file" -w '%{http_code}' -X POST
   exit 1
 fi
 
-token=$(jq -r .token "$token_response_file")
-if [ -z "$token" ] || [ "$token" = "null" ] || [ "$token_status" -lt 200 ] || [ "$token_status" -ge 300 ]; then
-  error_message=$(jq -r '.message // empty' "$token_response_file")
+if [ "$token_status" -lt 200 ] || [ "$token_status" -ge 300 ]; then
+  error_message=$(jq -r '.message // empty' "$token_response_file" 2>/dev/null || true)
   echo "[deploy] GitHub App token の取得に失敗しました。HTTP ${token_status}${error_message:+ ($error_message)}" >&2
+  exit 1
+fi
+
+token=$(jq -r '.token // empty' "$token_response_file" 2>/dev/null || true)
+if [ -z "$token" ] || [ "$token" = "null" ]; then
+  echo "[deploy] GitHub App token の取得に失敗しました（応答が不正です）。" >&2
   exit 1
 fi
 
@@ -82,15 +87,16 @@ printf '%s' "$token" > "$token_file"
 chown "$APP_USER":"$APP_USER" "$token_file"
 chmod 600 "$token_file"
 
-cat <<'ASKPASS' > "$askpass_script"
+printf -v token_file_escaped '%q' "$token_file"
+cat <<ASKPASS > "$askpass_script"
 #!/usr/bin/env bash
-case "$1" in
+token_file=$token_file_escaped
+case "\$1" in
 *Username*) echo "x-access-token" ;;
-*Password*) cat "__TOKEN_FILE__" ;;
-*) cat "__TOKEN_FILE__" ;;
+*Password*) cat "\$token_file" ;;
+*) cat "\$token_file" ;;
 esac
 ASKPASS
-sed -i "s|__TOKEN_FILE__|$token_file|" "$askpass_script"
 chmod 755 "$askpass_script"
 
 if [ ! -d "$APP_DIR/.git" ]; then
