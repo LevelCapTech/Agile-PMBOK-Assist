@@ -7,7 +7,7 @@
 - Ubuntu 22.04 LTS
 - sudo 権限を持つユーザーで作業すること（root 直ログインは禁止）
 - 事前に SSH 公開鍵を登録済みであること
-- 公開ポートは 443/TCP のみ（SSH は管理 IP のみ許可）
+- 公開ポートは 443/TCP のみ（SSH は全 IP 許可）
 
 ## 使い方（概要）
 
@@ -30,6 +30,7 @@ sudo bash infra/setup/90-verify/10-healthcheck.sh
 - SSH は全 IP 許可のため、IP 制限が使えない環境向けの構成です。
 - fail2ban と鍵認証を前提に運用し、ブロック状況の監視を必須としてください（`setup/10-security/30-fail2ban.sh`、`setup/10-security/10-ssh.sh` を参照）。
 - `10-ssh.sh` は初期設定済み（PermitRootLogin no 前提）の確認のみ実行します（PubkeyAuthentication yes を検証）。
+- GitHub App の Installation Token を使って HTTPS で pull します。`GITHUB_APP_ID`、`GITHUB_INSTALLATION_ID`、`GITHUB_APP_PEM_PATH` を `.env` に設定し、`APP_REPO_URL` は HTTPS 形式にしてください。
 
 ## ディレクトリ構成
 

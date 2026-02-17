@@ -6,7 +6,7 @@
   - さくらVPS（Ubuntu 22.04 LTS）上で **本番環境** 向けの初回インフラ整備を自動化する。
   - OS 基本整備として `apt update/upgrade`、タイムゾーン（JST）、ロケール（`ja_JP.UTF-8`）を適用する。
   - `.bashrc`、`/etc/issue`、`/etc/update-motd.d` を整備し、運用向けの表示・履歴設定を行う。
-  - Git を整備して GitHub からアプリ/スクリプトをクローンできるようにする。
+  - Git を整備し、GitHub App の Installation Token を使って HTTPS でアプリ/スクリプトを取得できるようにする。
   - SSR 前提の Next.js（`next build` + `next start`）を systemd 管理で起動する。
   - MySQL をローカルバインドで初期化し、`prisma migrate deploy` を実行できる状態にする。
   - Nginx によるリバースプロキシ、rate limit、fail2ban 連携を設定する。
@@ -16,7 +16,7 @@
 - 非機能要件:
   - Docker は使用しない。
   - Node LTS を使用し、NodeSource の手順で導入する。
-  - 外部公開ポートは 443 のみ。SSH は管理 IP のみ許可する。
+  - 外部公開ポートは 443 のみ。SSH は全 IP 許可（fail2ban 前提）。
   - 監視 UI（Prometheus/Grafana）は **別サーバー** 側に設置し、本サーバーには設置しない。
   - secrets は Git 管理外とし、実値は `infra/env/.env` に配置する（`sample.env` はテンプレート）。
   - root 直ログインは禁止し、sudo 可能な専用ユーザーで運用する。
@@ -30,7 +30,7 @@
 - 外部依存・Secrets の扱い:
   - Node LTS、MySQL、Nginx、fail2ban、certbot、postfix、node_exporter、mysqld_exporter を OS パッケージで導入する。
   - Prometheus/Grafana は **監視サーバー側** で運用する。
-  - secrets（MySQL パスワード、SMTP 認証情報、Basic 認証、Deploy Key 等）は Git 管理外で、サーバー側に安全に配置する。
+  - secrets（MySQL パスワード、SMTP 認証情報、Basic 認証、GitHub App PEM 等）は Git 管理外で、サーバー側に安全に配置する。
 
 ## 3. 設計方針
 
@@ -60,11 +60,11 @@
 | 6 | infra/setup/00-base/10-locale.sh | タイムゾーン/ロケール設定 |
 | 7 | infra/setup/00-base/20-shell.sh | `.bashrc` の履歴/alias 設定 |
 | 8 | infra/setup/00-base/30-motd.sh | `/etc/issue` と `/etc/update-motd.d` の整備 |
-| 9 | infra/setup/10-security/10-ssh.sh | root ログイン禁止と sshd 設定 |
-| 10 | infra/setup/10-security/20-ufw.sh | 443 のみ公開、SSH は管理 IP 制限 |
+| 9 | infra/setup/10-security/10-ssh.sh | root ログイン禁止と鍵認証の確認 |
+| 10 | infra/setup/10-security/20-ufw.sh | 443 のみ公開、SSH は全 IP 許可（fail2ban 前提） |
 | 11 | infra/setup/10-security/30-fail2ban.sh | fail2ban jail の配置 |
 | 12 | infra/setup/20-runtime/10-node.sh | Node LTS の導入 |
-| 13 | infra/setup/20-runtime/20-git.sh | Git 導入と clone 用設定 |
+| 13 | infra/setup/20-runtime/20-git.sh | Git 導入と GitHub App トークン取得に必要な依存準備 |
 | 14 | infra/setup/30-db/10-mysql.sh | MySQL セキュア初期化 |
 | 15 | infra/setup/30-db/20-prisma.sh | `prisma migrate deploy` 用の準備 |
 | 16 | infra/setup/40-web/10-nginx.sh | Nginx reverse proxy / rate limit 設定 |
@@ -116,11 +116,14 @@ infra/
 
 | 変数名 | 用途 | 例（ダミー） |
 | --- | --- | --- |
-| APP_REPO_URL | Next.js リポジトリ URL | git@github.com:example/app.git |
+| APP_REPO_URL | Next.js リポジトリ URL | https://github.com/example/app.git |
 | APP_BRANCH | デプロイ対象ブランチ | main |
 | APP_DIR | 配置先ディレクトリ | /var/www/app |
 | APP_USER | 実行ユーザー | appuser |
-| NODE_VERSION | Node LTS バージョン | 20.x |
+| NODE_VERSION | Node LTS バージョン | 20 |
+| GITHUB_APP_ID | GitHub App ID | 123456 |
+| GITHUB_INSTALLATION_ID | GitHub App Installation ID | 12345678 |
+| GITHUB_APP_PEM_PATH | GitHub App PEM パス | /etc/app/github-app.pem |
 | MYSQL_ROOT_PASSWORD | MySQL root パスワード | `***` |
 | MYSQL_APP_DB | アプリ用 DB 名 | app_db |
 | MYSQL_APP_USER | アプリ用 DB ユーザー | app_user |
@@ -144,9 +147,10 @@ infra/
 - `infra/env/.env` は `.gitignore` で除外する。
 - 環境変数ファイルにはパスワードや SMTP 認証情報などの機密情報を含むため、以下のセキュリティ要件を満たすこと。
   - `infra/bootstrap.sh` または各セットアップスクリプトで、`chmod 600 infra/env/.env` を実行し、所有者のみが読み書き可能なパーミッション (rw-------) に設定する。
-  - `infra/env/.env` の所有者はアプリケーションの実行ユーザー（例: `appuser`）または管理ユーザーとし、不必要に共有アカウントからアクセスできないようにする。
-  - バックアップやログに `infra/env/.env` の内容が含まれないようにし、ダンプ取得時はマスクや除外ルールを適用する。
+- `infra/env/.env` の所有者はアプリケーションの実行ユーザー（例: `appuser`）または管理ユーザーとし、不必要に共有アカウントからアクセスできないようにする。
+- バックアップやログに `infra/env/.env` の内容が含まれないようにし、ダンプ取得時はマスクや除外ルールを適用する。
 - `infra/env/.env` のパーミッションは `chmod 600`、所有者は `appuser` など最小権限で保持する。
+- GitHub App の PEM ファイルは `chmod 600`、所有者は `root` など最小権限で管理する。
 
 ### 3.4 ベースOS整備（本番向け）
 
@@ -155,7 +159,7 @@ infra/
 - タイムゾーン: `timedatectl set-timezone Asia/Tokyo`。
 - ロケール: `locale-gen ja_JP.UTF-8` と `localectl set-locale LANG=ja_JP.UTF-8 LC_ALL=ja_JP.UTF-8`。
 - logrotate: `systemctl status logrotate.timer` で有効化を確認する。
-- Node LTS は NodeSource の手順で導入する（`curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -` → `apt install -y nodejs`）。
+- Node LTS は NodeSource の apt リポジトリを利用して導入する（keyring + sources.list 方式）。
 - `.bashrc` に以下を追記する。
 
 ```
@@ -351,7 +355,7 @@ root@app01.example.com alert@your-domain
 - 新しい sudo ユーザーと SSH 公開鍵を登録した後に `PermitRootLogin no` を適用する。
 - `ufw allow OpenSSH` を先に実行し、`ufw enable` は最後に行う。
 - 変更前後で `sshd -t` を実行し、設定の有効性を確認する。
-- UFW 例: `ufw default deny incoming`、`ufw allow 443/tcp`、`ufw allow from <ADMIN_IP> to any port 22`。
+- UFW 例: `ufw default deny incoming`、`ufw allow 443/tcp`、`ufw allow 22/tcp`。
 
 ### 3.16 ログ設計
 
@@ -402,8 +406,8 @@ flowchart TD
 | ---- | --- | ----- | ----------------------- | --------- | --------------- |
 | H-00 | VPS 初期リセット | 新規 VPS の確保 | さくら VPS コンソールからサーバーリセットを依頼する | 初期化完了通知の確認 | 新規 VPS にログイン可能 |
 | H-01 | VPS 事前準備 | セキュアな初期状態を整える | DNS 設定（A レコード）、新規 sudo ユーザー作成、SSH 公開鍵登録、root 直ログイン禁止を計画する | SSH で sudo ユーザーがログインできること | root 無効化前に新規ユーザーでログイン可能 |
-| H-02 | Git/Clone 準備 | アプリと整備スクリプトを取得する | Git をインストールし、Deploy Key で `APP_REPO_URL` と `infra` リポジトリをクローンする | `git clone` が成功すること | `/var/www/app` と `/opt/infra` に配置済み |
-| H-03 | 環境値/Secrets 配置 | 秘密情報の安全な配置 | `infra/env/.env` を用意し、`.env.production`、MySQL パスワード、SMTP 認証情報、Basic 認証ファイルをサーバーに配置する | Git 管理外であること | secrets がサーバーにのみ存在 |
+| H-02 | Git/Clone 準備 | アプリと整備スクリプトを取得する | Git をインストールし、GitHub App の Installation Token で `APP_REPO_URL` と `infra` リポジトリをクローンする | `git clone` が成功すること | `/var/www/app` と `/opt/infra` に配置済み |
+| H-03 | 環境値/Secrets 配置 | 秘密情報の安全な配置 | `infra/env/.env` を用意し、`.env.production`、MySQL パスワード、SMTP 認証情報、Basic 認証ファイル、GitHub App PEM をサーバーに配置する | Git 管理外であること | secrets がサーバーにのみ存在 |
 | H-04 | Bootstrap 実行 | 自動整備の開始 | `infra/bootstrap.sh` を実行し、各 `setup/*` が完走することを確認する | `nginx -t` と `systemctl status` の確認 | Next.js/MySQL/Nginx/Exporters/Postfix が起動 |
 | H-05 | アプリ初期化 | DB と SSR を同期 | `npm ci` → `npm run build` → `prisma migrate deploy` を実行し、`systemctl restart nextjs` | migrate の成功 | SSR が 443 で応答 |
 | H-06 | 監視疎通確認 | 監視対象として登録 | 監視サーバーから `/metrics` を取得し、IP 制限が有効か確認 | 監視 IP のみ取得可能 | node_exporter 値が取得可能 |
@@ -414,7 +418,7 @@ flowchart TD
 - 作業に必要な資料:
   - `.github/copilot/00-index.md` 〜 `60-ci-quality-gates.md`
   - `infra/README.md`（運用手順書）
-  - 対象ドメイン、IP 制限用の許可リスト、SMTP 認証情報
+  - 対象ドメイン、IP 制限用の許可リスト、SMTP 認証情報、GitHub App ID/Installation ID/PEM
 
 ## 6. テスト戦略
 
@@ -451,7 +455,7 @@ flowchart TD
   - `systemctl stop nextjs.service` でアプリ停止し、Nginx 設定をバックアップから戻す。
   - 証明書更新に失敗した場合は `certbot` を再実行し、TLS-ALPN-01/DNS-01 を切り替える。
 - 監視・運用上の注意:
-  - 公開ポートは 443 のみ。SSH は管理 IP 制限。
+  - 公開ポートは 443 のみ。SSH は全 IP 許可（fail2ban 前提）。
   - `/metrics` は監視 IP のみ許可し、Basic 認証を併用する場合は secrets 管理外とする。
 - デプロイ運用の前提:
   - 本タスクのスコープでは CI/CD（自動デプロイ）は対象外とし、デプロイは手動実行（例: 管理者による `git pull` / `npm run build` / `systemctl restart` など）を前提とする。
