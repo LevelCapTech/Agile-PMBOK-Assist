@@ -1,68 +1,104 @@
 # GitHub App からの初回 Clone ガイド
 
 GitHub App を対象リポジトリにインストールしてから、VPS で初回 clone を実行するまでの手順です。
-詳細な infra 全体の運用は [README.md](README.md) を参照してください。
 
-## 事前注意
+## GitHub側（準備）
 
-**重要**: `agile-pmbok-assist-pull.timer` による自動 pull は `reset --hard` で同期するため、未コミットのローカル変更は破棄されます（未追跡ファイルは残ります）。
+### 1) GitHub App を対象リポジトリに Install
 
-## 1. GitHub App を対象リポジトリに Install
+* GitHub → **Settings** → **Developer settings** → **GitHub Apps** →（対象App）→ **Install App**
+* インストール先（Org/ユーザー）を選ぶ
+* Repository access は **Only select repositories** を選んで対象repoを選択（Allでも可）
+* **Install** を実行
 
-1. GitHub の「Developer settings」から GitHub App を作成する。
-2. Permissions は **Contents: Read-only** を付与する。
-3. App を対象リポジトリにインストールする（Only select repositories で対象 repo を選択）。
-4. App の設定画面で **App ID** を控える。
-5. Install 画面の URL 末尾から **Installation ID** を控える。
-6. 「Generate a private key」で PEM を発行する。
-   - VPS に配置する。
-   - GitHub やリポジトリには置かず、Git 管理外にする。
-   - 誤登録防止のため `.gitignore` に `*.pem` などのパターンを記載する。
+### 2) 権限（Permissions）を付与
 
-## 2. VPS に PEM を配置
+* App settings → **Permissions & events**
+* **Repository permissions → Contents: Read**（最低限）
+* 権限を変更した場合：
 
-```bash
-sudo install -d -m 700 /etc/agile-pmbok-assist
-sudo install -m 600 ~/Downloads/app-name.2024-01-15.private-key.pem /etc/agile-pmbok-assist/github-app.pem
-sudo chown root:root /etc/agile-pmbok-assist/github-app.pem
-```
+  * 変更後に **Reinstall / Update permissions**（表示される場合）を実行して反映
 
-※ PEM のファイル名はダウンロードした実ファイル名に合わせて置き換えてください（`app-name.YYYY-MM-DD.private-key.pem` 形式の名前になります）。
+### 3) 秘密鍵（PEM）を生成してダウンロード
 
-## 3. infra/.env に GitHub App 情報を設定
+* App settings → **Private keys** → **Generate a private key**
+* `.pem` がダウンロードされる（これが唯一。GitHubは秘密鍵を再表示しない）
 
-`infra/.env.sample` を `infra/.env` にコピーし、以下を設定します。
+### 4) App ID / Installation ID を控える
 
-```bash
-GITHUB_APP_ID=123456
-GITHUB_INSTALLATION_ID=12345678
-GITHUB_APP_PEM_PATH=/etc/agile-pmbok-assist/github-app.pem
-APP_REPO_URL=https://github.com/example/agile-pmbok-assist.git
-APP_BRANCH=main
-APP_DIR=/opt/agile-pmbok-assist_repo
-APP_USER=appuser
-```
+* **App ID**：App settings の画面に表示されている値を控える
+* **Installation ID**：Install App 後に開くインストール画面のURLに含まれる
+  例：`.../settings/installations/<ID>` の `<ID>`
 
-## 4. 初回 Clone を実行
+---
 
-1. bootstrap を実行して systemd を配置する。
+## VPS側（JWT → Installation Token → clone）
+
+### 5) 必要コマンドの確認（入ってなければ入れる）
+
+* 必要：`git`, `curl`, `openssl`, `jq`
+
+例（Rocky系なら）：
 
 ```bash
-sudo bash infra/bootstrap.sh
+sudo dnf install -y git curl openssl jq
 ```
 
-2. 初回 pull（clone）を実行する。
+### 6) 秘密鍵（PEM）をVPSに配置
+
+例：
 
 ```bash
-sudo systemctl start agile-pmbok-assist-pull.service
+sudo mkdir -p /opt/secrets
+sudo cp ./YOUR_APP_PRIVATE_KEY.pem /opt/secrets/github-app.pem
+sudo chmod 600 /opt/secrets/github-app.pem
 ```
 
-3. clone の結果を確認する。
+### 7) 環境変数をセット（App ID / Installation ID / PEMパス / リポジトリ）
 
 ```bash
-sudo -u appuser -- git -C /opt/agile-pmbok-assist_repo status
+export GITHUB_APP_ID="123456"
+export GITHUB_INSTALLATION_ID="987654321"
+export GITHUB_APP_PEM_PATH="/opt/secrets/github-app.pem"
+
+export OWNER="LevelCapTech"
+export REPO="Agile-PMBOK-Assist"
 ```
 
-## 5. 補足
+### 8) JWT を作る（bash + openssl）
 
-- 監視間隔の変更や停止は `agile-pmbok-assist-pull.timer` を管理してください。
+```bash
+b64url() { openssl base64 -A | tr '+/' '-_' | tr -d '='; }
+
+now=$(date +%s)
+iat=$((now-60))
+exp=$((now+540)) # 9分後
+
+header='{"alg":"RS256","typ":"JWT"}'
+payload=$(printf '{"iat":%d,"exp":%d,"iss":"%s"}' "$iat" "$exp" "$GITHUB_APP_ID")
+
+h64=$(printf '%s' "$header" | b64url)
+p64=$(printf '%s' "$payload" | b64url)
+data="${h64}.${p64}"
+
+sig=$(printf '%s' "$data" | openssl dgst -sha256 -sign "$GITHUB_APP_PEM_PATH" | b64url)
+export JWT="${data}.${sig}"
+```
+
+### 9) JWT で Installation Token を発行（GitHub API）
+
+```bash
+export INSTALL_TOKEN="$(
+  curl -sS -X POST \
+    -H "Authorization: Bearer ${JWT}" \
+    -H "Accept: application/vnd.github+json" \
+    "https://api.github.com/app/installations/${GITHUB_INSTALLATION_ID}/access_tokens" \
+  | jq -r .token
+)"
+```
+
+### 10) Installation Token で HTTPS clone（初回）
+
+```bash
+git clone "https://x-access-token:${INSTALL_TOKEN}@github.com/${OWNER}/${REPO}.git"
+```
