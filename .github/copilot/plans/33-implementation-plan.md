@@ -118,7 +118,7 @@ infra/
 | --- | --- | --- |
 | APP_REPO_URL | Next.js リポジトリ URL | https://github.com/example/app.git |
 | APP_BRANCH | デプロイ対象ブランチ | main |
-| APP_DIR | 配置先ディレクトリ | /opt/myapp/repo |
+| APP_DIR | 配置先ディレクトリ | /opt/agile-pmbok-assist_repo |
 | APP_USER | 実行ユーザー | appuser |
 | APP_ENV_FILE | アプリ環境変数ファイル | /etc/myapp/app.env |
 | APP_PORT | Nginx からの proxy 先ポート | 4000 |
@@ -240,9 +240,9 @@ After=network.target mysql.service
 [Service]
 Type=simple
 User=appuser
-WorkingDirectory=/opt/myapp/repo
+WorkingDirectory=/opt/agile-pmbok-assist_repo
 EnvironmentFile=/etc/myapp/app.env
-ExecStart=/usr/bin/node /opt/myapp/repo/node_modules/next/dist/bin/next start -p ${PORT}
+ExecStart=/usr/bin/node /opt/agile-pmbok-assist_repo/node_modules/next/dist/bin/next start -p ${PORT}
 Restart=always
 RestartSec=5
 LimitNOFILE=65535
@@ -408,7 +408,7 @@ flowchart TD
 | ---- | --- | ----- | ----------------------- | --------- | --------------- |
 | H-00 | VPS 初期リセット | 新規 VPS の確保 | さくら VPS コンソールからサーバーリセットを依頼する | 初期化完了通知の確認 | 新規 VPS にログイン可能 |
 | H-01 | VPS 事前準備 | セキュアな初期状態を整える | DNS 設定（A レコード）、新規 sudo ユーザー作成、SSH 公開鍵登録、root 直ログイン禁止を計画する | SSH で sudo ユーザーがログインできること | root 無効化前に新規ユーザーでログイン可能 |
-| H-02 | Git/Clone 準備 | アプリと整備スクリプトを取得する | GitHub App での pull 自動化を構築済みであることを確認し、`/opt/myapp/repo` と `infra` リポジトリを配置する | `git clone` が成功すること | `/opt/myapp/repo` と `/opt/infra` に配置済み |
+| H-02 | Git/Clone 準備 | アプリと整備スクリプトを取得する | GitHub App での pull 自動化を構築済みであることを確認し、`/opt/agile-pmbok-assist_repo` と `infra` リポジトリを配置する | `git clone` が成功すること | `/opt/agile-pmbok-assist_repo` と `/opt/infra` に配置済み |
 | H-03 | 環境値/Secrets 配置 | 秘密情報の安全な配置 | `infra/env/.env` を用意し、`.env.production`、MySQL パスワード、SMTP 認証情報、Basic 認証ファイル、GitHub App PEM をサーバーに配置する | Git 管理外であること | secrets がサーバーにのみ存在 |
 | H-04 | Bootstrap 実行 | 自動整備の開始 | `infra/bootstrap.sh` を実行し、各 `setup/*` が完走することを確認する | `nginx -t` と `systemctl status` の確認 | Next.js/MySQL/Nginx/Exporters/Postfix が起動 |
 | H-05 | アプリ初期化 | DB と SSR を同期 | `infra/setup/40-web/deploy.sh` を実行し、`systemctl restart nextjs` を確認する | build の成功 | SSR が 443 で応答 |

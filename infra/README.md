@@ -8,7 +8,7 @@
 - sudo 権限を持つユーザーで作業すること（root 直ログインは禁止）
 - 事前に SSH 公開鍵を登録済みであること
 - 公開ポートは 443/TCP のみ（SSH は全 IP 許可）
-- ソース配置は `/opt/myapp/repo`、アプリ環境変数は `/etc/myapp/app.env` を想定します。
+- ソース配置は `/opt/agile-pmbok-assist_repo`、アプリ環境変数は `/etc/myapp/app.env` を想定します。
 - `/etc/myapp/app.env` の `PORT` は `APP_PORT` と同じ値にしてください。
 - GitHub App での pull 自動化は別途構築済み前提で、`deploy.sh` はビルドと再起動のみ実行します。
 
