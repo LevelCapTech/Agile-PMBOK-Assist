@@ -27,6 +27,8 @@ sudo bash infra/setup/90-verify/10-healthcheck.sh
 - `.env` には MySQL/SMTP などの機密情報が含まれるため、Git 管理外にしてください。
 - Nginx は 443 のみ公開し、80 は閉じたままです（TLS-ALPN-01 を使用）。
 - `/metrics` は `METRICS_ALLOW_IPS` で指定した監視サーバーの IP のみ許可します。
+- SSH は全IP許可のため、fail2ban と鍵認証を前提に運用してください。
+- `10-ssh.sh` は初期設定済みの前提で確認のみ実行します。
 
 ## ディレクトリ構成
 
