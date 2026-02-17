@@ -26,11 +26,11 @@ if ! sshd -t; then
 fi
 
 sshd_dump=$(sshd -T)
-if ! echo "$sshd_dump" | grep -iq '^permitrootlogin no$'; then
+if ! echo "$sshd_dump" | grep -Eiq '^permitrootlogin[[:space:]]+no[[:space:]]*$'; then
   echo "[10-ssh] PermitRootLogin が no ではありません。" >&2
   exit 1
 fi
-if ! echo "$sshd_dump" | grep -iq '^pubkeyauthentication yes$'; then
+if ! echo "$sshd_dump" | grep -Eiq '^pubkeyauthentication[[:space:]]+yes[[:space:]]*$'; then
   echo "[10-ssh] PubkeyAuthentication が yes ではありません。" >&2
   exit 1
 fi
