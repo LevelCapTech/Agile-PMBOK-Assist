@@ -19,11 +19,17 @@ if [ ! -f "$APP_ENV_FILE" ]; then
   echo "[30-nextjs-service] APP_ENV_FILE が見つかりません: $APP_ENV_FILE" >&2
   exit 1
 fi
+if [[ "$APP_ENV_FILE" != /* ]]; then
+  echo "[30-nextjs-service] APP_ENV_FILE は絶対パスで指定してください。" >&2
+  exit 1
+fi
 
 service_file="/etc/systemd/system/nextjs.service"
 if [ -f "$service_file" ]; then
   cp "$service_file" "${service_file}.bak.$(date +%s)"
 fi
+
+port_placeholder="\$PORT"
 
 cat <<SERVICE > "$service_file"
 [Unit]
@@ -37,7 +43,7 @@ User=${APP_USER}
 WorkingDirectory=${APP_DIR}
 Environment=NODE_ENV=production
 EnvironmentFile=${APP_ENV_FILE}
-ExecStart=/usr/bin/node ${APP_DIR}/node_modules/next/dist/bin/next start -p \$PORT
+ExecStart=/usr/bin/node ${APP_DIR}/node_modules/next/dist/bin/next start -p ${port_placeholder}
 Restart=always
 RestartSec=5
 LimitNOFILE=65535
