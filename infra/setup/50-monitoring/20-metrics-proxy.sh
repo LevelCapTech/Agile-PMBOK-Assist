@@ -13,7 +13,7 @@ if [ -n "${METRICS_ALLOW_IPS:-}" ]; then
   IFS=' ' read -r -a metrics_ips <<< "$METRICS_ALLOW_IPS"
 fi
 if [ "${#metrics_ips[@]}" -eq 0 ]; then
-  echo "[20-metrics-proxy][WARNING] METRICS_ALLOW_IPS 未指定のため全IP許可になります。セキュリティリスクがあるため明示指定してください。" >&2
+  echo "[20-metrics-proxy][WARNING] METRICS_ALLOW_IPS が未指定のため全 IP 許可になります。セキュリティリスクがあるため明示指定してください。" >&2
   allow_lines+=("    allow all;")
 else
   for ip in "${metrics_ips[@]}"; do
