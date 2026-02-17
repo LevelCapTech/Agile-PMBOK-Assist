@@ -132,7 +132,7 @@ infra/
 | MYSQL_BIND_ADDRESS | MySQL bind | 127.0.0.1 |
 | ACME_DOMAIN | 証明書対象ドメイン | app.example.com |
 | ACME_CHALLENGE | ACME 方式 | tls-alpn-01 / dns-01 |
-| METRICS_ALLOW_IPS | 監視サーバーの IP（未指定なら全IP許可） | 203.0.113.10 |
+| METRICS_ALLOW_IPS | 監視サーバーの IP（未指定なら全IP許可・明示指定推奨） | 203.0.113.10 |
 | POSTFIX_RELAY_HOST | さくら SMTP | smtp.sakura.ne.jp |
 | POSTFIX_RELAY_PORT | SMTP ポート | 587 |
 | POSTFIX_RELAY_USER | SMTP ユーザー | user@example.com |
@@ -325,7 +325,7 @@ maxretry = 5
 - exporter は `127.0.0.1` にバインドし、Nginx を経由して `/metrics` を 443 で公開する。
 - `/metrics/node` は `proxy_pass http://127.0.0.1:9100/metrics`、`/metrics/mysql` は `proxy_pass http://127.0.0.1:9104/metrics` を設定する。
 - `/metrics` は用途別に `/metrics/node` と `/metrics/mysql` に分割し、単一パスで混在させない。
-- `/metrics` 配下は `METRICS_ALLOW_IPS` 指定時に許可IPのみ許可し、未指定の場合は全IP許可する。
+- `/metrics` 配下は `METRICS_ALLOW_IPS` 指定時に許可IPのみ許可し、未指定の場合は全IP許可（明示指定を推奨）。
 - mysqld_exporter 用に `exporter` ユーザーを作成し、`PROCESS, REPLICATION CLIENT, SELECT` を付与する。
 - mysqld_exporter は `/etc/.mysqld_exporter.cnf` に認証情報を置き、`--web.listen-address=127.0.0.1:9104` で起動する。
 - `/etc/.mysqld_exporter.cnf` は `[client]` で `user`/`password` を記載し、`chmod 600` を適用する。
