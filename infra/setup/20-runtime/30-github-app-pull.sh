@@ -20,7 +20,7 @@ if [ ! -f "$GITHUB_APP_PEM_PATH" ]; then
   exit 1
 fi
 pem_perm="$(stat -c '%a' "$GITHUB_APP_PEM_PATH" 2>/dev/null || true)"
-if ! printf '%s' "$pem_perm" | grep -Eq '^[46]00$'; then
+if ! printf '%s' "$pem_perm" | grep -Eq '^(400|600)$'; then
   echo "[30-github-app-pull] GITHUB_APP_PEM_PATH のパーミッションを 600 または 400 にしてください: ${pem_perm:-unknown}" >&2
   exit 1
 fi
@@ -68,7 +68,7 @@ if [ ! -f "$GITHUB_APP_PEM_PATH" ]; then
   exit 1
 fi
 pem_perm="$(stat -c '%a' "$GITHUB_APP_PEM_PATH" 2>/dev/null || true)"
-if ! printf '%s' "$pem_perm" | grep -Eq '^[46]00$'; then
+if ! printf '%s' "$pem_perm" | grep -Eq '^(400|600)$'; then
   echo "[githubapp-pull] GITHUB_APP_PEM_PATH のパーミッションを 600 または 400 にしてください: ${pem_perm:-unknown}" >&2
   exit 1
 fi
@@ -151,6 +151,7 @@ if ! sudo -u "$APP_USER" -- git -C "$APP_DIR" diff --quiet || \
   ! sudo -u "$APP_USER" -- git -C "$APP_DIR" diff --cached --quiet; then
   echo "[githubapp-pull] ローカル変更があるため reset --hard で破棄します。" >&2
 fi
+# ローカル変更の有無に関わらず最新のコミットへ合わせる。
 sudo -u "$APP_USER" -- git -C "$APP_DIR" reset --hard "origin/$APP_BRANCH"
 SCRIPT
 
