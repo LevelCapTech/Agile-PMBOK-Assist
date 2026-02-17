@@ -23,7 +23,7 @@ GitHub App を対象リポジトリにインストールしてから、VPS で�
 
 ```bash
 sudo install -d -m 700 /etc/agile-pmbok-assist
-sudo install -m 600 ~/Downloads/your-app-name.pem /etc/agile-pmbok-assist/github-app.pem
+sudo install -m 600 ~/Downloads/agile-pmbok-assist-app.pem /etc/agile-pmbok-assist/github-app.pem
 sudo chown root:root /etc/agile-pmbok-assist/github-app.pem
 ```
 
@@ -42,8 +42,6 @@ APP_USER=appuser
 ```
 
 ## 4. 初回 Clone を実行
-
-実行前に、`agile-pmbok-assist-pull.timer` の自動 pull は `reset --hard` で同期する点に注意してください。
 
 1. bootstrap を実行して systemd を配置する。
 
