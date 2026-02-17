@@ -19,6 +19,11 @@ if [ ! -f "$GITHUB_APP_PEM_PATH" ]; then
   echo "[30-github-app-pull] GITHUB_APP_PEM_PATH が見つかりません: $GITHUB_APP_PEM_PATH" >&2
   exit 1
 fi
+pem_perm="$(stat -c '%a' "$GITHUB_APP_PEM_PATH" 2>/dev/null || true)"
+if ! printf '%s' "$pem_perm" | grep -Eq '^[46]00$'; then
+  echo "[30-github-app-pull] GITHUB_APP_PEM_PATH のパーミッションを 600 または 400 にしてください: ${pem_perm:-unknown}" >&2
+  exit 1
+fi
 if ! id -u "$APP_USER" >/dev/null 2>&1; then
   echo "[30-github-app-pull] APP_USER が存在しません。先にユーザーを作成してください。" >&2
   exit 1
@@ -62,6 +67,11 @@ if [ ! -f "$GITHUB_APP_PEM_PATH" ]; then
   echo "[githubapp-pull] GITHUB_APP_PEM_PATH が見つかりません: $GITHUB_APP_PEM_PATH" >&2
   exit 1
 fi
+pem_perm="$(stat -c '%a' "$GITHUB_APP_PEM_PATH" 2>/dev/null || true)"
+if ! printf '%s' "$pem_perm" | grep -Eq '^[46]00$'; then
+  echo "[githubapp-pull] GITHUB_APP_PEM_PATH のパーミッションを 600 または 400 にしてください: ${pem_perm:-unknown}" >&2
+  exit 1
+fi
 if ! id -u "$APP_USER" >/dev/null 2>&1; then
   echo "[githubapp-pull] APP_USER が存在しません。先にユーザーを作成してください。" >&2
   exit 1
@@ -85,6 +95,7 @@ need sudo
 b64url() { openssl base64 -e -A | tr '+/' '-_' | tr -d '='; }
 
 now="$(date +%s)"
+# 1分の時計ずれを吸収し、JWT の有効期限は10分未満にする。
 iat=$((now-60))
 exp=$((now+540))
 
@@ -109,15 +120,27 @@ if [ -z "$token" ] || [ "$token" = "null" ]; then
 fi
 
 basic="$(printf 'x-access-token:%s' "$token" | openssl base64 -A)"
-git_header="Authorization: Basic $basic"
+
+tmp_dir="$(mktemp -d)"
+cleanup() { rm -rf "$tmp_dir"; }
+trap cleanup EXIT
+chown "$APP_USER":"$APP_USER" "$tmp_dir"
+
+git_config="${tmp_dir}/git-config"
+cat <<EOF > "$git_config"
+[http]
+  extraHeader = Authorization: Basic ${basic}
+EOF
+chown "$APP_USER":"$APP_USER" "$git_config"
+chmod 600 "$git_config"
 
 if [ ! -d "$APP_DIR/.git" ]; then
   mkdir -p "$APP_DIR"
   chown "$APP_USER":"$APP_USER" "$APP_DIR"
-  sudo -u "$APP_USER" -- git -c http.extraHeader="$git_header" clone "$APP_REPO_URL" "$APP_DIR"
+  sudo -u "$APP_USER" -- git -c "include.path=$git_config" clone "$APP_REPO_URL" "$APP_DIR"
 fi
 
-sudo -u "$APP_USER" -- git -C "$APP_DIR" -c http.extraHeader="$git_header" fetch origin "$APP_BRANCH"
+sudo -u "$APP_USER" -- git -C "$APP_DIR" -c "include.path=$git_config" fetch origin "$APP_BRANCH"
 sudo -u "$APP_USER" -- git -C "$APP_DIR" reset --hard "origin/$APP_BRANCH"
 SCRIPT
 
