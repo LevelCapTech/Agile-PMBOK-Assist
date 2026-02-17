@@ -36,9 +36,11 @@ for name in npm npx node flock; do
   case "$name" in
     npm) npm_bin=$cmd ;;
     npx) npx_bin=$cmd ;;
+    node) node_bin=$cmd ;;
     flock) flock_bin=$cmd ;;
   esac
 done
+: "$node_bin"
 
 DATABASE_URL_VALUE="$(build_database_url)"
 
@@ -47,7 +49,15 @@ set -a
 source "$APP_ENV_FILE"
 set +a
 
-if [ -n "${APP_PORT:-}" ] && [ -n "${PORT:-}" ] && [ "$APP_PORT" != "$PORT" ]; then
+if [ -z "${APP_PORT:-}" ]; then
+  echo "[deploy] APP_PORT が未設定です。" >&2
+  exit 1
+fi
+if [ -z "${PORT:-}" ]; then
+  echo "[deploy] APP_ENV_FILE の PORT が未設定です。" >&2
+  exit 1
+fi
+if [ "$APP_PORT" != "$PORT" ]; then
   echo "[deploy] APP_PORT と APP_ENV_FILE の PORT が一致していません: ${APP_PORT} / ${PORT}" >&2
   echo "[deploy] Nginx の proxy 先ポートとアプリの PORT を一致させてください。" >&2
   exit 1
