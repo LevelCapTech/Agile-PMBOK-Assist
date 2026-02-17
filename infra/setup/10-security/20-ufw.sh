@@ -28,7 +28,7 @@ if [ -n "${METRICS_ALLOW_IPS:-}" ]; then
   IFS=' ' read -r -a metrics_ips <<< "$METRICS_ALLOW_IPS"
 fi
 if [ "${#metrics_ips[@]}" -eq 0 ]; then
-  echo "[20-ufw][WARNING] METRICS_ALLOW_IPS が未指定のため全IP許可になります。" >&2
+  echo "[20-ufw][WARNING] METRICS_ALLOW_IPS 未指定のため全IP許可になります。セキュリティリスクがあるため明示指定してください。" >&2
   for port in "${metrics_ports[@]}"; do
     ufw allow "${port}/tcp"
   done
