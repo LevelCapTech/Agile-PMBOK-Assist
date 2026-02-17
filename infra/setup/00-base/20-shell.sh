@@ -9,7 +9,7 @@ fi
 
 : "${APP_USER:?APP_USER が未設定です}"
 
-read -r -d '' BASHRC_BLOCK <<'BLOCK'
+BASHRC_BLOCK=$(cat <<'BLOCK'
 # ---- infra bootstrap ----
 export HISTTIMEFORMAT='%F %T '
 alias ll='ls -alF'
@@ -18,6 +18,7 @@ export HISTSIZE=10000
 export HISTFILESIZE=20000
 # ---- infra bootstrap ----
 BLOCK
+)
 
 append_block() {
   local target="$1"
