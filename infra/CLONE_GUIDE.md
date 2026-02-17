@@ -10,7 +10,7 @@ GitHub App を対象リポジトリにインストールしてから、VPS で�
 3. App を対象リポジトリにインストールする（Only select repositories で対象 repo を選択）。
 4. App の設定画面で **App ID** を控える。
 5. Install 画面の URL 末尾から **Installation ID** を控える。
-6. 「Generate a private key」で PEM を発行し、VPS に配置する（GitHub にはアップロードしない）。
+6. 「Generate a private key」で PEM を発行し、VPS に配置する（GitHub やリポジトリには置かず、Git 管理外にする）。
 
 ## 2. VPS に PEM を配置
 
@@ -56,5 +56,5 @@ sudo -u appuser -- git -C /opt/agile-pmbok-assist_repo status
 
 ## 5. 補足
 
-- `agile-pmbok-assist-pull.service` は `reset --hard` で同期するため、ローカル変更は破棄されます。
+- `agile-pmbok-assist-pull.timer` による自動 pull は `reset --hard` で同期するため、ローカル変更は破棄されます。
 - 監視間隔の変更や停止は `agile-pmbok-assist-pull.timer` を管理してください。
