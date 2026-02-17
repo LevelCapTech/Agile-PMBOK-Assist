@@ -18,7 +18,7 @@
   - Node LTS を使用し、NodeSource の手順で導入する。
   - 外部公開ポートは 443 のみ。SSH は全 IP 許可（fail2ban 前提）。
   - 監視 UI（Prometheus/Grafana）は **別サーバー** 側に設置し、本サーバーには設置しない。
-  - secrets は Git 管理外とし、実値は `infra/env/.env` に配置する（`sample.env` はテンプレート）。
+  - secrets は Git 管理外とし、実値は `infra/.env` に配置する（`infra/.env.sample` はテンプレート）。
   - root 直ログインは禁止し、sudo 可能な専用ユーザーで運用する。
 
 - `.github/copilot/80-templates/implementation-plan.md` に準拠した plan ドキュメントを`.github/copilot/plans/XXXXX-implementation-plan.md`に作成する(この1行は変更せずにそのまま出力する)
@@ -36,8 +36,8 @@
 
 - 責務分離 / データフロー:
   - `infra/bootstrap.sh` が `infra/setup/*` を順序実行し、基盤 → セキュリティ → ランタイム → DB → Web → 監視 → 検証の流れで初回整備する。
-  - Next.js は `next build` の成果物を `next start` で SSR 実行し、Nginx が `localhost:4000` へプロキシする。
-  - node_exporter / mysqld_exporter はローカルバインドし、Nginx 経由で監視サーバーにのみ公開する。
+  - Next.js は `next build` の成果物を `next start` で SSR 実行し、Nginx が `localhost:${APP_PORT}` へプロキシする。
+  - node_exporter / mysqld_exporter は外部アクセス可能なアドレスで起動し、UFW で監視 IP に限定する。
 - エッジケース / 例外系 / リトライ方針:
   - 既存設定がある場合は上書き前にバックアップを作成し、Nginx 設定は `nginx -t` で検証してから reload する。
   - 証明書取得に失敗した場合は TLS-ALPN-01/DNS-01 の再試行を行い、失敗理由をログに残す。
@@ -54,8 +54,8 @@
 | --- | -- | ---- |
 | 1 | infra/README.md | 初回整備の運用手順・再実行方法を記載 |
 | 2 | infra/bootstrap.sh | `setup` を順序実行するエントリポイント |
-| 3 | infra/env/sample.env | 環境変数テンプレート（雛形） |
-| 4 | infra/env/.env | 実運用の環境変数（Git 管理外） |
+| 3 | infra/.env.sample | 環境変数テンプレート（雛形） |
+| 4 | infra/.env | 実運用の環境変数（Git 管理外） |
 | 5 | infra/setup/00-base/00-packages.sh | `apt update/upgrade` と必須パッケージ導入 |
 | 6 | infra/setup/00-base/10-locale.sh | タイムゾーン/ロケール設定 |
 | 7 | infra/setup/00-base/20-shell.sh | `.bashrc` の履歴/alias 設定 |
@@ -69,7 +69,7 @@
 | 15 | infra/setup/30-db/20-prisma.sh | `prisma migrate deploy` 用の準備 |
 | 16 | infra/setup/40-web/10-nginx.sh | Nginx reverse proxy / rate limit 設定 |
 | 17 | infra/setup/40-web/20-certbot.sh | TLS-ALPN-01/DNS-01 で証明書取得 |
-| 18 | infra/setup/40-web/30-nextjs-service.sh | `nextjs.service` 配置（/etc/myapp/app.env 参照） |
+| 18 | infra/setup/40-web/30-nextjs-service.sh | `nextjs.service` 配置（/opt/agile-pmbok-assist_repo/app.env 参照） |
 | 19 | infra/setup/40-web/deploy.sh | pull後のビルド＋再起動処理 |
 | 20 | infra/setup/50-monitoring/10-exporters.sh | node_exporter / mysqld_exporter 導入 |
 | 21 | infra/setup/50-monitoring/20-metrics-proxy.sh | Nginx の metrics 逆プロキシ |
@@ -98,9 +98,8 @@
 infra/
 ├── README.md
 ├── bootstrap.sh
-├── env/
-│   ├── sample.env
-│   └── .env
+├── .env.sample
+├── .env
 └── setup/
     ├── 00-base/
     ├── 10-security/
@@ -120,7 +119,7 @@ infra/
 | APP_BRANCH | デプロイ対象ブランチ | main |
 | APP_DIR | 配置先ディレクトリ | /opt/agile-pmbok-assist_repo |
 | APP_USER | 実行ユーザー | appuser |
-| APP_ENV_FILE | アプリ環境変数ファイル | /etc/myapp/app.env |
+| APP_ENV_FILE | アプリ環境変数ファイル | /opt/agile-pmbok-assist_repo/app.env |
 | APP_PORT | Nginx からの proxy 先ポート | 4000 |
 | NODE_VERSION | Node LTS バージョン | 20 |
 | GITHUB_APP_ID | GitHub App ID | 123456 |
@@ -133,7 +132,7 @@ infra/
 | MYSQL_BIND_ADDRESS | MySQL bind | 127.0.0.1 |
 | ACME_DOMAIN | 証明書対象ドメイン | app.example.com |
 | ACME_CHALLENGE | ACME 方式 | tls-alpn-01 / dns-01 |
-| METRICS_ALLOW_IPS | 監視サーバーの IP | 203.0.113.10 |
+| METRICS_ALLOW_IPS | 監視サーバーの IP（未指定なら全IP許可） | 203.0.113.10 |
 | POSTFIX_RELAY_HOST | さくら SMTP | smtp.sakura.ne.jp |
 | POSTFIX_RELAY_PORT | SMTP ポート | 587 |
 | POSTFIX_RELAY_USER | SMTP ユーザー | user@example.com |
@@ -145,15 +144,15 @@ infra/
 
 #### 3.3.1 取り込み方法（推奨）
 
-- `infra/env/.env` に実値を記載し、`source infra/env/.env` で一括読み込みする（個別 `export` は不要）。
-- `infra/env/.env` は `.gitignore` で除外する。
+- `infra/.env` に実値を記載し、`source infra/.env` で一括読み込みする（個別 `export` は不要）。
+- `infra/.env` は `.gitignore` で除外する。
 - 環境変数ファイルにはパスワードや SMTP 認証情報などの機密情報を含むため、以下のセキュリティ要件を満たすこと。
-  - `infra/bootstrap.sh` または各セットアップスクリプトで、`chmod 600 infra/env/.env` を実行し、所有者のみが読み書き可能なパーミッション (rw-------) に設定する。
-- `infra/env/.env` の所有者はアプリケーションの実行ユーザー（例: `appuser`）または管理ユーザーとし、不必要に共有アカウントからアクセスできないようにする。
-- バックアップやログに `infra/env/.env` の内容が含まれないようにし、ダンプ取得時はマスクや除外ルールを適用する。
-- `infra/env/.env` のパーミッションは `chmod 600`、所有者は `appuser` など最小権限で保持する。
+  - `infra/bootstrap.sh` または各セットアップスクリプトで、`chmod 600 infra/.env` を実行し、所有者のみが読み書き可能なパーミッション (rw-------) に設定する。
+- `infra/.env` の所有者はアプリケーションの実行ユーザー（例: `appuser`）または管理ユーザーとし、不必要に共有アカウントからアクセスできないようにする。
+- バックアップやログに `infra/.env` の内容が含まれないようにし、ダンプ取得時はマスクや除外ルールを適用する。
+- `infra/.env` のパーミッションは `chmod 600`、所有者は `appuser` など最小権限で保持する。
 - GitHub App の PEM ファイルは `chmod 600`、所有者は `root` など最小権限で管理する。
-- `/etc/myapp/app.env` には `PORT` を設定し、`APP_PORT` と同じ値を指定する。
+- `/opt/agile-pmbok-assist_repo/app.env` には `PORT` を設定し、`APP_PORT` と同じ値を指定する。
 
 ### 3.4 ベースOS整備（本番向け）
 
@@ -230,7 +229,7 @@ echo "----------------------------------------"
 ### 3.5 SSR 前提 Next.js 実行設計
 
 - `next build` はデプロイ時に実行し、`next start` を systemd で起動する。
-- Node 実行ユーザーは `appuser` を想定し、`/var/www/app` 配下に配置する。
+- Node 実行ユーザーは `appuser` を想定し、`/opt/agile-pmbok-assist_repo` 配下に配置する。
 
 ```
 [Unit]
@@ -241,7 +240,7 @@ After=network.target mysql.service
 Type=simple
 User=appuser
 WorkingDirectory=/opt/agile-pmbok-assist_repo
-EnvironmentFile=/etc/myapp/app.env
+EnvironmentFile=/opt/agile-pmbok-assist_repo/app.env
 ExecStart=/usr/bin/node /opt/agile-pmbok-assist_repo/node_modules/next/dist/bin/next start -p ${PORT}
 Restart=always
 RestartSec=5
@@ -326,7 +325,7 @@ maxretry = 5
 - exporter は `127.0.0.1` にバインドし、Nginx を経由して `/metrics` を 443 で公開する。
 - `/metrics/node` は `proxy_pass http://127.0.0.1:9100/metrics`、`/metrics/mysql` は `proxy_pass http://127.0.0.1:9104/metrics` を設定する。
 - `/metrics` は用途別に `/metrics/node` と `/metrics/mysql` に分割し、単一パスで混在させない。
-- `/metrics` 配下は `allow $METRICS_ALLOW_IPS; deny all;` で監視サーバーのみ許可する。
+- `/metrics` 配下は `METRICS_ALLOW_IPS` 指定時に許可IPのみ許可し、未指定の場合は全IP許可する。
 - mysqld_exporter 用に `exporter` ユーザーを作成し、`PROCESS, REPLICATION CLIENT, SELECT` を付与する。
 - mysqld_exporter は `/etc/.mysqld_exporter.cnf` に認証情報を置き、`--web.listen-address=127.0.0.1:9104` で起動する。
 - `/etc/.mysqld_exporter.cnf` は `[client]` で `user`/`password` を記載し、`chmod 600` を適用する。
@@ -357,7 +356,7 @@ root@app01.example.com alert@your-domain
 - 新しい sudo ユーザーと SSH 公開鍵を登録した後に `PermitRootLogin no` を適用する。
 - `ufw allow OpenSSH` を先に実行し、`ufw enable` は最後に行う。
 - 変更前後で `sshd -t` を実行し、設定の有効性を確認する。
-- UFW 例: `ufw default deny incoming`、`ufw allow 443/tcp`、`ufw allow 22/tcp`。
+- UFW 例: `ufw default deny incoming`、`ufw allow 443/tcp`、`ufw allow 22/tcp`、`ufw allow 9100/tcp`、`ufw allow 9104/tcp`。
 
 ### 3.16 ログ設計
 
@@ -409,7 +408,7 @@ flowchart TD
 | H-00 | VPS 初期リセット | 新規 VPS の確保 | さくら VPS コンソールからサーバーリセットを依頼する | 初期化完了通知の確認 | 新規 VPS にログイン可能 |
 | H-01 | VPS 事前準備 | セキュアな初期状態を整える | DNS 設定（A レコード）、新規 sudo ユーザー作成、SSH 公開鍵登録、root 直ログイン禁止を計画する | SSH で sudo ユーザーがログインできること | root 無効化前に新規ユーザーでログイン可能 |
 | H-02 | Git/Clone 準備 | アプリと整備スクリプトを取得する | GitHub App での pull 自動化を構築済みであることを確認し、`/opt/agile-pmbok-assist_repo` と `infra` リポジトリを配置する | `git clone` が成功すること | `/opt/agile-pmbok-assist_repo` と `/opt/infra` に配置済み |
-| H-03 | 環境値/Secrets 配置 | 秘密情報の安全な配置 | `infra/env/.env` を用意し、`.env.production`、MySQL パスワード、SMTP 認証情報、Basic 認証ファイル、GitHub App PEM をサーバーに配置する | Git 管理外であること | secrets がサーバーにのみ存在 |
+| H-03 | 環境値/Secrets 配置 | 秘密情報の安全な配置 | `infra/.env` を用意し、`.env.production`、MySQL パスワード、SMTP 認証情報、Basic 認証ファイル、GitHub App PEM をサーバーに配置する | Git 管理外であること | secrets がサーバーにのみ存在 |
 | H-04 | Bootstrap 実行 | 自動整備の開始 | `infra/bootstrap.sh` を実行し、各 `setup/*` が完走することを確認する | `nginx -t` と `systemctl status` の確認 | Next.js/MySQL/Nginx/Exporters/Postfix が起動 |
 | H-05 | アプリ初期化 | DB と SSR を同期 | `infra/setup/40-web/deploy.sh` を実行し、`systemctl restart nextjs` を確認する | build の成功 | SSR が 443 で応答 |
 | H-06 | 監視疎通確認 | 監視対象として登録 | 監視サーバーから `/metrics` を取得し、IP 制限が有効か確認 | 監視 IP のみ取得可能 | node_exporter 値が取得可能 |

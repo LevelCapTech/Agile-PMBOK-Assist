@@ -8,7 +8,7 @@ if [ "$(id -u)" -ne 0 ]; then
 fi
 
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
-ENV_FILE="${ENV_FILE:-${SCRIPT_DIR}/env/.env}"
+ENV_FILE="${ENV_FILE:-${SCRIPT_DIR}/.env}"
 
 if [ ! -f "$ENV_FILE" ]; then
   echo "[bootstrap] 環境変数ファイルが見つかりません: $ENV_FILE" >&2

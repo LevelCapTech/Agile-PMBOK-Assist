@@ -37,7 +37,7 @@ mkdir -p "$node_override_dir"
 cat <<'NODE' > "$node_override_dir/override.conf"
 [Service]
 ExecStart=
-ExecStart=/usr/bin/prometheus-node-exporter --web.listen-address=127.0.0.1:9100
+ExecStart=/usr/bin/prometheus-node-exporter --web.listen-address=0.0.0.0:9100
 NODE
 
 mysql_override_dir="/etc/systemd/system/prometheus-mysqld-exporter.service.d"
@@ -45,7 +45,7 @@ mkdir -p "$mysql_override_dir"
 cat <<'MYSQL' > "$mysql_override_dir/override.conf"
 [Service]
 ExecStart=
-ExecStart=/usr/bin/prometheus-mysqld-exporter --config.my-cnf=/etc/.mysqld_exporter.cnf --web.listen-address=127.0.0.1:9104
+ExecStart=/usr/bin/prometheus-mysqld-exporter --config.my-cnf=/etc/.mysqld_exporter.cnf --web.listen-address=0.0.0.0:9104
 MYSQL
 
 systemctl daemon-reload

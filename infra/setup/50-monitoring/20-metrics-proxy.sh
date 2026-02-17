@@ -7,13 +7,18 @@ if [ "$(id -u)" -ne 0 ]; then
   exit 1
 fi
 
-: "${METRICS_ALLOW_IPS:?METRICS_ALLOW_IPS が未設定です}"
-
 allow_lines=()
-IFS=' ' read -r -a metrics_ips <<< "$METRICS_ALLOW_IPS"
-for ip in "${metrics_ips[@]}"; do
-  allow_lines+=("    allow ${ip};")
-done
+metrics_ips=()
+if [ -n "${METRICS_ALLOW_IPS:-}" ]; then
+  IFS=' ' read -r -a metrics_ips <<< "$METRICS_ALLOW_IPS"
+fi
+if [ "${#metrics_ips[@]}" -eq 0 ]; then
+  allow_lines+=("    allow all;")
+else
+  for ip in "${metrics_ips[@]}"; do
+    allow_lines+=("    allow ${ip};")
+  done
+fi
 allow_block=$(printf '%s\n' "${allow_lines[@]}")
 
 mkdir -p /etc/nginx/snippets

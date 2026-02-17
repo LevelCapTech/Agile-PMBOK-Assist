@@ -22,6 +22,23 @@ ufw default allow outgoing
 ufw allow 443/tcp
 ufw allow 22/tcp
 
+metrics_ports=(9100 9104)
+metrics_ips=()
+if [ -n "${METRICS_ALLOW_IPS:-}" ]; then
+  IFS=' ' read -r -a metrics_ips <<< "$METRICS_ALLOW_IPS"
+fi
+if [ "${#metrics_ips[@]}" -eq 0 ]; then
+  for port in "${metrics_ports[@]}"; do
+    ufw allow "${port}/tcp"
+  done
+else
+  for ip in "${metrics_ips[@]}"; do
+    for port in "${metrics_ports[@]}"; do
+      ufw allow from "$ip" to any port "$port" proto tcp
+    done
+  done
+fi
+
 if ufw status | grep -q inactive; then
   ufw --force enable
 else
