@@ -95,7 +95,7 @@ need sudo
 b64url() { openssl base64 -e -A | tr '+/' '-_' | tr -d '='; }
 
 now="$(date +%s)"
-# 1分の時計ずれを吸収し、JWT の有効期限は10分未満にする。
+# 1分の時計ずれを吸収し、JWT の有効期限は約9分にする。
 iat=$((now-60))
 exp=$((now+540))
 
@@ -122,6 +122,7 @@ fi
 basic="$(printf 'x-access-token:%s' "$token" | openssl base64 -A)"
 
 tmp_dir="$(mktemp -d)"
+chmod 700 "$tmp_dir"
 cleanup() { rm -rf "$tmp_dir"; }
 trap cleanup EXIT
 chown "$APP_USER":"$APP_USER" "$tmp_dir"
@@ -133,6 +134,7 @@ cat <<EOF > "$git_config"
 EOF
 chown "$APP_USER":"$APP_USER" "$git_config"
 chmod 600 "$git_config"
+unset token basic
 
 if [ ! -d "$APP_DIR/.git" ]; then
   mkdir -p "$APP_DIR"
@@ -141,6 +143,10 @@ if [ ! -d "$APP_DIR/.git" ]; then
 fi
 
 sudo -u "$APP_USER" -- git -C "$APP_DIR" -c "include.path=$git_config" fetch origin "$APP_BRANCH"
+if ! sudo -u "$APP_USER" -- git -C "$APP_DIR" diff --quiet || \
+  ! sudo -u "$APP_USER" -- git -C "$APP_DIR" diff --cached --quiet; then
+  echo "[githubapp-pull] ローカル変更があるため reset --hard で破棄します。" >&2
+fi
 sudo -u "$APP_USER" -- git -C "$APP_DIR" reset --hard "origin/$APP_BRANCH"
 SCRIPT
 
