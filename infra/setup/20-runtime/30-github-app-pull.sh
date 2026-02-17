@@ -94,12 +94,12 @@ need sudo
 
 b64url() { openssl base64 -e -A | tr '+/' '-_' | tr -d '='; }
 
-CLOCK_SKEW_SECONDS=60
-JWT_EXPIRY_SECONDS=540 # 9分間
+CLOCK_SKEW_TOLERANCE_SECONDS=60
+JWT_EXPIRY_SECONDS=540 # 9分
 
 now="$(date +%s)"
-# CLOCK_SKEW_SECONDS の秒数ぶん時計ずれを吸収し、JWT の有効期限は約9分間にする。
-iat=$((now-CLOCK_SKEW_SECONDS))
+# CLOCK_SKEW_TOLERANCE_SECONDS の秒数ぶん時計ずれを吸収し、JWT の有効期限は約9分にする。
+iat=$((now-CLOCK_SKEW_TOLERANCE_SECONDS))
 exp=$((now+JWT_EXPIRY_SECONDS))
 
 header="$(printf '{"alg":"RS256","typ":"JWT"}' | b64url)"
@@ -138,7 +138,7 @@ EOF
 chown "$APP_USER":"$APP_USER" "$git_config"
 chmod 600 "$git_config"
 unset token basic
-# unset はベストエフォートで、メモリ上の残留は完全には防げない。高セキュリティ環境では tmpfs 配置やメモリ保護ツールの導入も検討する。
+# unset はベストエフォートで、メモリ上の残留は完全には防げない。本運用は短命トークン前提で許容し、高セキュリティ環境では tmpfs 配置やメモリ保護ツールの導入も検討する。
 
 if [ ! -d "$APP_DIR/.git" ]; then
   mkdir -p "$APP_DIR"
@@ -149,9 +149,9 @@ fi
 sudo -u "$APP_USER" -- git -C "$APP_DIR" -c "include.path=$git_config" fetch origin "$APP_BRANCH"
 if ! sudo -u "$APP_USER" -- git -C "$APP_DIR" diff --quiet || \
   ! sudo -u "$APP_USER" -- git -C "$APP_DIR" diff --cached --quiet; then
-  echo "[githubapp-pull] ローカル変更がある場合も reset --hard で破棄します。" >&2
+  echo "[githubapp-pull] ローカル変更があるため reset --hard で破棄します。" >&2
 fi
-# ローカル変更の有無に関わらず最新のコミットへ合わせる。
+echo "[githubapp-pull] reset --hard で最新のコミットへ合わせます。" >&2
 sudo -u "$APP_USER" -- git -C "$APP_DIR" reset --hard "origin/$APP_BRANCH"
 SCRIPT
 
