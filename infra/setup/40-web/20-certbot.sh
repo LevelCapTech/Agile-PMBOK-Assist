@@ -120,7 +120,7 @@ line=f"txt _acme-challenge {validation}"
 lines=[l for l in records.splitlines() if l.strip()]
 if line not in lines:
     lines.append(line)
-print("\\n".join(lines))
+print("\n".join(lines))
 PY
 )"
 
