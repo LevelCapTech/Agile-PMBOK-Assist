@@ -133,8 +133,8 @@ PY
 )"
 
 request_api PUT "$payload" >/dev/null
-# certbot manual hook には CERTBOT_DNS_PROPAGATION_SECONDS は渡されないため固定値を使用する
-propagation_seconds=60
+# DNS 伝播待ち時間は CERTBOT_DNS_PROPAGATION_SECONDS で調整可能（未設定時は 60 秒）
+propagation_seconds="${CERTBOT_DNS_PROPAGATION_SECONDS:-60}"
 sleep "$propagation_seconds"
 HOOK
 
