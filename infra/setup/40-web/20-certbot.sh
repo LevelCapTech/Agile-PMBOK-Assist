@@ -268,11 +268,9 @@ systemctl reload nginx
 HOOK
 chmod +x "$hook_dir/reload-nginx.sh"
 
-if systemctl list-timers --all | grep -q "certbot.timer"; then
-  systemctl enable --now certbot.timer
-elif systemctl list-timers --all | grep -q "snap.certbot.renew.timer"; then
-  systemctl enable --now snap.certbot.renew.timer
-else
+certbot_timer="$(systemctl list-timers --all --no-legend | awk '$1 ~ /certbot.*\\.timer|snap\\.certbot.*\\.timer/ {print $1; exit}')"
+if [ -z "$certbot_timer" ]; then
   echo "[20-certbot] certbot 用の systemd timer が見つかりません。list-timers で確認してください。" >&2
   exit 1
 fi
+systemctl enable --now "$certbot_timer"
