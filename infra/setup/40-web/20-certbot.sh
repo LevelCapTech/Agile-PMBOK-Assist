@@ -216,7 +216,7 @@ records=os.environ.get("VD_RECORDS","")
 validation=os.environ["CERTBOT_VALIDATION"]
 line=f"txt _acme-challenge {validation}"
 lines=[l for l in records.splitlines() if l.strip() and l.strip()!=line]
-print("\\n".join(lines))
+print("\n".join(lines))
 PY
 )"
 
