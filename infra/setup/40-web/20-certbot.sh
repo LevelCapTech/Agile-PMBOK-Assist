@@ -154,8 +154,9 @@ if [ -z "$api_key" ]; then
   exit 1
 fi
 domain="${CERTBOT_DOMAIN:?CERTBOT_DOMAIN が未設定です}"
+base_domain="$(awk -F. '{print $(NF-1)"."$NF}' <<< "$domain")"
 validation="${CERTBOT_VALIDATION:?CERTBOT_VALIDATION が未設定です}"
-api_endpoint="https://api.value-domain.com/v1/domains/${domain}/dns"
+api_endpoint="https://api.value-domain.com/v1/domains/${base_domain}/dns"
 
 request_api() {
   local method="$1"
