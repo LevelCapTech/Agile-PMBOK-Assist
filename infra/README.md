@@ -10,15 +10,19 @@
 - 公開ポートは 443/TCP のみ（SSH は SSH_ALLOW_IPS 指定時はその IP のみに限定）
 - ソース配置は `/opt/agile-pmbok-assist_repo`、アプリ環境変数は `/opt/agile-pmbok-assist_repo/app.env` を想定します。
 - `app.env` の `PORT` は `APP_PORT` と同じ値にしてください。
-- GitHub App での pull 自動化は別途構築済み前提で、`deploy.sh` はビルドと再起動のみ実行します。
-- GitHub App の設定手順は GitHub 公式ドキュメントを参照してください（App ID/Installation ID/PEM の取得が必要です）。
+- GitHub App の Installation Token で HTTPS pull するため、`setup/20-runtime/30-github-app-pull.sh` が pull スクリプトと systemd timer を配置します。
+- GitHub App の設定手順は GitHub 公式ドキュメントを参照し、App ID / Installation ID / PEM を事前に用意してください。
 - SSH_ALLOW_IPS を指定した場合は、その IP のみに SSH を許可します（未指定の場合は全 IP 許可）。
 
 ## 使い方（概要）
 
 1. `infra/.env.sample` を `infra/.env` にコピーし、実値に更新する
 2. `infra/bootstrap.sh` を実行する
-3. `infra/setup/90-verify/10-healthcheck.sh` で起動確認する
+3. `systemctl start agile-pmbok-assist-pull.service` で初回 pull を実行する
+4. `infra/setup/40-web/deploy.sh` を実行する
+5. `infra/setup/90-verify/10-healthcheck.sh` で起動確認する
+
+GitHub App からの初回 clone 手順は [CLONE_GUIDE.md](CLONE_GUIDE.md) を参照してください。
 
 ```bash
 cp infra/.env.sample infra/.env
@@ -38,6 +42,8 @@ sudo bash infra/setup/90-verify/10-healthcheck.sh
 - fail2ban と鍵認証を前提に運用し、ブロック状況の監視を必須としてください（`setup/10-security/30-fail2ban.sh`、`setup/10-security/10-ssh.sh` を参照）。
 - `10-ssh.sh` は初期設定済み（PermitRootLogin no 前提）の確認のみ実行します（PubkeyAuthentication yes を検証）。
 - GitHub App の Installation Token を使って HTTPS で pull します。`GITHUB_APP_ID`、`GITHUB_INSTALLATION_ID`、`GITHUB_APP_PEM_PATH` を `.env` に設定し、`APP_REPO_URL` は HTTPS 形式にしてください。
+- `agile-pmbok-assist-pull.timer` は 5 分間隔で pull します。不要な場合は `systemctl disable --now agile-pmbok-assist-pull.timer` で停止してください。
+- GitHub App の短命トークンはメモリ上の残留を完全には防げないため、高セキュリティ環境では tmpfs 配置やメモリ保護ツールの導入を検討してください。
 
 ## ディレクトリ構成
 

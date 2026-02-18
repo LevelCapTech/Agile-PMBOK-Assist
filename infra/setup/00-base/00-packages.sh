@@ -21,6 +21,7 @@ apt-get install -y \
   jq \
   logrotate \
   lsb-release \
+  openssl \
   ssl-cert \
   sysstat \
   ufw \

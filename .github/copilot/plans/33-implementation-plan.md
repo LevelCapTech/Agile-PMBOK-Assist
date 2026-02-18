@@ -7,6 +7,7 @@
   - OS 基本整備として `apt update/upgrade`、タイムゾーン（JST）、ロケール（`ja_JP.UTF-8`）を適用する。
   - `.bashrc`、`/etc/issue`、`/etc/update-motd.d` を整備し、運用向けの表示・履歴設定を行う。
   - Git を整備し、GitHub App の Installation Token を使って HTTPS でアプリ/スクリプトを取得できるようにする。
+  - GitHub App の Installation Token を生成して pull する systemd timer を配置し、初回 clone を実施できるようにする。
   - SSR 前提の Next.js（`npm ci` + `npm run build` + `next start`）を systemd 管理で起動する。
   - MySQL を VPN 側 IP にバインドして初期化し、`prisma migrate deploy` を実行できる状態にする。
   - Nginx によるリバースプロキシ、rate limit、fail2ban 連携を設定する。
@@ -65,32 +66,37 @@
 | 11 | infra/setup/10-security/30-fail2ban.sh | fail2ban jail の配置 |
 | 12 | infra/setup/20-runtime/10-node.sh | Node LTS の導入 |
 | 13 | infra/setup/20-runtime/20-git.sh | Git 導入と GitHub App トークン取得に必要な依存準備 |
-| 14 | infra/setup/30-db/10-mysql.sh | MySQL セキュア初期化 |
-| 15 | infra/setup/30-db/20-prisma.sh | `prisma migrate deploy` 用の準備 |
-| 16 | infra/setup/40-web/10-nginx.sh | Nginx reverse proxy / rate limit 設定 |
-| 17 | infra/setup/40-web/20-certbot.sh | TLS-ALPN-01/DNS-01 で証明書取得 |
-| 18 | infra/setup/40-web/30-nextjs-service.sh | `nextjs.service` 配置（/opt/agile-pmbok-assist_repo/app.env 参照） |
-| 19 | infra/setup/40-web/deploy.sh | pull後のビルド＋再起動処理 |
-| 20 | infra/setup/50-monitoring/10-exporters.sh | node_exporter / mysqld_exporter 導入 |
-| 21 | infra/setup/50-monitoring/20-metrics-proxy.sh | Nginx の metrics 逆プロキシ |
-| 22 | infra/setup/60-mail/10-postfix.sh | postfix + さくら SMTP 設定 |
-| 23 | infra/setup/90-verify/10-healthcheck.sh | 起動/疎通の検証 |
+| 14 | infra/setup/20-runtime/30-github-app-pull.sh | GitHub App トークンで pull するスクリプトと timer の配置 |
+| 15 | infra/setup/30-db/10-mysql.sh | MySQL セキュア初期化 |
+| 16 | infra/setup/30-db/20-prisma.sh | `prisma migrate deploy` 用の準備 |
+| 17 | infra/setup/40-web/10-nginx.sh | Nginx reverse proxy / rate limit 設定 |
+| 18 | infra/setup/40-web/20-certbot.sh | TLS-ALPN-01/DNS-01 で証明書取得 |
+| 19 | infra/setup/40-web/30-nextjs-service.sh | `nextjs.service` 配置（/opt/agile-pmbok-assist_repo/app.env 参照） |
+| 20 | infra/setup/40-web/deploy.sh | pull後のビルド＋再起動処理 |
+| 21 | infra/setup/50-monitoring/10-exporters.sh | node_exporter / mysqld_exporter 導入 |
+| 22 | infra/setup/50-monitoring/20-metrics-proxy.sh | Nginx の metrics 逆プロキシ |
+| 23 | infra/setup/60-mail/10-postfix.sh | postfix + さくら SMTP 設定 |
+| 24 | infra/setup/90-verify/10-healthcheck.sh | 起動/疎通の検証 |
 
 #### 3.1.2 サーバー上で配置・更新する設定ファイル
 
 | No. | パス | 変更内容 |
 | --- | -- | ---- |
 | 1 | /etc/systemd/system/nextjs.service | SSR 用 systemd ユニット |
-| 2 | /etc/nginx/sites-available/app.conf | 443 専用リバースプロキシ |
-| 3 | /etc/nginx/conf.d/metrics.conf | `/metrics/node` `/metrics/mysql` を監視 IP のみに公開 |
-| 4 | /etc/fail2ban/jail.d/nginx-http-auth.conf | Nginx 認証失敗検知 |
-| 5 | /etc/postfix/main.cf | さくら SMTP リレー設定 |
-| 6 | /etc/postfix/generic | From 変換マップ |
-| 7 | /etc/aliases | root 宛て通知の外部転送 |
-| 8 | /etc/issue | ログイン前メッセージ |
-| 9 | /etc/update-motd.d/99-custom | ログイン後のカスタム表示 |
-| 10 | /etc/default/locale | LANG/LC_ALL 設定 |
-| 11 | /etc/logrotate.d/nextjs | Next.js ログのローテーション |
+| 2 | /etc/systemd/system/agile-pmbok-assist-pull.service | GitHub App Token で pull する systemd ユニット |
+| 3 | /etc/systemd/system/agile-pmbok-assist-pull.timer | GitHub App pull 用 timer |
+| 4 | /etc/agile-pmbok-assist/pull.env | GitHub App pull 用の環境変数 |
+| 5 | /usr/local/bin/agile-pmbok-assist-githubapp-pull.sh | GitHub App Token で pull するスクリプト |
+| 6 | /etc/nginx/sites-available/app.conf | 443 専用リバースプロキシ |
+| 7 | /etc/nginx/conf.d/metrics.conf | `/metrics/node` `/metrics/mysql` を監視 IP のみに公開 |
+| 8 | /etc/fail2ban/jail.d/nginx-http-auth.conf | Nginx 認証失敗検知 |
+| 9 | /etc/postfix/main.cf | さくら SMTP リレー設定 |
+| 10 | /etc/postfix/generic | From 変換マップ |
+| 11 | /etc/aliases | root 宛て通知の外部転送 |
+| 12 | /etc/issue | ログイン前メッセージ |
+| 13 | /etc/update-motd.d/99-custom | ログイン後のカスタム表示 |
+| 14 | /etc/default/locale | LANG/LC_ALL 設定 |
+| 15 | /etc/logrotate.d/nextjs | Next.js ログのローテーション |
 
 ### 3.2 初回整備専用ディレクトリ構造
 
@@ -261,6 +267,9 @@ WantedBy=multi-user.target
 - exporter 用に `node_exporter.service`、`mysqld_exporter.service` を追加し、以下のように依存関係を設計する。
   - `node_exporter.service`: `After=network.target` のみを指定し、ネットワーク有効化後に起動させる。
   - `mysqld_exporter.service`: `After=network.target mysql.service` とし、`Wants=mysql.service`（または `Requires=mysql.service`）を指定して MySQL サービスとの依存関係を明確にする。
+- `agile-pmbok-assist-pull.service` は GitHub App の Installation Token を取得して HTTPS で pull し、`/etc/agile-pmbok-assist/pull.env` に App ID / Installation ID / PEM / repo / branch / dir / user を保持する。
+  - PEM は root 所有のため service は root 実行し、git 操作は `sudo -u ${APP_USER}` で実行して所有者を維持する。
+  - `agile-pmbok-assist-pull.timer` は `OnBootSec=1min`、`OnUnitActiveSec=5min` で定期実行する。
 - ログは journald に集約し、エラー時は `journalctl -u <service>` で確認可能にする。
 - `nextjs.service` には `Wants=network-online.target` と `After=network-online.target mysql.service` を追加し、`Requires=mysql.service` の付与を検討する。
 
@@ -410,12 +419,13 @@ flowchart TD
 | ---- | --- | ----- | ----------------------- | --------- | --------------- |
 | H-00 | VPS 初期リセット | 新規 VPS の確保 | さくら VPS コンソールからサーバーリセットを依頼する | 初期化完了通知の確認 | 新規 VPS にログイン可能 |
 | H-01 | VPS 事前準備 | セキュアな初期状態を整える | DNS 設定（A レコード）、新規 sudo ユーザー作成、SSH 公開鍵登録、root 直ログイン禁止を計画する | SSH で sudo ユーザーがログインできること | root 無効化前に新規ユーザーでログイン可能 |
-| H-02 | Git/Clone 準備 | アプリと整備スクリプトを取得する | GitHub App での pull 自動化を構築済みであることを確認し、`/opt/agile-pmbok-assist_repo` と `infra` リポジトリを配置する | `git clone` が成功すること | `/opt/agile-pmbok-assist_repo` と `/opt/infra` に配置済み |
+| H-02 | GitHub App 準備 | pull 用の認証情報を用意する | GitHub App を作成し、Contents: Read-only を付与して対象 repo にインストール、PEM を発行し App ID / Installation ID を控える | App が対象 repo にインストール済みであること | App ID / Installation ID / PEM が準備済み |
 | H-03 | 環境値/Secrets 配置 | 秘密情報の安全な配置 | `infra/.env` を用意し、`.env.production`、MySQL パスワード、SMTP 認証情報、Basic 認証ファイル、GitHub App PEM をサーバーに配置する | Git 管理外であること | secrets がサーバーにのみ存在 |
 | H-04 | Bootstrap 実行 | 自動整備の開始 | `infra/bootstrap.sh` を実行し、各 `setup/*` が完走することを確認する | `nginx -t` と `systemctl status` の確認 | Next.js/MySQL/Nginx/Exporters/Postfix が起動 |
-| H-05 | アプリ初期化 | DB と SSR を同期 | `infra/setup/40-web/deploy.sh` を実行し、`systemctl restart nextjs` を確認する | build の成功 | SSR が 443 で応答 |
-| H-06 | 監視疎通確認 | 監視対象として登録 | 監視サーバーから `/metrics` を取得し、IP 制限が有効か確認 | 監視 IP のみ取得可能 | node_exporter 値が取得可能 |
-| H-07 | 通知メール確認 | アラート転送の検証 | `mail` で root 宛てを送信し、外部メールへ転送されることを確認 | SMTP 認証成功 | 外部メールで受信できる |
+| H-05 | GitHub App pull 実行 | 初回 clone と同期 | `systemctl start agile-pmbok-assist-pull.service` を実行し、`/opt/agile-pmbok-assist_repo` に clone されることを確認する | `git status` が取得できること | リポジトリが配置済み |
+| H-06 | アプリ初期化 | DB と SSR を同期 | `infra/setup/40-web/deploy.sh` を実行し、`systemctl restart nextjs` を確認する | build の成功 | SSR が 443 で応答 |
+| H-07 | 監視疎通確認 | 監視対象として登録 | 監視サーバーから `/metrics` を取得し、IP 制限が有効か確認 | 監視 IP のみ取得可能 | node_exporter 値が取得可能 |
+| H-08 | 通知メール確認 | アラート転送の検証 | `mail` で root 宛てを送信し、外部メールへ転送されることを確認 | SMTP 認証成功 | 外部メールで受信できる |
 
 ### 5.1 使用する情報・資料
 
@@ -462,7 +472,8 @@ flowchart TD
   - 公開ポートは 443 のみ。SSH は全 IP 許可（fail2ban 前提）。
   - `/metrics` は監視 IP のみ許可し、Basic 認証を併用する場合は secrets 管理外とする。
 - デプロイ運用の前提:
-  - 本タスクのスコープでは CI/CD（自動デプロイ）は対象外とし、デプロイは手動実行（例: 管理者による `git pull` / `npm run build` / `systemctl restart` など）を前提とする。
+  - 本タスクのスコープでは CI/CD（自動デプロイ）は対象外とし、コード取得は GitHub App pull timer を利用する。
+  - ビルド/再起動は手動実行（`infra/setup/40-web/deploy.sh`）を前提とする。
 
 ## 9. オープンな課題 / ADR 要否
 
@@ -470,7 +481,7 @@ flowchart TD
   - CI/CD / 自動デプロイ全般（本設計ではスコープ外）:
     - デプロイスクリプトの配置場所および命名規則。
     - デプロイ手順（ビルド / マイグレーション / プロセス再起動等）の自動化レベル。
-    - 実行トリガー方式（外部 CI からのトリガー、systemd timer、完全手動など）の選定。
+    - pull 後の build/restart を自動化するかの判断（外部 CI / systemd timer / 完全手動など）。
   - MySQL バックアップ（スナップショット / 論理バックアップ）の方式。
 - ADR に残すべき判断:
   - CI/CD / 自動デプロイの採用有無および方式、バックアップ方式、監視 `/metrics` の公開方法。
