@@ -43,17 +43,70 @@ cat <<'HOOK' > "$hook_base/valuedomain-auth.sh"
 set -euo pipefail
 IFS=$'\n\t'
 
-api_key_file="${CERTBOT_DNS_CREDENTIALS:?CERTBOT_DNS_CREDENTIALS が未設定です}"
+api_key_file="${CERTBOT_DNS_CREDENTIALS:-/etc/letsencrypt/valuedomain-apikey.txt}"
+if [ ! -f "$api_key_file" ] || [ ! -s "$api_key_file" ]; then
+  echo "[valuedomain-auth] API キーファイルが見つからないか空です: $api_key_file" >&2
+  exit 1
+fi
 api_key="$(tr -d '\n' < "$api_key_file")"
+if [ -z "$api_key" ]; then
+  echo "[valuedomain-auth] API キーが空です: $api_key_file" >&2
+  exit 1
+fi
 domain="${CERTBOT_DOMAIN:?CERTBOT_DOMAIN が未設定です}"
 validation="${CERTBOT_VALIDATION:?CERTBOT_VALIDATION が未設定です}"
 api_endpoint="https://api.value-domain.com/v1/domains/${domain}/dns"
 
-response="$(curl -fsS -H "Authorization: Bearer ${api_key}" "$api_endpoint")"
+request_api() {
+  local method="$1"
+  local payload="${2:-}"
+  local response
+  local http_code
+  local body
+  local curl_config
+  curl_config="$(mktemp)"
+  trap 'rm -f "$curl_config"' RETURN
+  cat > "$curl_config" <<EOF
+header = "Authorization: Bearer ${api_key}"
+EOF
+  chmod 600 "$curl_config"
+  if [ -n "$payload" ]; then
+    response="$(curl -sS -w '\n%{http_code}' -X "$method" -K "$curl_config" \
+      -H "Content-Type: application/json" -d "$payload" "$api_endpoint")" || {
+      echo "[valuedomain-auth] DNS レコード更新 API 呼び出し (${method}) に失敗しました" >&2
+      exit 1
+    }
+  else
+    response="$(curl -sS -w '\n%{http_code}' -X "$method" -K "$curl_config" \
+      "$api_endpoint")" || {
+      echo "[valuedomain-auth] DNS レコード取得 API 呼び出し (${method}) に失敗しました" >&2
+      exit 1
+    }
+  fi
+  http_code="$(printf '%s\n' "$response" | tail -n1)"
+  body="$(printf '%s\n' "$response" | sed '$d')"
+  if [ "$http_code" -ge 400 ]; then
+    echo "[valuedomain-auth] HTTP エラー (${method}): $http_code" >&2
+    printf '%s\n' "$body" >&2
+    exit 1
+  fi
+  printf '%s' "$body"
+}
+
+response="$(request_api GET)"
 records="$(printf '%s' "$response" | python3 - <<'PY'
 import json, sys
-data=json.load(sys.stdin)
-print(data["results"]["records"])
+try:
+    data = json.load(sys.stdin)
+except json.JSONDecodeError as e:
+    print(f"[valuedomain-auth] JSON デコードに失敗しました: {e}", file=sys.stderr)
+    sys.exit(1)
+try:
+    records = data["results"]["records"]
+except (KeyError, TypeError) as e:
+    print(f"[valuedomain-auth] API レスポンスの形式が想定外です: {e}", file=sys.stderr)
+    sys.exit(1)
+print(records)
 PY
 )"
 
@@ -63,7 +116,7 @@ import os
 records=os.environ.get("VD_RECORDS","")
 validation=os.environ["CERTBOT_VALIDATION"]
 line=f"txt _acme-challenge {validation}"
-lines=[l for l in records.split("\\n") if l.strip()]
+lines=[l for l in records.splitlines() if l.strip()]
 if line not in lines:
     lines.append(line)
 print("\\n".join(lines))
@@ -78,13 +131,9 @@ print(json.dumps({"ns_type":"valuedomain1","records":records,"ttl":"3600"}))
 PY
 )"
 
-curl -fsS -X PUT \
-  -H "Authorization: Bearer ${api_key}" \
-  -H "Content-Type: application/json" \
-  -d "$payload" \
-  "$api_endpoint"
-
-sleep 60
+request_api PUT "$payload" >/dev/null
+propagation_seconds="${CERTBOT_DNS_PROPAGATION_SECONDS:-60}"
+sleep "$propagation_seconds"
 HOOK
 
 cat <<'HOOK' > "$hook_base/valuedomain-cleanup.sh"
@@ -92,17 +141,70 @@ cat <<'HOOK' > "$hook_base/valuedomain-cleanup.sh"
 set -euo pipefail
 IFS=$'\n\t'
 
-api_key_file="${CERTBOT_DNS_CREDENTIALS:?CERTBOT_DNS_CREDENTIALS が未設定です}"
+api_key_file="${CERTBOT_DNS_CREDENTIALS:-/etc/letsencrypt/valuedomain-apikey.txt}"
+if [ ! -f "$api_key_file" ] || [ ! -s "$api_key_file" ]; then
+  echo "[valuedomain-cleanup] API キーファイルが見つからないか空です: $api_key_file" >&2
+  exit 1
+fi
 api_key="$(tr -d '\n' < "$api_key_file")"
+if [ -z "$api_key" ]; then
+  echo "[valuedomain-cleanup] API キーが空です: $api_key_file" >&2
+  exit 1
+fi
 domain="${CERTBOT_DOMAIN:?CERTBOT_DOMAIN が未設定です}"
 validation="${CERTBOT_VALIDATION:?CERTBOT_VALIDATION が未設定です}"
 api_endpoint="https://api.value-domain.com/v1/domains/${domain}/dns"
 
-response="$(curl -fsS -H "Authorization: Bearer ${api_key}" "$api_endpoint")"
+request_api() {
+  local method="$1"
+  local payload="${2:-}"
+  local response
+  local http_code
+  local body
+  local curl_config
+  curl_config="$(mktemp)"
+  trap 'rm -f "$curl_config"' RETURN
+  cat > "$curl_config" <<EOF
+header = "Authorization: Bearer ${api_key}"
+EOF
+  chmod 600 "$curl_config"
+  if [ -n "$payload" ]; then
+    response="$(curl -sS -w '\n%{http_code}' -X "$method" -K "$curl_config" \
+      -H "Content-Type: application/json" -d "$payload" "$api_endpoint")" || {
+      echo "[valuedomain-cleanup] DNS レコード更新 API 呼び出し (${method}) に失敗しました" >&2
+      exit 1
+    }
+  else
+    response="$(curl -sS -w '\n%{http_code}' -X "$method" -K "$curl_config" \
+      "$api_endpoint")" || {
+      echo "[valuedomain-cleanup] DNS レコード取得 API 呼び出し (${method}) に失敗しました" >&2
+      exit 1
+    }
+  fi
+  http_code="$(printf '%s\n' "$response" | tail -n1)"
+  body="$(printf '%s\n' "$response" | sed '$d')"
+  if [ "$http_code" -ge 400 ]; then
+    echo "[valuedomain-cleanup] HTTP エラー (${method}): $http_code" >&2
+    printf '%s\n' "$body" >&2
+    exit 1
+  fi
+  printf '%s' "$body"
+}
+
+response="$(request_api GET)"
 records="$(printf '%s' "$response" | python3 - <<'PY'
 import json, sys
-data=json.load(sys.stdin)
-print(data["results"]["records"])
+try:
+    data = json.load(sys.stdin)
+except json.JSONDecodeError as e:
+    print(f"[valuedomain-cleanup] JSON デコードに失敗しました: {e}", file=sys.stderr)
+    sys.exit(1)
+try:
+    records = data["results"]["records"]
+except (KeyError, TypeError) as e:
+    print(f"[valuedomain-cleanup] API レスポンスの形式が想定外です: {e}", file=sys.stderr)
+    sys.exit(1)
+print(records)
 PY
 )"
 
@@ -112,7 +214,7 @@ import os
 records=os.environ.get("VD_RECORDS","")
 validation=os.environ["CERTBOT_VALIDATION"]
 line=f"txt _acme-challenge {validation}"
-lines=[l for l in records.split("\\n") if l.strip() and l.strip()!=line]
+lines=[l for l in records.splitlines() if l.strip() and l.strip()!=line]
 print("\\n".join(lines))
 PY
 )"
@@ -125,14 +227,20 @@ print(json.dumps({"ns_type":"valuedomain1","records":records,"ttl":"3600"}))
 PY
 )"
 
-curl -fsS -X PUT \
-  -H "Authorization: Bearer ${api_key}" \
-  -H "Content-Type: application/json" \
-  -d "$payload" \
-  "$api_endpoint"
+request_api PUT "$payload" >/dev/null
 HOOK
 
 chmod +x "$hook_base/valuedomain-auth.sh" "$hook_base/valuedomain-cleanup.sh"
+
+domain_args=(-d "$ACME_DOMAIN")
+if [ -n "${ACME_EXTRA_DOMAINS:-}" ]; then
+  read -r -a extra_domains <<< "$ACME_EXTRA_DOMAINS"
+  for extra_domain in "${extra_domains[@]}"; do
+    if [ -n "$extra_domain" ]; then
+      domain_args+=(-d "$extra_domain")
+    fi
+  done
+fi
 
 cert_path="/etc/letsencrypt/live/${ACME_DOMAIN}/fullchain.pem"
 if [ -f "$cert_path" ]; then
@@ -143,7 +251,7 @@ else
     --manual-cleanup-hook "$hook_base/valuedomain-cleanup.sh" \
     --manual-public-ip-logging-ok \
     --non-interactive --agree-tos -m "$ACME_EMAIL" \
-    -d "$ACME_DOMAIN"; then
+    "${domain_args[@]}"; then
     echo "[20-certbot] DNS-01 証明書取得に失敗しました。" >&2
     exit 1
   fi
@@ -160,6 +268,9 @@ chmod +x "$hook_dir/reload-nginx.sh"
 
 if systemctl list-timers --all | grep -q "certbot.timer"; then
   systemctl enable --now certbot.timer
+elif systemctl list-timers --all | grep -q "snap.certbot.renew.timer"; then
+  systemctl enable --now snap.certbot.renew.timer
 else
-  echo "[20-certbot] certbot.timer が見つかりません。list-timers で確認してください。" >&2
+  echo "[20-certbot] certbot 用の systemd timer が見つかりません。list-timers で確認してください。" >&2
+  exit 1
 fi

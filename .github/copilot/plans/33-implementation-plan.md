@@ -309,7 +309,7 @@ WantedBy=multi-user.target
   - `proxy_set_header Connection $connection_upgrade`
   - `proxy_read_timeout 3600s`
   - `proxy_send_timeout 3600s`
-  - `map $http_upgrade $connection_upgrade` を http コンテキストで定義する。
+  - `map $http_upgrade $connection_upgrade` は http コンテキスト（`/etc/nginx/conf.d/connection_upgrade.conf`）で定義する。
 - 設定例（抜粋）:
 
 ```
@@ -368,6 +368,8 @@ maxretry = 5
   - Certbot 自体が TLS-ALPN-01 をサポートしていないため、`certbot --nginx --preferred-challenges tls-alpn-01` を前提とした設計は採用しない。
   - ValueDomain の API キーを `CERTBOT_DNS_CREDENTIALS` で指定したファイルに 1 行で保存し、`CERTBOT_DNS_PLUGIN=manual` を設定する。
   - hook スクリプトは `CERTBOT_DOMAIN` と `CERTBOT_VALIDATION` を用いて `_acme-challenge` の TXT レコードを追加/削除する。
+- 追加の SAN / wildcard が必要な場合は `ACME_EXTRA_DOMAINS` にスペース区切りで指定する。
+- DNS 伝播待ち時間は `CERTBOT_DNS_PROPAGATION_SECONDS`（デフォルト 60 秒）で調整する。
 - DNS-01 の実施コマンド（例）:
   - `certbot certonly --manual --preferred-challenges dns --manual-auth-hook /etc/letsencrypt/valuedomain-hooks/valuedomain-auth.sh --manual-cleanup-hook /etc/letsencrypt/valuedomain-hooks/valuedomain-cleanup.sh -d $ACME_DOMAIN`
 - `apt install -y certbot` を前提とする（DNS プラグインは不要）。

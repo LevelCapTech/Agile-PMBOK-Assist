@@ -29,6 +29,17 @@ cat <<'LIMIT' > "$limit_conf"
 limit_req_zone $binary_remote_addr zone=one:10m rate=10r/s;
 LIMIT
 
+map_conf="/etc/nginx/conf.d/connection_upgrade.conf"
+if [ -f "$map_conf" ]; then
+  cp "$map_conf" "${map_conf}.bak.$(date +%s)"
+fi
+cat <<'MAP' > "$map_conf"
+map $http_upgrade $connection_upgrade {
+  default upgrade;
+  ''      close;
+}
+MAP
+
 site_conf="/etc/nginx/sites-available/app.conf"
 if [ -f "$site_conf" ]; then
   cp "$site_conf" "${site_conf}.bak.$(date +%s)"
@@ -37,11 +48,6 @@ fi
 mkdir -p /etc/nginx/snippets
 
 cat <<'SITE' > "$site_conf"
-map $http_upgrade $connection_upgrade {
-  default upgrade;
-  ''      close;
-}
-
 server {
   listen 443 ssl http2;
   server_name __ACME_DOMAIN__;
