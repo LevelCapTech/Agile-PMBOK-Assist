@@ -34,7 +34,8 @@ sudo bash infra/setup/90-verify/10-healthcheck.sh
 ## 注意事項
 
 - `.env` には MySQL/SMTP などの機密情報が含まれるため、Git 管理外にしてください。
-- Nginx は 443 のみ公開し、80 は閉じたままです（TLS-ALPN-01 を使用）。
+- Nginx は 443 のみ公開し、80 は閉じたままです（Certbot は DNS-01 を利用）。
+- SSE/ストリーミングは `/api/stream/`、WebSocket は `/ws/` を例に Nginx 設定を用意しています（必要に応じてパスを変更してください）。
 - `/metrics` は `METRICS_ALLOW_IPS` で指定した監視サーバーの IP のみ許可します（未指定の場合は全 IP 許可のため明示指定を推奨）。
 - MySQL は `MYSQL_BIND_ADDRESS` に VPN 側 IP を指定し、general_log は OFF（必要時のみ ON）で運用します。
 - `app.env` に DATABASE_URL を指定しない場合は、`MYSQL_*` から自動生成される値を利用します。
@@ -62,6 +63,20 @@ infra/
     ├── 50-monitoring/
     ├── 60-mail/
     └── 90-verify/
+```
+
+## 運用確認
+
+- 80/TCP が閉塞されていること（ファイアウォールおよび Nginx 設定で `listen 80` がないこと）を確認する。
+- SSE は `curl -N https://example.com/api/stream/...` で逐次出力されることを確認する。
+- WebSocket は `wscat -c wss://example.com/ws/` 等で Upgrade が成立することを確認する。
+- 証明書更新は `certbot renew --dry-run` で DNS-01 が自動実行できることを確認する。
+
+```bash
+ss -ltnp | grep -E ":80\\s"
+curl -N https://example.com/api/stream/...
+wscat -c wss://example.com/ws/
+certbot renew --dry-run
 ```
 
 ## 再実行について

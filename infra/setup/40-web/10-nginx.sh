@@ -37,12 +37,45 @@ fi
 mkdir -p /etc/nginx/snippets
 
 cat <<'SITE' > "$site_conf"
+map $http_upgrade $connection_upgrade {
+  default upgrade;
+  ''      close;
+}
+
 server {
   listen 443 ssl http2;
   server_name __ACME_DOMAIN__;
 
   ssl_certificate __SSL_CERT__;
   ssl_certificate_key __SSL_KEY__;
+
+  location /api/stream/ {
+    limit_req zone=one burst=20 nodelay;
+    proxy_pass http://127.0.0.1:__APP_PORT__;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_http_version 1.1;
+    proxy_set_header Connection "";
+    proxy_buffering off;
+    proxy_cache off;
+    proxy_read_timeout 3600s;
+    proxy_send_timeout 3600s;
+    gzip off;
+  }
+
+  location /ws/ {
+    limit_req zone=one burst=20 nodelay;
+    proxy_pass http://127.0.0.1:__APP_PORT__;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection $connection_upgrade;
+    proxy_read_timeout 3600s;
+    proxy_send_timeout 3600s;
+  }
 
   location / {
     limit_req zone=one burst=20 nodelay;

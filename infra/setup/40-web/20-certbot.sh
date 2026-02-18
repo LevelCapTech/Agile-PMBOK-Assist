@@ -12,50 +12,41 @@ fi
 : "${ACME_CHALLENGE:?ACME_CHALLENGE が未設定です}"
 
 export DEBIAN_FRONTEND=noninteractive
-apt-get install -y certbot python3-certbot-nginx
+apt-get install -y certbot
 
 cert_path="/etc/letsencrypt/live/${ACME_DOMAIN}/fullchain.pem"
 if [ -f "$cert_path" ]; then
   echo "[20-certbot] 証明書は既に存在します。"
 else
-  case "$ACME_CHALLENGE" in
-    tls-alpn-01)
-      if ! certbot --nginx --preferred-challenges tls-alpn-01 -d "$ACME_DOMAIN" --non-interactive --agree-tos -m "$ACME_EMAIL"; then
-        echo "[20-certbot] 証明書取得に失敗しました。" >&2
-        exit 1
-      fi
-      ;;
-    dns-01)
-      if [ -z "${CERTBOT_DNS_PLUGIN:-}" ] || [ -z "${CERTBOT_DNS_CREDENTIALS:-}" ]; then
-        echo "[20-certbot] DNS-01 には DNS プラグイン設定が必要です。" >&2
-        exit 1
-      fi
-      allowed_plugins=(cloudflare route53 digitalocean dnsimple linode rfc2136)
-      plugin_valid=false
-      for plugin in "${allowed_plugins[@]}"; do
-        if [ "$CERTBOT_DNS_PLUGIN" = "$plugin" ]; then
-          plugin_valid=true
-          break
-        fi
-      done
-      if [ "$plugin_valid" != true ]; then
-        echo "[20-certbot] 不正な CERTBOT_DNS_PLUGIN 値です: $CERTBOT_DNS_PLUGIN" >&2
-        echo "[20-certbot] 許可されている値: ${allowed_plugins[*]}" >&2
-        exit 1
-      fi
-      if ! certbot certonly --non-interactive --agree-tos -m "$ACME_EMAIL" \
-        --dns-"$CERTBOT_DNS_PLUGIN" \
-        --dns-"$CERTBOT_DNS_PLUGIN"-credentials "$CERTBOT_DNS_CREDENTIALS" \
-        -d "$ACME_DOMAIN"; then
-        echo "[20-certbot] DNS-01 証明書取得に失敗しました。" >&2
-        exit 1
-      fi
-      ;;
-    *)
-      echo "[20-certbot] 未対応の ACME_CHALLENGE: $ACME_CHALLENGE" >&2
-      exit 1
-      ;;
-  esac
+  if [ "$ACME_CHALLENGE" != "dns-01" ]; then
+    echo "[20-certbot] 443 のみ公開するため ACME_CHALLENGE は dns-01 を指定してください。" >&2
+    exit 1
+  fi
+  if [ -z "${CERTBOT_DNS_PLUGIN:-}" ] || [ -z "${CERTBOT_DNS_CREDENTIALS:-}" ]; then
+    echo "[20-certbot] DNS-01 には DNS プラグイン設定が必要です。" >&2
+    exit 1
+  fi
+  allowed_plugins=(cloudflare route53 digitalocean dnsimple linode rfc2136)
+  plugin_valid=false
+  for plugin in "${allowed_plugins[@]}"; do
+    if [ "$CERTBOT_DNS_PLUGIN" = "$plugin" ]; then
+      plugin_valid=true
+      break
+    fi
+  done
+  if [ "$plugin_valid" != true ]; then
+    echo "[20-certbot] 不正な CERTBOT_DNS_PLUGIN 値です: $CERTBOT_DNS_PLUGIN" >&2
+    echo "[20-certbot] 許可されている値: ${allowed_plugins[*]}" >&2
+    exit 1
+  fi
+  apt-get install -y "python3-certbot-dns-${CERTBOT_DNS_PLUGIN}"
+  if ! certbot certonly --non-interactive --agree-tos -m "$ACME_EMAIL" \
+    --dns-"$CERTBOT_DNS_PLUGIN" \
+    --dns-"$CERTBOT_DNS_PLUGIN"-credentials "$CERTBOT_DNS_CREDENTIALS" \
+    -d "$ACME_DOMAIN"; then
+    echo "[20-certbot] DNS-01 証明書取得に失敗しました。" >&2
+    exit 1
+  fi
 fi
 
 hook_dir="/etc/letsencrypt/renewal-hooks/deploy"
@@ -67,4 +58,8 @@ systemctl reload nginx
 HOOK
 chmod +x "$hook_dir/reload-nginx.sh"
 
-systemctl enable --now certbot.timer
+if systemctl list-timers --all | grep -q "certbot.timer"; then
+  systemctl enable --now certbot.timer
+else
+  echo "[20-certbot] certbot.timer が見つかりません。list-timers で確認してください。" >&2
+fi

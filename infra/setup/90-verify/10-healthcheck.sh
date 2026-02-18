@@ -15,7 +15,6 @@ services=(
   prometheus-node-exporter
   prometheus-mysqld-exporter
   postfix
-  certbot.timer
 )
 
 for service in "${services[@]}"; do
@@ -24,6 +23,11 @@ for service in "${services[@]}"; do
     exit 1
   fi
 done
+
+if ! systemctl list-timers --all | grep -Eq "certbot|certbot\\.timer|certbot-renew|snap\\.certbot"; then
+  echo "[10-healthcheck] certbot の timer が見つかりません。list-timers で環境の名称を確認してください。" >&2
+  exit 1
+fi
 
 if ! nginx -t; then
   echo "[10-healthcheck] nginx 設定の検証に失敗しました。" >&2
