@@ -47,7 +47,7 @@
 
 ## 3. 取得した API KEY を CERTBOT_DNS_CREDENTIALS 用ファイルに保存（VPS 側）
 
-> これは画面操作じゃなく VPS 作業だけど、方式 B の「資格情報」の正体はこれ
+> これは画面操作ではなく VPS 側で実施する作業であり、DNS-01 の manual hook 方式で使用する API キーの保存場所です。
 
 - 例：
 
