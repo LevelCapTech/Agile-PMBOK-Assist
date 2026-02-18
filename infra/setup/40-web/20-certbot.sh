@@ -133,7 +133,8 @@ PY
 )"
 
 request_api PUT "$payload" >/dev/null
-propagation_seconds="${CERTBOT_DNS_PROPAGATION_SECONDS:-60}"
+# certbot manual hook には CERTBOT_DNS_PROPAGATION_SECONDS は渡されないため固定値を使用する
+propagation_seconds=60
 sleep "$propagation_seconds"
 HOOK
 
