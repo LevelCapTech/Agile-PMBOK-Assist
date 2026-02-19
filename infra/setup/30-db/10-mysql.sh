@@ -64,14 +64,25 @@ fi
 
 systemctl restart mysql
 
-if ! command -v mysql >/dev/null 2>&1; then
-  echo "[10-mysql] mysql クライアントが見つかりません。mysql-client のインストールに失敗しています。" >&2
+mysql_bin=""
+if command -v mysql >/dev/null 2>&1; then
+  mysql_bin="$(command -v mysql)"
+elif [ -x /usr/bin/mysql ]; then
+  mysql_bin="/usr/bin/mysql"
+elif command -v mariadb >/dev/null 2>&1; then
+  mysql_bin="$(command -v mariadb)"
+elif [ -x /usr/bin/mariadb ]; then
+  mysql_bin="/usr/bin/mariadb"
+fi
+
+if [ -z "$mysql_bin" ]; then
+  echo "[10-mysql] mysql/mariadb クライアントが見つかりません。mysql-client のインストールに失敗しています。" >&2
   exit 1
 fi
 
-MYSQL_CMD="mysql --protocol=socket"
+MYSQL_CMD="$mysql_bin --protocol=socket"
 if [ -f /root/.my.cnf ]; then
-  MYSQL_CMD="mysql --defaults-extra-file=/root/.my.cnf"
+  MYSQL_CMD="$mysql_bin --defaults-extra-file=/root/.my.cnf"
 fi
 
 $MYSQL_CMD <<SQL
