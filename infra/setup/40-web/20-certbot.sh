@@ -95,10 +95,15 @@ EOF
 }
 
 response="$(request_api GET)"
-records="$(printf '%s' "$response" | python3 - <<'PY'
-import json, sys
+export VD_RESPONSE="$response"
+records="$(python3 - <<'PY'
+import json, os, sys
+response = os.environ.get("VD_RESPONSE", "")
+if not response:
+    print("[valuedomain-auth] API レスポンスが空です", file=sys.stderr)
+    sys.exit(1)
 try:
-    data = json.load(sys.stdin)
+    data = json.loads(response)
 except json.JSONDecodeError as e:
     print(f"[valuedomain-auth] JSON デコードに失敗しました: {e}", file=sys.stderr)
     sys.exit(1)
@@ -195,10 +200,15 @@ EOF
 }
 
 response="$(request_api GET)"
-records="$(printf '%s' "$response" | python3 - <<'PY'
-import json, sys
+export VD_RESPONSE="$response"
+records="$(python3 - <<'PY'
+import json, os, sys
+response = os.environ.get("VD_RESPONSE", "")
+if not response:
+    print("[valuedomain-cleanup] API レスポンスが空です", file=sys.stderr)
+    sys.exit(1)
 try:
-    data = json.load(sys.stdin)
+    data = json.loads(response)
 except json.JSONDecodeError as e:
     print(f"[valuedomain-cleanup] JSON デコードに失敗しました: {e}", file=sys.stderr)
     sys.exit(1)
