@@ -18,7 +18,7 @@
 
   - `.github/copilot-instructions.md`
   - `.github/instructions/**/*.instructions.md`
-  - `.github/copilot/10-60-*` 配下の関連ファイル
+  - `.github/copilot/10-requirements.md` から `.github/copilot/60-ci-quality-gates.md` までの関連ファイル
 
 - CI は必ず成功させること（lint / typecheck / test / security）。
 
