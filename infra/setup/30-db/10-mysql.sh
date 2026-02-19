@@ -80,12 +80,12 @@ if [ -z "$mysql_bin" ]; then
   exit 1
 fi
 
-MYSQL_CMD="$mysql_bin --protocol=socket"
+MYSQL_CMD=("$mysql_bin" "--protocol=socket")
 if [ -f /root/.my.cnf ]; then
-  MYSQL_CMD="$mysql_bin --defaults-extra-file=/root/.my.cnf"
+  MYSQL_CMD=("$mysql_bin" "--defaults-extra-file=/root/.my.cnf")
 fi
 
-$MYSQL_CMD <<SQL
+"${MYSQL_CMD[@]}" <<SQL
 -- caching_sha2_password を前提とする（旧クライアント互換が必要な場合は要調整）
 ALTER USER 'root'@'localhost' IDENTIFIED BY '${MYSQL_ROOT_PASSWORD}';
 DELETE FROM mysql.user WHERE User='';
