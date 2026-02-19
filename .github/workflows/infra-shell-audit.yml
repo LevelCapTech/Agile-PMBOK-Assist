@@ -39,7 +39,11 @@ jobs:
             fi
           done
 
-          printf '%s\n' "${targets[@]}" | sort -u > /tmp/infra-shell-targets.txt
+          if ((${#targets[@]} == 0)); then
+            : > /tmp/infra-shell-targets.txt
+          else
+            printf '%s\n' "${targets[@]}" | sort -u > /tmp/infra-shell-targets.txt
+          fi
           if [[ ! -s /tmp/infra-shell-targets.txt ]]; then
             echo "No infra bash scripts found."
           fi
