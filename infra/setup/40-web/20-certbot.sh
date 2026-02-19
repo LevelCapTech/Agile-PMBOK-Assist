@@ -136,11 +136,29 @@ PY
 )"
 
 export VD_RECORDS="$records"
+export VD_DOMAIN="$domain"
+export VD_BASE_DOMAIN="$base_domain"
+record_name="$(python3 - <<'PY'
+import os, sys
+domain = os.environ["VD_DOMAIN"]
+base_domain = os.environ["VD_BASE_DOMAIN"]
+if domain == base_domain:
+    name = "_acme-challenge"
+elif domain.endswith("." + base_domain):
+    host = domain[: -(len(base_domain) + 1)]
+    name = f"_acme-challenge.{host}"
+else:
+    print("[valuedomain-auth] base_domain の判定に失敗しました", file=sys.stderr)
+    sys.exit(1)
+print(name)
+PY
+)"
 updated_records="$(python3 - <<'PY'
 import os
 records=os.environ.get("VD_RECORDS","")
 validation=os.environ["CERTBOT_VALIDATION"]
-line=f"txt _acme-challenge {validation}"
+record_name=os.environ["VD_RECORD_NAME"]
+line=f"txt {record_name} {validation}"
 lines=[l for l in records.splitlines() if l.strip()]
 if line not in lines:
     lines.append(line)
@@ -149,6 +167,7 @@ PY
 )"
 
 export UPDATED_RECORDS="$updated_records"
+export VD_RECORD_NAME="$record_name"
 export VD_NS_TYPE="$ns_type"
 payload="$(python3 - <<'PY'
 import json, os
@@ -262,17 +281,36 @@ PY
 )"
 
 export VD_RECORDS="$records"
+export VD_DOMAIN="$domain"
+export VD_BASE_DOMAIN="$base_domain"
+record_name="$(python3 - <<'PY'
+import os, sys
+domain = os.environ["VD_DOMAIN"]
+base_domain = os.environ["VD_BASE_DOMAIN"]
+if domain == base_domain:
+    name = "_acme-challenge"
+elif domain.endswith("." + base_domain):
+    host = domain[: -(len(base_domain) + 1)]
+    name = f"_acme-challenge.{host}"
+else:
+    print("[valuedomain-cleanup] base_domain の判定に失敗しました", file=sys.stderr)
+    sys.exit(1)
+print(name)
+PY
+)"
 updated_records="$(python3 - <<'PY'
 import os
 records=os.environ.get("VD_RECORDS","")
 validation=os.environ["CERTBOT_VALIDATION"]
-line=f"txt _acme-challenge {validation}"
+record_name=os.environ["VD_RECORD_NAME"]
+line=f"txt {record_name} {validation}"
 lines=[l for l in records.splitlines() if l.strip() and l.strip()!=line]
 print("\n".join(lines))
 PY
 )"
 
 export UPDATED_RECORDS="$updated_records"
+export VD_RECORD_NAME="$record_name"
 export VD_NS_TYPE="$ns_type"
 payload="$(python3 - <<'PY'
 import json, os
