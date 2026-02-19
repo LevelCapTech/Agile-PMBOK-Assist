@@ -96,6 +96,25 @@ EOF
 
 response="$(request_api GET)"
 export VD_RESPONSE="$response"
+ns_type="$(python3 - <<'PY'
+import json, os, sys
+response = os.environ.get("VD_RESPONSE", "")
+if not response:
+    print("[valuedomain-auth] API レスポンスが空です", file=sys.stderr)
+    sys.exit(1)
+try:
+    data = json.loads(response)
+except json.JSONDecodeError as e:
+    print(f"[valuedomain-auth] JSON デコードに失敗しました: {e}", file=sys.stderr)
+    sys.exit(1)
+try:
+    ns_type = data["results"]["ns_type"]
+except (KeyError, TypeError) as e:
+    print(f"[valuedomain-auth] API レスポンスの形式が想定外です: {e}", file=sys.stderr)
+    sys.exit(1)
+print(ns_type)
+PY
+)"
 records="$(python3 - <<'PY'
 import json, os, sys
 response = os.environ.get("VD_RESPONSE", "")
@@ -130,10 +149,12 @@ PY
 )"
 
 export UPDATED_RECORDS="$updated_records"
+export VD_NS_TYPE="$ns_type"
 payload="$(python3 - <<'PY'
 import json, os
 records=os.environ["UPDATED_RECORDS"]
-print(json.dumps({"ns_type":"valuedomain1","records":records,"ttl":"3600"}))
+ns_type=os.environ["VD_NS_TYPE"]
+print(json.dumps({"ns_type":ns_type,"records":records,"ttl":"3600"}))
 PY
 )"
 
@@ -201,6 +222,25 @@ EOF
 
 response="$(request_api GET)"
 export VD_RESPONSE="$response"
+ns_type="$(python3 - <<'PY'
+import json, os, sys
+response = os.environ.get("VD_RESPONSE", "")
+if not response:
+    print("[valuedomain-cleanup] API レスポンスが空です", file=sys.stderr)
+    sys.exit(1)
+try:
+    data = json.loads(response)
+except json.JSONDecodeError as e:
+    print(f"[valuedomain-cleanup] JSON デコードに失敗しました: {e}", file=sys.stderr)
+    sys.exit(1)
+try:
+    ns_type = data["results"]["ns_type"]
+except (KeyError, TypeError) as e:
+    print(f"[valuedomain-cleanup] API レスポンスの形式が想定外です: {e}", file=sys.stderr)
+    sys.exit(1)
+print(ns_type)
+PY
+)"
 records="$(python3 - <<'PY'
 import json, os, sys
 response = os.environ.get("VD_RESPONSE", "")
@@ -233,10 +273,12 @@ PY
 )"
 
 export UPDATED_RECORDS="$updated_records"
+export VD_NS_TYPE="$ns_type"
 payload="$(python3 - <<'PY'
 import json, os
 records=os.environ["UPDATED_RECORDS"]
-print(json.dumps({"ns_type":"valuedomain1","records":records,"ttl":"3600"}))
+ns_type=os.environ["VD_NS_TYPE"]
+print(json.dumps({"ns_type":ns_type,"records":records,"ttl":"3600"}))
 PY
 )"
 
