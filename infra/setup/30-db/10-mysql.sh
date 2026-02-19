@@ -14,7 +14,7 @@ fi
 : "${MYSQL_BIND_ADDRESS:?MYSQL_BIND_ADDRESS が未設定です}"
 
 export DEBIAN_FRONTEND=noninteractive
-apt-get install -y mysql-server
+apt-get install -y mysql-server mysql-client
 systemctl enable --now mysql
 
 cat <<MYSQLCONF > /etc/mysql/mysql.conf.d/99-custom.cnf
@@ -63,6 +63,11 @@ if command -v mysqld >/dev/null 2>&1; then
 fi
 
 systemctl restart mysql
+
+if ! command -v mysql >/dev/null 2>&1; then
+  echo "[10-mysql] mysql クライアントが見つかりません。mysql-client のインストールに失敗しています。" >&2
+  exit 1
+fi
 
 MYSQL_CMD="mysql --protocol=socket"
 if [ -f /root/.my.cnf ]; then
