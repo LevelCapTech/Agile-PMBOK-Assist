@@ -29,6 +29,17 @@ cat <<'LIMIT' > "$limit_conf"
 limit_req_zone $binary_remote_addr zone=one:10m rate=10r/s;
 LIMIT
 
+map_conf="/etc/nginx/conf.d/connection_upgrade.conf"
+if [ -f "$map_conf" ]; then
+  cp "$map_conf" "${map_conf}.bak.$(date +%s)"
+fi
+cat <<'MAP' > "$map_conf"
+map $http_upgrade $connection_upgrade {
+  default upgrade;
+  ''      close;
+}
+MAP
+
 site_conf="/etc/nginx/sites-available/app.conf"
 if [ -f "$site_conf" ]; then
   cp "$site_conf" "${site_conf}.bak.$(date +%s)"
@@ -43,6 +54,34 @@ server {
 
   ssl_certificate __SSL_CERT__;
   ssl_certificate_key __SSL_KEY__;
+
+  location /api/stream/ {
+    limit_req zone=one burst=20 nodelay;
+    proxy_pass http://127.0.0.1:__APP_PORT__;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_http_version 1.1;
+    proxy_set_header Connection "";
+    proxy_buffering off;
+    proxy_cache off;
+    proxy_read_timeout 3600s;
+    proxy_send_timeout 3600s;
+    gzip off;
+  }
+
+  location /ws/ {
+    limit_req zone=one burst=20 nodelay;
+    proxy_pass http://127.0.0.1:__APP_PORT__;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection $connection_upgrade;
+    proxy_read_timeout 3600s;
+    proxy_send_timeout 3600s;
+  }
 
   location / {
     limit_req zone=one burst=20 nodelay;

@@ -19,7 +19,7 @@ fi
 ufw default deny incoming
 ufw default allow outgoing
 
-# HTTPS のみ公開し、HTTP 80/tcp は開けない（TLS-ALPN-01 を利用）
+# HTTPS のみ公開し、HTTP 80/tcp は開けない（Certbot は DNS-01 を利用）
 ufw allow 443/tcp
 is_valid_ip() {
   local ip="$1"

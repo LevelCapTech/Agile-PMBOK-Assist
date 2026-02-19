@@ -34,7 +34,11 @@ sudo bash infra/setup/90-verify/10-healthcheck.sh
 ## 注意事項
 
 - `.env` には MySQL/SMTP などの機密情報が含まれるため、Git 管理外にしてください。
-- Nginx は 443 のみ公開し、80 は閉じたままです（TLS-ALPN-01 を使用）。
+- Nginx は 443 のみ公開し、80 は閉じたままです（Certbot は DNS-01 を利用）。
+- SSE/ストリーミングは `/api/stream/`、WebSocket は `/ws/` を例に Nginx 設定を用意しています（必要に応じてパスを変更してください）。
+- DNS-01 は ValueDomain の API キーを利用した manual hook 方式です（`CERTBOT_DNS_PLUGIN=manual`）。
+- `CERTBOT_DNS_CREDENTIALS` に ValueDomain API キーを 1 行で保存し、権限は `600` を付与してください。
+- DNS 伝播待ち時間は `CERTBOT_DNS_PROPAGATION_SECONDS` で調整できます（デフォルト 60 秒）。
 - `/metrics` は `METRICS_ALLOW_IPS` で指定した監視サーバーの IP のみ許可します（未指定の場合は全 IP 許可のため明示指定を推奨）。
 - MySQL は `MYSQL_BIND_ADDRESS` に VPN 側 IP を指定し、general_log は OFF（必要時のみ ON）で運用します。
 - `app.env` に DATABASE_URL を指定しない場合は、`MYSQL_*` から自動生成される値を利用します。
@@ -62,6 +66,34 @@ infra/
     ├── 50-monitoring/
     ├── 60-mail/
     └── 90-verify/
+```
+
+## DNS-01（ValueDomain）準備
+
+- ValueDomain 側で DNS API を有効化し、API キーを発行する。
+- `CERTBOT_DNS_CREDENTIALS` で指定したファイルに API キーを 1 行で保存する。
+- API キーファイルは `chmod 600` で権限を制限する。
+- ワイルドカードや追加 SAN が必要な場合は `ACME_EXTRA_DOMAINS` にスペース区切りで設定する。
+
+```bash
+echo "your-api-key-here" | sudo install -m 600 /dev/stdin /etc/letsencrypt/valuedomain-apikey.txt
+# または
+sudo install -m 600 /dev/null /etc/letsencrypt/valuedomain-apikey.txt
+sudo nano /etc/letsencrypt/valuedomain-apikey.txt
+```
+
+## 運用確認
+
+- 80/TCP が閉塞されていること（ファイアウォールおよび Nginx 設定で `listen 80` がないこと）を確認する。
+- SSE は `curl -N https://example.com/api/stream/...` で逐次出力されることを確認する。
+- WebSocket は `wscat -c wss://example.com/ws/` 等で Upgrade が成立することを確認する。
+- 証明書更新は `certbot renew --dry-run` で DNS-01 が自動実行できることを確認する。
+
+```bash
+ss -ltnp | grep -E ":80\\s"
+curl -N https://example.com/api/stream/...
+wscat -c wss://example.com/ws/
+certbot renew --dry-run
 ```
 
 ## 再実行について

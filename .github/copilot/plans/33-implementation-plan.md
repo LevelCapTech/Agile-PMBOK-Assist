@@ -11,7 +11,7 @@
   - SSR 前提の Next.js（`npm ci` + `npm run build` + `next start`）を systemd 管理で起動する。
   - MySQL を VPN 側 IP にバインドして初期化し、`prisma migrate deploy` を実行できる状態にする。
   - Nginx によるリバースプロキシ、rate limit、fail2ban 連携を設定する。
-  - Let’s Encrypt 証明書取得と自動更新を構成する（443 のみ公開、TLS-ALPN-01 または DNS-01）。
+  - Let’s Encrypt 証明書取得と自動更新を構成する（443 のみ公開、DNS-01（ValueDomain API + manual hook））。
   - 監視対象サーバーとして node_exporter / mysqld_exporter を導入し、監視サーバーから取得できるようにする。
   - postfix を整備し、root 宛て通知をさくら SMTP 経由で外部メールに転送する。
 - 非機能要件:
@@ -41,7 +41,7 @@
   - node_exporter / mysqld_exporter は外部アクセス可能なアドレスで起動し、UFW で監視 IP に限定する。
 - エッジケース / 例外系 / リトライ方針:
   - 既存設定がある場合は上書き前にバックアップを作成し、Nginx 設定は `nginx -t` で検証してから reload する。
-  - 証明書取得に失敗した場合は TLS-ALPN-01/DNS-01 の再試行を行い、失敗理由をログに残す。
+  - 証明書取得に失敗した場合は DNS-01（ValueDomain API + manual hook）の再試行を行い、失敗理由をログに残す。
   - MySQL 初期化は既存 DB/ユーザーがある場合はスキップし、冪等性を維持する。
 - ログと観測性（漏洩防止を含む）:
   - systemd/journald に Next.js、exporter を統合し、Nginx/MySQL/postfix は `/var/log` に出力する。
@@ -70,7 +70,7 @@
 | 15 | infra/setup/30-db/10-mysql.sh | MySQL セキュア初期化 |
 | 16 | infra/setup/30-db/20-prisma.sh | `prisma migrate deploy` 用の準備 |
 | 17 | infra/setup/40-web/10-nginx.sh | Nginx reverse proxy / rate limit 設定 |
-| 18 | infra/setup/40-web/20-certbot.sh | TLS-ALPN-01/DNS-01 で証明書取得 |
+| 18 | infra/setup/40-web/20-certbot.sh | DNS-01（ValueDomain manual hook）で証明書取得 |
 | 19 | infra/setup/40-web/30-nextjs-service.sh | `nextjs.service` 配置（/opt/agile-pmbok-assist_repo/app.env 参照） |
 | 20 | infra/setup/40-web/deploy.sh | pull後のビルド＋再起動処理 |
 | 21 | infra/setup/50-monitoring/10-exporters.sh | node_exporter / mysqld_exporter 導入 |
@@ -296,7 +296,46 @@ WantedBy=multi-user.target
 - 443 以外の外部公開は行わず、80 は閉じる（HTTP リダイレクトは行わない）。
   - セキュリティポリシー上、インターネット公開ポートは 443/TCP のみに限定し、80/TCP は L4 ファイアウォールと Nginx の両方で閉塞する。
   - 利用者向けドキュメントおよび運用手順に「必ず https:// でアクセスすること（http:// でのアクセスは不可）」を明記する。
-- ACME は TLS-ALPN-01 / DNS-01 を利用し、80 を開放しない（要件により 443 のみ公開）。
+- ACME は **DNS-01（ValueDomain API + manual hook）を前提**とし、80 を開放しない（Certbot は TLS-ALPN-01 をサポートしないため 3.11 に準拠）。
+- SSE（HTTP ストリーミング）向けの API パス（例: `/api/stream/`）では、Nginx バッファリングによる遅延を避けるため以下を設定する。
+  - `proxy_buffering off`
+  - `proxy_cache off`
+  - `proxy_read_timeout 3600s`（長時間生成に備えて調整）
+  - `proxy_send_timeout 3600s`
+  - 必要に応じて `gzip off`
+- WebSocket パス（例: `/ws/`）では HTTP Upgrade に対応するため以下を設定する。
+  - `proxy_http_version 1.1`
+  - `proxy_set_header Upgrade $http_upgrade`
+  - `proxy_set_header Connection $connection_upgrade`
+  - `proxy_read_timeout 3600s`
+  - `proxy_send_timeout 3600s`
+  - `map $http_upgrade $connection_upgrade` は http コンテキスト（`/etc/nginx/conf.d/connection_upgrade.conf`）で定義する。
+- 設定例（抜粋）:
+
+```
+map $http_upgrade $connection_upgrade {
+  default upgrade;
+  ''      close;
+}
+
+location /api/stream/ {
+  proxy_pass http://127.0.0.1:4000;
+  proxy_buffering off;
+  proxy_cache off;
+  proxy_read_timeout 3600s;
+  proxy_send_timeout 3600s;
+  gzip off;
+}
+
+location /ws/ {
+  proxy_pass http://127.0.0.1:4000;
+  proxy_http_version 1.1;
+  proxy_set_header Upgrade $http_upgrade;
+  proxy_set_header Connection $connection_upgrade;
+  proxy_read_timeout 3600s;
+  proxy_send_timeout 3600s;
+}
+```
 
 ### 3.9 Nginx rate limit 設計
 
@@ -325,11 +364,18 @@ maxretry = 5
 
 ### 3.11 Let’s Encrypt 証明書取得・自動更新設計
 
-- 443 のみ公開するため TLS-ALPN-01 または DNS-01 を利用する。
-- `certbot --nginx --preferred-challenges tls-alpn-01 -d $ACME_DOMAIN` を基本とし、DNS-01 が可能なら DNS プラグインを利用する。
-- `apt install -y certbot python3-certbot-nginx` を前提とし、`systemctl list-timers | grep certbot` でタイマーの有効化を確認する。
-- `systemctl enable --now certbot.timer` で更新タイマーを有効化する。
-- `certbot.timer` により自動更新し、`/etc/letsencrypt/renewal-hooks/deploy/reload-nginx.sh` で `systemctl reload nginx` を実行する。
+- 80/TCP を公開しないため、**Certbot は DNS-01（ValueDomain API + manual hook）を利用する**。
+  - Certbot 自体が TLS-ALPN-01 をサポートしていないため、`certbot --nginx --preferred-challenges tls-alpn-01` を前提とした設計は採用しない。
+  - ValueDomain の API キーを `CERTBOT_DNS_CREDENTIALS` で指定したファイルに 1 行で保存し、`CERTBOT_DNS_PLUGIN=manual` を設定する。
+  - hook スクリプトは `CERTBOT_DOMAIN` と `CERTBOT_VALIDATION` を用いて `_acme-challenge` の TXT レコードを追加/削除する。
+- 追加の SAN / wildcard が必要な場合は `ACME_EXTRA_DOMAINS` にスペース区切りで指定する。
+- DNS 伝播待ち時間は `CERTBOT_DNS_PROPAGATION_SECONDS`（デフォルト 60 秒）で調整する。
+- DNS-01 の実施コマンド（例）:
+  - `certbot certonly --manual --preferred-challenges dns --manual-auth-hook /etc/letsencrypt/valuedomain-hooks/valuedomain-auth.sh --manual-cleanup-hook /etc/letsencrypt/valuedomain-hooks/valuedomain-cleanup.sh -d $ACME_DOMAIN`
+- `apt install -y certbot` を前提とする（DNS プラグインは不要）。
+- systemd timer は環境差があるため `systemctl list-timers | grep -E "certbot|certbot\.timer|certbot-renew|snap\.certbot"` で確認する。
+  - `certbot.timer` が存在する場合は `systemctl enable --now certbot.timer` を実行する。
+- `certbot` の自動更新後、`/etc/letsencrypt/renewal-hooks/deploy/reload-nginx.sh` で `systemctl reload nginx` を実行する。
 
 ### 3.12 監視（node_exporter / mysqld_exporter）設計
 
@@ -467,10 +513,11 @@ flowchart TD
 
 - ロールバック方法:
   - `systemctl stop nextjs.service` でアプリ停止し、Nginx 設定をバックアップから戻す。
-  - 証明書更新に失敗した場合は `certbot` を再実行し、TLS-ALPN-01/DNS-01 を切り替える。
+  - 証明書更新に失敗した場合は `certbot` を再実行し、ValueDomain API キーと hook 設定を再確認する。
 - 監視・運用上の注意:
   - 公開ポートは 443 のみ。SSH は全 IP 許可（fail2ban 前提）。
   - `/metrics` は監視 IP のみ許可し、Basic 認証を併用する場合は secrets 管理外とする。
+  - 運用確認として 80/TCP の閉塞、SSE のストリーミング疎通、WebSocket の Upgrade、`certbot renew --dry-run` を確認する。
 - デプロイ運用の前提:
   - 本タスクのスコープでは CI/CD（自動デプロイ）は対象外とし、コード取得は GitHub App pull timer を利用する。
   - ビルド/再起動は手動実行（`infra/setup/40-web/deploy.sh`）を前提とする。
