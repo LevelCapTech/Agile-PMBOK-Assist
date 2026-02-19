@@ -362,7 +362,7 @@ chmod +x "$hook_dir/reload-nginx.sh"
 certbot_timers="$(systemctl list-timers --all --no-legend)"
 echo "[20-certbot] systemd timers (certbot 抜粋):" >&2
 echo "$certbot_timers" | awk 'tolower($0) ~ /certbot/ {print "  " $0}' >&2
-certbot_timer="$(printf '%s\n' "$certbot_timers" | awk 'tolower($0) ~ /certbot.*\.timer|snap\.certbot.*\.timer/ {print $NF; exit}')"
+certbot_timer="$(printf '%s\n' "$certbot_timers" | awk 'tolower($0) ~ /certbot.*\.timer|snap\.certbot.*\.timer/ {if (NF>=2) {print $(NF-1); exit}}')"
 if [ -z "$certbot_timer" ]; then
   echo "[20-certbot] certbot 用の systemd timer が見つかりません。list-timers で確認してください。" >&2
   exit 1
