@@ -13,6 +13,7 @@
 - GitHub App の Installation Token で HTTPS pull するため、`setup/20-runtime/30-github-app-pull.sh` が pull スクリプトと systemd timer を配置します。
 - GitHub App の設定手順は GitHub 公式ドキュメントを参照し、App ID / Installation ID / PEM を事前に用意してください。
 - SSH_ALLOW_IPS を指定した場合は、その IP のみに SSH を許可します（未指定の場合は全 IP 許可）。
+- infra 配下のシェルスクリプトは bash に統一し、shebang は `#!/usr/bin/env bash` を使用します。
 
 ## 使い方（概要）
 
