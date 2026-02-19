@@ -153,6 +153,7 @@ else:
 print(name)
 PY
 )"
+export VD_RECORD_NAME="$record_name"
 updated_records="$(python3 - <<'PY'
 import os
 records=os.environ.get("VD_RECORDS","")
@@ -167,7 +168,6 @@ PY
 )"
 
 export UPDATED_RECORDS="$updated_records"
-export VD_RECORD_NAME="$record_name"
 export VD_NS_TYPE="$ns_type"
 payload="$(python3 - <<'PY'
 import json, os
@@ -298,6 +298,7 @@ else:
 print(name)
 PY
 )"
+export VD_RECORD_NAME="$record_name"
 updated_records="$(python3 - <<'PY'
 import os
 records=os.environ.get("VD_RECORDS","")
@@ -310,7 +311,6 @@ PY
 )"
 
 export UPDATED_RECORDS="$updated_records"
-export VD_RECORD_NAME="$record_name"
 export VD_NS_TYPE="$ns_type"
 payload="$(python3 - <<'PY'
 import json, os
