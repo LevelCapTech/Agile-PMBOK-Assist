@@ -18,8 +18,8 @@ if [ ! -f /root/.my.cnf ]; then
   exit 1
 fi
 
-MYSQL_CMD="mysql --defaults-extra-file=/root/.my.cnf"
-$MYSQL_CMD <<SQL
+MYSQL_CMD=("mysql" "--defaults-extra-file=/root/.my.cnf")
+"${MYSQL_CMD[@]}" <<SQL
 CREATE USER IF NOT EXISTS '${MYSQL_EXPORTER_USER}'@'localhost' IDENTIFIED BY '${MYSQL_EXPORTER_PASSWORD}';
 GRANT PROCESS, REPLICATION CLIENT, SELECT ON *.* TO '${MYSQL_EXPORTER_USER}'@'localhost';
 FLUSH PRIVILEGES;
