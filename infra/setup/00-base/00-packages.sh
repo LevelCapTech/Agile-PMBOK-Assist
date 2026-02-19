@@ -9,6 +9,9 @@ fi
 
 export DEBIAN_FRONTEND=noninteractive
 
+mkdir -p /var/lib/apt/lists/partial
+chmod 755 /var/lib/apt/lists /var/lib/apt/lists/partial
+
 apt-get update -y
 apt-get upgrade -y
 
