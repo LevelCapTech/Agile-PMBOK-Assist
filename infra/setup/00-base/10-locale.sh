@@ -12,9 +12,8 @@ fi
 
 timedatectl set-timezone "$TIMEZONE"
 locale-gen "$LANG"
-localectl set-locale "LANG=$LANG" "LC_ALL=$LANG"
+localectl set-locale "LANG=$LANG"
 
 cat <<LOCALE > /etc/default/locale
 LANG=$LANG
-LC_ALL=$LANG
 LOCALE
