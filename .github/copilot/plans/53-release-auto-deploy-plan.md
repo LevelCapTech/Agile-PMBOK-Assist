@@ -177,3 +177,21 @@ flowchart TD
 - アプリ名（app）: `agile-pmbok-assist_repo`（`<app>` 表記はラベルとして固定）
 - 追記済みのアプリ名記述（`<app>`/`app`）は同一の固定ラベルを示し、表記差は意図しない。
 - 表記の正は `<app>` とし、`app` 表記は補足説明としてのみ併記する。
+- 既存 systemd 登録済みの unit/timer は「新規作成」ではなく差し替え（更新/置換）として扱う。
+- A) `nextjs.service`（既存 `/etc/systemd/system/nextjs.service`）の差し替え手順:
+  1. `sudo systemctl stop nextjs.service`
+  2. `/etc/systemd/system/nextjs.service` を更新（`WorkingDirectory` / `EnvironmentFile` / `ExecStart` を `current` 前提に統一）
+  3. `sudo systemctl daemon-reload`
+  4. `sudo systemctl restart nextjs.service`
+  5. `sudo systemctl status nextjs.service --no-pager -l`
+  - unit を repo 管理する場合は `infra/setup/40-web/30-nextjs-service.sh` を更新し、そこから再配置する前提とする。
+- B) 既存自動 pull（`agile-pmbok-assist-pull.service` / `agile-pmbok-assist-pull.timer`）との差し替え前提:
+  - `agile-pmbok-assist-pull.*` は Git リポジトリの pull を担う。
+  - 今回の release polling deploy は Release asset 取得・展開・current 切替・`nextjs.service` 再起動を担う。
+  - **正の方式は Release asset デプロイとし、pull.timer は停止/無効化対象**とする（競合防止）。
+  - 差し替え/無効化手順（Release asset デプロイを正とする場合）:
+    1. `sudo systemctl stop agile-pmbok-assist-pull.timer`
+    2. `sudo systemctl disable agile-pmbok-assist-pull.timer`
+    3. `sudo systemctl stop agile-pmbok-assist-pull.service`
+    4. `sudo systemctl daemon-reload`
+  - pull を残す場合は責務が競合しないよう、実行タイミングの調整または排他制御（例: ロックファイル）を設計に追加する。
