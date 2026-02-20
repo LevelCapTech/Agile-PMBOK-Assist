@@ -112,11 +112,11 @@ flowchart TD
 ### 5.1 使用する情報・資料
 
 - 作業に必要な資料:
-  - `.github/copilot/00-index.md`
-  - `.github/copilot/10-requirements.md`
-  - `.github/copilot/20-architecture.md`
-  - `.github/copilot/40-testing-strategy.md`
-  - `.github/copilot/60-ci-quality-gates.md`
+  - [00-index](../00-index.md)
+  - [10-requirements](../10-requirements.md)
+  - [20-architecture](../20-architecture.md)
+  - [40-testing-strategy](../40-testing-strategy.md)
+  - [60-ci-quality-gates](../60-ci-quality-gates.md)
 
 ## 6. テスト戦略
 
