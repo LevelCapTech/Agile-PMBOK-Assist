@@ -32,12 +32,13 @@
 ## 3. 設計方針
 
 - 責務分離 / データフロー:
-  - Workflow で日付取得・タグ解決・コミット検証・Release Notes 生成・Release 作成を順次実行する。
+  - Workflow で日付取得・既存タグ確認・コミット検証・新タグ計算・Release Notes 生成・Release 作成を順次実行する。
   - Conventional Commits 検証は commitlint（config-conventional）で実施し、以下のタイミングで強制する。
     - ローカル: pre-push フック（例: husky）で、push 対象コミットに対して commitlint を実行し、不正なコミットは push 前に検出する。
     - CI: main ブランチ向けすべての PR で commitlint を実行し、PR 内に不正なコミットが含まれる場合はジョブを失敗させてマージをブロックする。
     - Release ワークフロー: Release 対象レンジ（直近タグ〜HEAD）のコミットに対しても commitlint を実行し、main に混入した不正コミットがある場合は Release を失敗として停止する最終ゲートとする。
   - Release Notes は `conventional-changelog` の conventionalcommits プリセットで生成し、直近タグから HEAD までを対象とする。既存タグが 1 つも存在しない初回リリース時は、リポジトリ初期コミットから HEAD までを対象とする。
+  - npm コマンド（commitlint / conventional-changelog）は `.github/workflows/ci-nextjs.yml` と同様に `mock/v1/web` を作業ディレクトリとして実行し、git タグ操作はリポジトリルートで行う。
 - エッジケース / 例外系 / リトライ方針:
   - 同日の既存タグを `git tag -l "vYYYY.MM.DD*"` で取得し、未サフィックスは 0 とみなして最大サフィックス +1 を新タグに採用する。
   - 同一コミットで既存 Release が存在する場合は処理済みとして終了する。
@@ -71,11 +72,11 @@ sequenceDiagram
   alt 既存 Release が同一コミットに存在
     GH-->>Dev: 成功として終了
   else 新規 Release が必要
-    GH->>GH: 新タグ計算 (vYYYY.MM.DD(-N))
     GH->>GH: commitlint 実行
     alt commitlint 失敗
       GH-->>Dev: 失敗で終了
     else commitlint 成功
+      GH->>GH: 新タグ計算 (vYYYY.MM.DD(-N))
       GH->>GH: Release Notes 生成
       GH->>Repo: タグ作成と Release 作成
       GH-->>Dev: 完了
@@ -92,10 +93,10 @@ flowchart TD
   Date --> Tags[既存タグ検索]
   Tags --> CheckRelease{同一コミットのRelease有無}
   CheckRelease -->|あり| Done([終了])
-  CheckRelease -->|なし| NextTag[次のタグ決定]
-  NextTag --> Lint[commitlint 実行]
+  CheckRelease -->|なし| Lint[commitlint 実行]
   Lint -->|失敗| Fail([失敗])
-  Lint -->|成功| Notes[Release Notes 生成]
+  Lint -->|成功| NextTag[次のタグ決定]
+  NextTag --> Notes[Release Notes 生成]
   Notes --> Create[Release 作成]
   Create --> Done
 ```
@@ -127,19 +128,20 @@ flowchart TD
 - モック / フィクスチャ方針:
   - GitHub Actions 上で実行し、モックは使用しない。
 - テスト追加の実行コマンド（例: `python -m pytest`）:
-  - `npm run lint`
-  - `npm run build`
-  - `npx tsc --noEmit`
-  - `npm audit`
+  - `cd mock/v1/web && npm run lint`
+  - `cd mock/v1/web && npm run typecheck`
+  - `cd mock/v1/web && npm run test`
+  - `cd mock/v1/web && npm run build`
+  - `cd mock/v1/web && npm audit`
 
 ## 7. CI 品質ゲート
 
 - 実行コマンド（format / lint / typecheck / test / security）:
-  - format: `npx prettier . --check`（未導入の場合は実装時に判断）
-  - lint: `npm run lint`
-  - typecheck: `npx tsc --noEmit`
-  - test: `npm run test`（未定義の場合は実装時に整備）
-  - security: `npm audit`
+  - format: `cd mock/v1/web && npx prettier . --check`（未導入の場合は実装時に判断）
+  - lint: `cd mock/v1/web && npm run lint`
+  - typecheck: `cd mock/v1/web && npm run typecheck`
+  - test: `cd mock/v1/web && npm run test`
+  - security: `cd mock/v1/web && npm audit`
 - 通過基準と失敗時の対応:
   - いずれかのコマンドが失敗した場合、Release ワークフローは停止し、原因を修正して再実行する。
 
