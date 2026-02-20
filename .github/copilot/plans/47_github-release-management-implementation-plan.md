@@ -44,7 +44,7 @@
 | No. | パス | 変更内容 |
 | --- | --- | --- |
 | 1 | .github/workflows/release-date.yml | 日付ベース Release 生成ワークフローを新規追加 |
-| 2 | .commitlintrc.cjs | Conventional Commits 検証ルールの追加 |
+| 2 | mock/v1/web/.commitlintrc.cjs | Conventional Commits 検証ルールの追加 |
 | 3 | mock/v1/web/package.json | commitlint/conventional-changelog 追加に伴う devDependencies 更新 |
 
 ## 4. 設計UML
