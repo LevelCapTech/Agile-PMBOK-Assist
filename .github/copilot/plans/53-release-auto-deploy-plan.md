@@ -198,3 +198,11 @@ flowchart TD
     3. `sudo systemctl stop agile-pmbok-assist-pull.service`
     4. `sudo systemctl daemon-reload`
   - pull を残す場合は責務が競合しないよう、実行タイミングの調整または排他制御（例: ロックファイル）を設計に追加する。
+- bootstrap スクリプト運用（今回作業専用）:
+  - `infra/bootstrap_20260220.sh` を新規作成し、systemd unit 差し替え等の今回作業に限定した手順のみを安全に再実行する。
+  - フルの `bootstrap.sh` 再実行は副作用が大きいため避ける。
+  - 実行コマンド（必須）: `sudo ENV_FILE=infra/.env bash infra/bootstrap_20260220.sh`
+  - `ENV_FILE` の存在/権限を確認し、source で環境変数を読み込む。
+  - `infra/setup/40-web/30-nextjs-service.sh` を実行した後に `systemctl daemon-reload` → `systemctl restart nextjs.service` → `systemctl status nextjs.service --no-pager -l` を実行する。
+  - ヘルスチェックは `infra/setup/90-verify/10-healthcheck.sh` を呼び出す。
+  - ヘルスチェック不足分の対応: `infra/setup/90-verify/10-healthcheck.sh` の `nextjs` チェックを有効化し、`systemctl is-active nextjs` を含める。
