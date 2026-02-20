@@ -10,7 +10,7 @@
   - Release 作成・タグ作成・Release Notes 生成・bundle 添付を単一 workflow で完結できること。
   - workflow_dispatch 実行時に Next.js standalone ビルドを行い、bundle を tar.gz 化して Release asset を登録できること。
   - bundle には `server.js` / `.next/static` / `public` / `package.json` が含まれること。
-  - 既存タグの Release または既存の Release が存在する場合は workflow を必ず失敗させること。
+  - 既存のタグまたは Release が存在する場合は workflow を必ず失敗させること。
   - 既存 Release への asset 追記・上書き・差し替えを行わないこと。
 - 非機能要件:
   - GITHUB_TOKEN を用いた最小権限設計で実行できること。
@@ -57,7 +57,7 @@
     2. setup-node（Node 20 固定）
     3. npm ci
     4. JST 日付取得とタグ計算: `YYYY.MM.DD` / `YYYY.MM.DD-2` 以降
-    5. 既存タグ/Release 確認（存在する場合は失敗し、asset追記や上書きは行わない）
+    5. 既存タグ/Release 確認（存在する場合は失敗）
     6. commitlint 実行
     7. Release Notes 生成
     8. npm run build（standalone 出力）
