@@ -115,7 +115,13 @@ jobs:
       - name: Generate release notes
         run: |
           set -euo pipefail
-          npx conventional-changelog -p conventionalcommits -u --tag-prefix '' -o release-notes.md
+          range_from="${{ steps.release_meta.outputs.range_from }}"
+          if [[ -n "${range_from}" ]]; then
+            npx conventional-changelog -p conventionalcommits --tag-prefix '' -o release-notes.md -- --from="${range_from}" --to=HEAD
+          else
+            # No previous tag or starting point; fall back to default behavior.
+            npx conventional-changelog -p conventionalcommits --tag-prefix '' -o release-notes.md
+          fi
 
       - name: Build standalone
         run: npm run build
