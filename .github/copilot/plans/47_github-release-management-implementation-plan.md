@@ -57,7 +57,7 @@
     1. checkout
     2. setup-node（Node 20 固定）
     3. npm ci（リポジトリルート）
-    4. `release_date`（JST 日付）を基にタグ計算: `YYYY.MM.DD` / `YYYY.MM.DD-2` / `YYYY.MM.DD-3` ...（初回はサフィックス無しで固定し、2回目以降を `-2` 起点で区別するため `-1` は欠番扱いとする）
+    4. `release_date`（JST 日付）を基にタグ計算: `YYYY.MM.DD` / `YYYY.MM.DD-2` / `YYYY.MM.DD-3` ...（初回は `YYYY.MM.DD`、再リリースは `-2` 起点とし、`-1` は将来用途のため予約する）
     5. 採用予定タグ（同名の Git tag）と同名 Release を確認（いずれかが存在する場合は失敗）
     6. commitlint 実行
     7. Release Notes 生成
@@ -248,7 +248,7 @@ flowchart TD
 
 - ロールバック方法:
   - 誤ったタグや Release が生成された場合は GitHub Release とタグを削除する。
-  - 誤った bundle asset が登録された場合は Release とタグを削除して再実行する、または新しい枝番タグ（例: `YYYY.MM.DD-2` / `YYYY.MM.DD-3`、`-1` は使用しない）で再リリースする。公開後の修正は枝番タグでの再リリースを優先し、未公開であれば削除して再実行する。ベースタグ `YYYY.MM.DD` が残っている場合は `-2` 以降の枝番で再リリースする。
+  - 誤った bundle asset が登録された場合は、公開前は Release とタグを削除して再実行する。公開後は新しい枝番タグ（例: `YYYY.MM.DD-2` / `YYYY.MM.DD-3`、`-1` は使用しない）で再リリースする。ベースタグ `YYYY.MM.DD` が残っている場合は `-2` 以降の枝番で再リリースする。
 - 監視・運用上の注意:
   - Release 作成ログに Secrets を出さない。
   - main ブランチを基準に運用し、デプロイや npm publish は行わない。
