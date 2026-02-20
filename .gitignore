@@ -19,6 +19,7 @@
 
 # production
 /build
+/mock/v1/web/dist
 
 # misc
 .DS_Store
