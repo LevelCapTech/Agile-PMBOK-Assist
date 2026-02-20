@@ -4,7 +4,7 @@
 
 - 機能要件:
   - GitHub Release（latest）から `next-bundle.tgz` を取得し、サーバーで自動デプロイする。
-  - `/opt/Agile-PMBOK-Assist/releases/<tag>` へ展開し、`current` シンボリックリンクを切り替える。
+  - `/opt/agile-pmbok-assist_repo/releases/<tag>` へ展開し、`current` シンボリックリンクを切り替える。
   - デプロイ完了後に systemd 経由で `next start` を安全に再起動する。
   - 同一 tag の再取得を防ぎ、冪等に終了できる。
   - 失敗時は `current` を変更せず、ロールバックが実行できる。
@@ -17,12 +17,13 @@
 ## 2. スコープと変更対象
 
 - 変更ファイル（新規/修正/削除）:
-  - `scripts/server-deploy.sh`（新規）: Release 取得・展開・symlink 切替・再起動・ロールバック処理。
-  - `deploy/agile-pmbok.service`（新規）: systemd ユニット定義。
+  - `infra/setup/40-web/40-release-poll-deploy.sh`（新規）: Release 取得・展開・symlink 切替・再起動・ロールバック処理。
+  - `infra/setup/40-web/30-nextjs-service.sh`（更新/置換）: systemd ユニット差し替え用の更新。
   - `docs/server-deployment.md`（新規）: 運用手順、ロールバック方法、監視観点。
+  - シェル配置は `infra/` 配下に統一し、`scripts/` や `deploy/` 直置きは行わない。
 - 影響範囲・互換性リスク:
   - サーバー運用に限定。アプリ本体コードや CI 設計は変更しない。
-  - `systemctl restart` による短時間の停止が発生しうるため、graceful 停止とヘルスチェックで影響を最小化する。
+  - `systemctl restart nextjs.service` による短時間の停止が発生しうるため、graceful 停止とヘルスチェックで影響を最小化する。
 - 外部依存・Secrets の扱い:
   - GitHub App の `App ID` / `Installation ID` / `Private Key` をサーバー側の環境変数（例: `/etc/agile-pmbok/deploy.env`）で管理。
   - GitHub API（Release / Asset ダウンロード）へのアクセスが必須。
@@ -30,23 +31,23 @@
 ## 3. 設計方針
 
 - 責務分離 / データフロー:
-  - `server-deploy.sh` は「Release 検知 → 取得 → 展開 → 切替 → 再起動」を一貫して担当する。
-  - Release 検知は **polling** を採用（systemd timer もしくは cron）。Webhook 依存を避け、サーバーの外部公開を最小化。
+  - `infra/setup/40-web/40-release-poll-deploy.sh` は「Release 検知 → 取得 → 展開 → 切替 → 再起動」を一貫して担当する。
+  - Release 検知は **polling** を採用（systemd timer もしくは cron）。Webhook 依存を避けつつ Release asset デプロイを正とするため、既存 `agile-pmbok-assist-pull.timer` は停止/無効化する。
   - GitHub API 利用: GitHub App の JWT を生成し、`POST /app/installations/{id}/access_tokens` で installation token を取得。`GET /repos/{owner}/{repo}/releases/latest` から最新 Release を取得し、`next-bundle.tgz` の asset を `Accept: application/octet-stream` でダウンロード。
 - 展開ディレクトリ設計:
-  - `/opt/Agile-PMBOK-Assist/releases/<tag>` に展開。
-  - `/opt/Agile-PMBOK-Assist/current -> releases/<tag>` を `ln -sfn` で原子的に切替。
+  - `/opt/agile-pmbok-assist_repo/releases/<tag>` に展開。
+  - `/opt/agile-pmbok-assist_repo/current -> releases/<tag>` を `ln -sfn` で原子的に切替。
   - 展開完了の印として `releases/<tag>/.deploy-complete` を作成。
 - 冪等性設計:
   - `releases/<tag>` と `.deploy-complete` が存在し、`current` が同じ tag を指す場合は即終了。
   - ダウンロード途中・展開途中の一時ディレクトリは `.deploying` などに隔離し、失敗時は削除する。
 - 再起動戦略（graceful restart）:
-  - `systemctl try-restart agile-pmbok.service` を実行。
+  - `systemctl try-restart nextjs.service` を実行。
   - `KillSignal=SIGTERM` と `TimeoutStopSec` を設定し、`next start` を正常停止させてから再起動。
   - 再起動後に `systemctl is-active` とアプリのヘルスチェック（HTTP 200）を確認。
 - ロールバック設計:
-  - `current` を直前のリリースへ戻し、`systemctl restart` を実行。
-  - `server-deploy.sh --rollback <tag>` を用意し、指定 tag へ切替可能にする。
+  - `current` を直前のリリースへ戻し、`systemctl restart nextjs.service` を実行。
+  - `infra/setup/40-web/40-release-poll-deploy.sh --rollback <tag>` を用意し、指定 tag へ切替可能にする。
 - エラー時復旧フロー:
   - Release 取得失敗／Asset なし／ダウンロード失敗／展開失敗時は `current` を変更せず終了。
   - 再起動失敗時は symlink を旧バージョンへ戻し、再起動を再試行。
@@ -59,8 +60,8 @@
 
 | No. | パス | 変更内容 |
 | --- | -- | ---- |
-| 1 | `scripts/server-deploy.sh` | Release 取得・展開・symlink 切替・再起動・ロールバックを実装 | 
-| 2 | `deploy/agile-pmbok.service` | systemd ユニット定義（WorkingDirectory / ExecStart / StopSignal など） | 
+| 1 | `infra/setup/40-web/40-release-poll-deploy.sh` | Release 取得・展開・symlink 切替・再起動・ロールバックを実装 | 
+| 2 | `infra/setup/40-web/30-nextjs-service.sh` | systemd ユニット差し替え（WorkingDirectory / ExecStart / StopSignal など） | 
 | 3 | `docs/server-deployment.md` | 手順書・運用/監視・ロールバック方法の記載 | 
 
 ## 4. 設計UML
@@ -70,9 +71,9 @@
 ```mermaid
 sequenceDiagram
   actor Timer as systemd-timer/cron
-  participant Script as server-deploy.sh
+  participant Script as infra/setup/40-web/40-release-poll-deploy.sh
   participant GitHub as GitHub API
-  participant FS as /opt/Agile-PMBOK-Assist
+  participant FS as /opt/agile-pmbok-assist_repo
   participant Systemd as systemd
 
   Timer->>Script: 定期実行
@@ -82,7 +83,7 @@ sequenceDiagram
   Script->>GitHub: next-bundle.tgz ダウンロード
   Script->>FS: releases/<tag> 展開
   Script->>FS: current symlink 切替
-  Script->>Systemd: try-restart agile-pmbok.service
+  Script->>Systemd: try-restart nextjs.service
   Systemd-->>Script: restart 結果
   Script-->>Timer: 成功/失敗ログ
 ```
@@ -112,9 +113,9 @@ flowchart TD
 
 | 手順ID | 作業名 | 作業の目的 | 具体的な作業内容（人間がやることを詳細に書く） | 判断・確認ポイント | 完了条件（チェック可能な状態） |
 | ---- | --- | ----- | ----------------------- | --------- | --------------- |
-| H-01 | GitHub App 資格情報の配置 | API 認証を可能にする | GitHub App の Private Key を `/etc/agile-pmbok/app.private-key.pem` に配置し、`APP_ID` と `INSTALLATION_ID` を `/etc/agile-pmbok/deploy.env` に設定する | 秘密鍵の権限が 600 であること | `server-deploy.sh --check-auth` が成功する |
-| H-02 | systemd ユニット配置 | Next.js 起動を管理する | `deploy/agile-pmbok.service` を `/etc/systemd/system/` に配置し `systemctl daemon-reload` と `systemctl enable --now` を実行 | `systemctl status agile-pmbok.service` が active | 起動後に HTTP 200 を返す |
-| H-03 | 定期実行設定 | Release 検知を自動化 | systemd timer または cron で `server-deploy.sh` を 5〜10 分間隔で実行 | 実行ログが定期的に出力される | 期待する頻度でログが残る |
+| H-01 | GitHub App 資格情報の配置 | API 認証を可能にする | GitHub App の Private Key を `/etc/agile-pmbok/app.private-key.pem` に配置し、`APP_ID` と `INSTALLATION_ID` を `/etc/agile-pmbok/deploy.env` に設定する | 秘密鍵の権限が 600 であること | `infra/setup/40-web/40-release-poll-deploy.sh --check-auth` が成功する |
+| H-02 | systemd ユニット差し替え | Next.js 起動を管理する | `infra/setup/40-web/30-nextjs-service.sh` を更新し、`/etc/systemd/system/nextjs.service` を差し替えた後に `systemctl daemon-reload` と `systemctl restart nextjs.service` を実行 | `systemctl status nextjs.service` が active | 起動後に HTTP 200 を返す |
+| H-03 | 定期実行設定 | Release 検知を自動化 | systemd timer または cron で `infra/setup/40-web/40-release-poll-deploy.sh` を 5〜10 分間隔で実行 | 実行ログが定期的に出力される | 期待する頻度でログが残る |
 
 ### 5.1 使用する情報・資料
 
@@ -133,8 +134,8 @@ flowchart TD
 - モック / フィクスチャ方針:
   - 実装 PR では `--dry-run` モードとモック URL を用意し、GitHub API を直接叩かない検証経路を準備する。
 - テスト追加の実行コマンド（例: `python -m pytest`）:
-  - `bash -n scripts/server-deploy.sh`
-  - `./scripts/server-deploy.sh --dry-run`
+  - `bash -n infra/setup/40-web/40-release-poll-deploy.sh`
+  - `./infra/setup/40-web/40-release-poll-deploy.sh --dry-run`
 
 ## 7. CI 品質ゲート
 
@@ -146,7 +147,7 @@ flowchart TD
 ## 8. ロールアウト・運用
 
 - ロールバック方法:
-  - `server-deploy.sh --rollback <tag>` を実行し、`current` を旧リリースへ切替後に `systemctl restart`。
+  - `infra/setup/40-web/40-release-poll-deploy.sh --rollback <tag>` を実行し、`current` を旧リリースへ切替後に `systemctl restart nextjs.service`。
   - 直近のリリースを自動で検出する場合は `releases/` の作成日時順で選定。
 - 監視・運用上の注意:
   - journald で `TAG=` `RESULT=` を含むログを監視。
@@ -166,7 +167,9 @@ flowchart TD
 ### 追記
 
 - アプリ名（<app>）: `agile-pmbok-assist_repo`
+- デプロイ先ルート: `/opt/agile-pmbok-assist_repo`
 - 再起動対象 systemd service: `nextjs.service`
+- デプロイスクリプト配置: `infra/setup/40-web/40-release-poll-deploy.sh`（`scripts/` や `deploy/` 直置き禁止）
 - デプロイ済み判定（state file）:
   - `/opt/agile-pmbok-assist_repo/.last_deployed_tag`
 - 実体切替（current symlink）:
