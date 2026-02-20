@@ -3,7 +3,7 @@
 ## 1. 機能要件 / 非機能要件
 
 - 機能要件:
-  - Next.js を `output: "standalone"` でビルドし、bundle ディレクトリを生成できること。
+  - Next.js を `output: "standalone"` でビルドし、`bundle` ディレクトリを生成できること。
   - bundle を tar.gz 化し、成果物 `next-bundle.tgz` を生成できること。
   - tag push をトリガーに GitHub Actions で build → bundle 生成 → Release asset 登録を実行できること。
   - 既存 Release が同一タグで存在する場合は workflow を失敗として停止すること。
@@ -22,8 +22,8 @@
   - bundle 生成 / tar.gz 化
   - Release asset 登録
 - Out of Scope:
-  - タグ戦略（Issue #47 参照）
-  - 本番サーバー側の pull/運用
+  - タグ戦略（別Issueで定義済みのため本 plan では扱わない）
+  - 本番サーバー側の pull/unpack/運用
   - デプロイ自動化 / ロールバック自動化
   - Docker 化 / GHCR 登録
 - 変更ファイル（新規/修正/削除）:
@@ -50,14 +50,17 @@
     8. Release 作成
     9. asset 登録
   - GitHub Actions は `actions/checkout` / `actions/setup-node` / Release 登録用アクションをタグまたは commit SHA で固定する。
-  - standalone 設定は既存の `next.config.ts` に追加し、以下の設定と等価にする（`.js` へ移行する場合は二重定義を避ける）。
+  - standalone 設定はリポジトリルートの `./next.config.ts`（既存ファイル）に追加し、既存設定を保持したまま `output: "standalone"` を追記する。
+  - 以下のコードは追加差分のイメージであり、実装時は既存設定を維持する。
 
-```js
-/** @type {import('next').NextConfig} */
-const nextConfig = {
+```ts
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
   output: "standalone",
 };
-module.exports = nextConfig;
+
+export default nextConfig;
 ```
 
   - bundle 構成は以下で固定する。
@@ -71,16 +74,18 @@ bundle/
   package.json
 ```
 
-  - bundle 生成は以下の手順で固定する。
+  - bundle 生成は以下の手順で固定し、workflow 内の bundle 生成ステップで検証を行う。
+    - build 完了直後に `test -f .next/standalone/server.js` を実行し、存在しない場合はエラーメッセージを出して workflow を失敗させる（コピー前の検証）
     - `rm -rf bundle && mkdir -p bundle`
     - `cp -R .next/standalone/* bundle/`
     - `mkdir -p bundle/.next && cp -R .next/static bundle/.next/static`
     - `cp -R public bundle/public`
     - `cp package.json bundle/package.json`
-  - tar.gz の生成は `tar -czf next-bundle.tgz -C bundle .` で行い、成果物名を固定する。
+    - コピー後に `bundle/server.js` が存在することを確認する
+  - tar.gz の生成は `tar -czf next-bundle.tgz -C bundle .` で行い、`tar -xzf next-bundle.tgz -C <確認用ディレクトリ>` で展開した際に展開先直下へ `server.js` などが配置される構成を固定する。
   - Release asset 登録は `github.ref_name` の tag を利用し、`gh release create` などで Release 作成後に `gh release upload` で登録する。
 - エッジケース / 例外系 / リトライ方針:
-  - `.next/standalone` または `server.js` が存在しない場合は bundle 生成を失敗させる。
+  - `.next/standalone/server.js` が存在しない場合は bundle 生成を失敗させる。
   - `gh release view <tag>` または GitHub API で既存 Release を検知した場合は exit 1 で停止する。
   - build 失敗や tar.gz 生成失敗時は Release 作成を行わない。
   - 依存コマンドは `set -euo pipefail` 相当で fail-fast を担保する。
@@ -92,9 +97,9 @@ bundle/
 
 | No. | パス | 変更内容 |
 | --- | --- | --- |
-| 1 | next.config.ts | `output: "standalone"` を追加して standalone 出力を有効化 |
+| 1 | ./next.config.ts | 既存設定を保持したまま `output: "standalone"` を追加して standalone 出力を有効化 |
 | 2 | .github/workflows/build-and-release.yml | tag push で build → bundle → Release asset 登録を行う workflow を追加 |
-| 3 | docs/release-process.md | Release 作成手順と bundle 検証方法を明文化 |
+| 3 | docs/release-process.md | Release 作成手順・bundle 検証方法・失敗時対応の概要を明文化 |
 | 4 | package.json | build script を確認（変更不要の場合は維持） |
 
 ## 4. 設計UML
@@ -145,9 +150,9 @@ flowchart TD
 
 | 手順ID | 作業名 | 作業の目的 | 具体的な作業内容（人間がやることを詳細に書く） | 判断・確認ポイント | 完了条件（チェック可能な状態） |
 | ---- | --- | ----- | ----------------------- | --------- | --------------- |
-| H-01 | standalone設定確認 | 出力形式の固定 | `next.config.ts` に `output: "standalone"` が入っていることを確認する | `next build` で `.next/standalone` が生成される | `.next/standalone/server.js` が存在する |
+| H-01 | standalone 設定確認 | 出力形式の固定 | `next.config.ts` に `output: "standalone"` が入っていることを確認する | `next build` で `.next/standalone` が生成される | `.next/standalone/server.js` が存在する |
 | H-02 | workflow手動検証 | 初回実行の確認 | 有効なタグを push して workflow を実行する | Release が作成され、asset が登録される | GitHub Release に `next-bundle.tgz` が存在する |
-| H-03 | bundle内容確認 | 成果物の妥当性確認 | `tar -tzf next-bundle.tgz` で bundle 内容を確認する | `server.js` と `.next/static` が含まれる | bundle 構成が設計通りである |
+| H-03 | bundle内容確認 | 成果物の妥当性確認 | `tar -tzf next-bundle.tgz` で bundle 内容を確認する | bundle ルートに `server.js` があり `.next/static` が含まれる | bundle 構成が設計通りである |
 | H-04 | 既存Release検証 | 冪等性の確認 | 同一タグで再実行し、workflow が失敗することを確認する | Release 既存時に失敗する | Release が重複作成されない |
 
 ### 5.1 使用する情報・資料
@@ -178,9 +183,10 @@ flowchart TD
 - 実行コマンド（format / lint / typecheck / test / security）:
   - format: 未整備の場合は導入可否を実装で判断する。
   - lint: `npm run lint`
-  - typecheck: `npm run typecheck`（未整備の場合は追加/別Issueで対応）
-  - test: `npm run test`（未整備の場合は追加/別Issueで対応）
-  - security: `npm audit --audit-level=high`
+  - typecheck: `npm run typecheck` （現状未整備のため別Issueで整備し、本 plan では実行対象外）
+  - test: `tar -tzf next-bundle.tgz`（bundle 構成検証を最低限の統合テストとして実行）
+  - test: `npm run test` （現状未整備のため別Issueで整備し、本 plan では実行対象外）
+  - security: `npm audit`
 - 通過基準と失敗時の対応:
   - いずれかのコマンドが失敗した場合は Release 作成を行わず、原因を修正して再実行する。
 
@@ -190,7 +196,7 @@ flowchart TD
   - 誤った Release を作成した場合は GitHub Release と tag を削除する。
 - 監視・運用上の注意:
   - Release 作成ログに Secrets を出さない。
-  - tag の存在は前提とし、タグ戦略は Issue #47 を参照する。
+  - tag の存在は前提とし、タグ戦略は別Issueで確定済みとする。
 
 ## 9. オープンな課題 / ADR 要否
 
