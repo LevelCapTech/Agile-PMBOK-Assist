@@ -174,3 +174,4 @@ flowchart TD
 - デプロイは「成果物の入替 + 再起動」に限定し、**デプロイ先でのCI実行は行わない**（Release作成側で担保）。
 - ポーリング方式デプロイは「state file + current symlink + restart」で堅牢化する。
 - `<app>` はテンプレ記号ではなく、実名 `agile-pmbok-assist_repo` を固定値として扱う。
+- アプリ名（app）: `agile-pmbok-assist_repo`（`<app>` 表記はラベルとして固定）
