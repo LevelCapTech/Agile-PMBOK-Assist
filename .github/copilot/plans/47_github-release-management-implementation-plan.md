@@ -32,7 +32,7 @@
   - Conventional Commits 検証は commitlint（config-conventional）で実施する。
   - Release Notes は `conventional-changelog` の conventionalcommits プリセットで生成し、直近タグから HEAD までを対象とする。
 - エッジケース / 例外系 / リトライ方針:
-  - 同日の既存タグを `git tag -l "vYYYY.MM.DD*"` で取得し、最大サフィックス +1 を新タグに採用する。
+  - 同日の既存タグを `git tag -l "vYYYY.MM.DD*"` で取得し、未サフィックスは 0 とみなして最大サフィックス +1 を新タグに採用する。
   - 同一コミットで既存 Release が存在する場合は処理済みとして終了する。
   - GitHub API の一時的な失敗は最大 3 回までリトライし、失敗時は非 0 で終了する。
 - ログと観測性（漏洩防止を含む）:
@@ -128,7 +128,7 @@ flowchart TD
 ## 7. CI 品質ゲート
 
 - 実行コマンド（format / lint / typecheck / test / security）:
-  - format: `npx prettier .`（未導入の場合は実装時に判断）
+  - format: `npx prettier . --check`（未導入の場合は実装時に判断）
   - lint: `npm run lint`
   - typecheck: `npx tsc --noEmit`
   - test: `npm run test`（未定義の場合は実装時に整備）
