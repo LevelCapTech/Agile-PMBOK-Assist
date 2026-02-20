@@ -4,7 +4,7 @@
 
 - 機能要件:
   - workflow_dispatch を起点に、日付ベースの GitHub Release を作成できること。
-  - タグ形式は `YYYY.MM.DD`（ 初回はサフィックス無し ）とし、同日 2 回目以降は `YYYY.MM.DD-2` から枝番を付与すること。
+  - タグ形式は `YYYY.MM.DD`（初回はサフィックス無し）とし、同日 2 回目以降は `YYYY.MM.DD-2` から枝番を付与すること。
   - Conventional Commits を解析して Release Notes を自動生成すること。
   - 無効な Conventional Commits を検知した場合はワークフローを失敗として停止すること。
   - Release 作成・タグ作成・Release Notes 生成・bundle 添付を単一 workflow で完結できること。
@@ -53,7 +53,7 @@
     1. checkout
     2. setup-node（Node 20 固定）
     3. npm ci
-    4. JST 日付取得とタグ計算（ `YYYY.MM.DD` / `YYYY.MM.DD-2` 以降 ）
+    4. JST 日付取得とタグ計算（`YYYY.MM.DD` / `YYYY.MM.DD-2` 以降）
     5. commitlint 実行
     6. Release Notes 生成
     7. npm run build（standalone 出力）
@@ -99,7 +99,7 @@ bundle/
   - Release asset 登録は計算したタグを利用し、`gh release create` で Release 作成後に `gh release upload` で登録する。
 - エッジケース / 例外系 / リトライ方針:
   - JST 日付で `git tag -l "YYYY.MM.DD*"` を取得し、当日一致タグが 0 件の場合は `YYYY.MM.DD`（サフィックス無し）を新タグとする。
-  - 既存タグがある場合は `YYYY.MM.DD-2` 以降の枝番を対象とし、最小の未使用番号を新タグに採用する（ 例: `2026.02.20` が既にあれば次は `2026.02.20-2`、`2026.02.20-2` が存在する場合は `2026.02.20-3` ）。
+  - 既存タグがある場合は `YYYY.MM.DD-2` 以降の枝番を対象とし、最小の未使用番号を新タグに採用する（例: `2026.02.20` が既にあれば次は `2026.02.20-2`、`2026.02.20-2` が存在する場合は `2026.02.20-3`）。
   - 同一コミットで既存 Release が存在する場合は処理済みとして終了する。
   - GitHub API を用いるタグ作成および Release 作成処理について、一時的な失敗（5xx / rate limit など）が発生した場合は最大 3 回までリトライし、各試行間に 5 秒の固定待機を挟む。永続的な 4xx エラーはリトライせず即時に失敗とし、最終的に解消しない場合は非 0 で終了する。
   - `.next/standalone/server.js` が存在しない場合は bundle 生成を失敗させる。
