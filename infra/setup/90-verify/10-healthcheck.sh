@@ -53,7 +53,7 @@ if ! nginx -t; then
 fi
 
 cert_dir="/etc/letsencrypt/live"
-if [ ! -d "$cert_dir" ] || ! find "$cert_dir" -mindepth 1 -maxdepth 2 -type f -name "fullchain.pem" -print -quit | grep -q .; then
+if [ ! -d "$cert_dir" ] || ! find "$cert_dir" -mindepth 1 -maxdepth 2 \( -type f -o -type l \) -name "fullchain.pem" -print -quit | grep -q .; then
   echo "[10-healthcheck] certbot の証明書が見つかりません。certbot.service の実行状態と設定を確認してください。" >&2
   exit 1
 fi
