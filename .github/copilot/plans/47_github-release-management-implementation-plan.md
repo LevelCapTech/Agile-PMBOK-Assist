@@ -11,7 +11,7 @@
   - workflow_dispatch 実行時に Next.js standalone ビルドを行い、bundle を tar.gz 化して Release asset を登録できること。
   - bundle には `server.js` / `.next/static` / `public` / `package.json` が含まれること。
   - 採用予定タグ（同名の Git tag）または同名 Release が存在する場合は workflow を必ず失敗させること。
-  - 採用予定タグの再利用・上書き、および同名 Release への asset 追記・上書き・差し替えを行わないこと。
+  - 既存の Git tag / Release を上書きせず、同名の tag / Release が残存している状態での再利用（asset 追記・上書き・差し替えを含む）を行わないこと。削除済みの tag / Release については同名の再作成を許容すること。
 - 非機能要件:
   - GITHUB_TOKEN を用いた最小権限設計で実行できること。
   - 同日複数実行でもタグ衝突が起きない冪等性を担保すること。
