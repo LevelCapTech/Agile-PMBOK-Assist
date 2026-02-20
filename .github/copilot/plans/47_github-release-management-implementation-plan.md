@@ -55,12 +55,12 @@
   - Next.js standalone bundle Release asset 登録は日付ベース Release 管理と同一 workflow で実行し、以下の順序で処理する。既存Release確認はタグ算出後に実施し、build前に fail-fast とする。
     1. checkout
     2. setup-node（Node 20 固定）
-    3. npm ci
+    3. npm ci（リポジトリルート）
     4. JST 日付取得とタグ計算: `YYYY.MM.DD` / `YYYY.MM.DD-2` 以降
     5. 採用予定タグ（同名の Git tag）と同名 Release を確認（いずれかが存在する場合は失敗）
     6. commitlint 実行
     7. Release Notes 生成
-    8. npm run build（standalone 出力）
+    8. npm run build（standalone 出力、リポジトリルート）
     9. bundle 生成
     10. tar.gz 生成（`next-bundle.tgz`）
     11. Release 作成
@@ -178,7 +178,7 @@ flowchart TD
   Build --> Bundle[bundle生成]
   Bundle --> Tar[tar.gz生成]
   Tar --> Create[Release 作成 + asset登録]
-  Create --> Done
+  Create --> Done([完了])
 ```
 
 ## 5. 人間が行う作業:
