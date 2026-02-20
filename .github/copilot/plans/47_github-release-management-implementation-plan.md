@@ -123,8 +123,8 @@ bundle/
 | No. | パス | 変更内容 |
 | --- | --- | --- |
 | 1 | .github/workflows/release-date.yml | 日付ベース Release 生成と bundle 登録を行う単一 workflow に統合 |
-| 2 | .commitlintrc.cjs | Conventional Commits 検証ルールの新規追加 |
-| 3 | package.json | commitlint/conventional-changelog 追加に伴う devDependencies 更新 |
+| 2 | ./.commitlintrc.cjs | Conventional Commits 検証ルールの新規追加 |
+| 3 | ./package.json | commitlint/conventional-changelog 追加に伴う devDependencies 更新 |
 | 4 | ./next.config.ts | 既存設定を保持したまま `output: "standalone"` を追加して standalone 出力を有効化 |
 | 5 | docs/release-process.md | Release 作成手順・bundle 検証方法・失敗時対応の概要を明文化 |
 
