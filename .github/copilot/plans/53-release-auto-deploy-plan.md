@@ -176,3 +176,4 @@ flowchart TD
 - `<app>` はテンプレ記号ではなく、実名 `agile-pmbok-assist_repo` を固定値として扱う。
 - アプリ名（app）: `agile-pmbok-assist_repo`（`<app>` 表記はラベルとして固定）
 - 追記済みのアプリ名記述（`<app>`/`app`）は同一の固定ラベルを示し、表記差は意図しない。
+- 表記の正は `<app>` とし、`app` 表記は補足説明としてのみ併記する。
