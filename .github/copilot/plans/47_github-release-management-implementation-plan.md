@@ -33,12 +33,12 @@
 
 - 責務分離 / データフロー:
   - Workflow で日付取得・既存タグ確認・コミット検証・新タグ計算・Release Notes 生成・Release 作成を順次実行する。
-  - Conventional Commits 検証は commitlint（config-conventional）で実施し、以下のタイミングで強制する。
-    - ローカル: pre-push フック（例: husky）で、push 対象コミットに対して commitlint を実行し、不正なコミットは push 前に検出する。
-    - CI: main ブランチ向けすべての PR で commitlint を実行し、PR 内に不正なコミットが含まれる場合はジョブを失敗させてマージをブロックする。
-    - Release ワークフロー: Release 対象レンジ（直近タグ〜HEAD）のコミットに対しても commitlint を実行し、main に混入した不正コミットがある場合は Release を失敗として停止する最終ゲートとする。
-  - Release Notes は `conventional-changelog` の conventionalcommits プリセットで生成し、直近タグから HEAD までを対象とする。既存タグが 1 つも存在しない初回リリース時は、リポジトリ初期コミットから HEAD までを対象とする。
-  - npm コマンド（commitlint / conventional-changelog）は `.github/workflows/ci-nextjs.yml` と同様に `mock/v1/web` を作業ディレクトリとして実行し、git タグ操作はリポジトリルートで行う。
+  - Conventional Commits 検証は commitlint（`@commitlint/cli` + `@commitlint/config-conventional`）で実施し、以下のタイミングで強制する。
+    - ローカル: pre-push フック（例: husky）で、push 対象コミットに対して `npx commitlint --from <BASE> --to HEAD` を実行し、不正なコミットは push 前に検出する。
+    - CI: main ブランチ向けすべての PR で `npx commitlint --from <BASE> --to HEAD` を実行し、PR 内に不正なコミットが含まれる場合はジョブを失敗させてマージをブロックする。
+    - Release ワークフロー: Release 対象レンジ（直近タグ〜HEAD）のコミットに対しても `npx commitlint --from <LAST_TAG> --to HEAD` を実行し、main に混入した不正コミットがある場合は Release を失敗として停止する最終ゲートとする。
+  - Release Notes は `conventional-changelog-cli`（内部で `conventional-changelog` を利用）を用い、`conventionalcommits` プリセット（例: `npx conventional-changelog -p conventionalcommits -r 0`）で生成し、直近タグから HEAD までを対象とする。既存タグが 1 つも存在しない初回リリース時は、リポジトリ初期コミットから HEAD までを対象とする。
+  - npm コマンド（commitlint / conventional-changelog-cli）は `.github/workflows/ci-nextjs.yml` と同様に `mock/v1/web` を作業ディレクトリとして実行し、git タグ操作はリポジトリルートで行う。
 - エッジケース / 例外系 / リトライ方針:
   - 同日の既存タグを `git tag -l "vYYYY.MM.DD*"` で取得し、未サフィックスは 0 とみなして最大サフィックス +1 を新タグに採用する。
   - 同一コミットで既存 Release が存在する場合は処理済みとして終了する。
