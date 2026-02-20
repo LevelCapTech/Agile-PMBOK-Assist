@@ -164,7 +164,11 @@ jobs:
       - name: Verify bundle archive
         run: |
           set -euo pipefail
-          tar -tzf next-bundle.tgz >/dev/null
+          bundle_listing=$(tar -tzf next-bundle.tgz)
+          echo "${bundle_listing}" | grep -qE '(^|\\./)server\\.js$'
+          echo "${bundle_listing}" | grep -qE '(^|\\./)package\\.json$'
+          echo "${bundle_listing}" | grep -qE '(^|\\./)public/'
+          echo "${bundle_listing}" | grep -qE '(^|\\./)\\.next/static/'
 
       - name: Create release and upload asset
         run: |
