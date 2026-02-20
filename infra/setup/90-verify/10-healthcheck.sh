@@ -24,9 +24,12 @@ for service in "${services[@]}"; do
   fi
 done
 
-certbot_timer="$(systemctl list-timers --all --no-legend | awk 'tolower($0) ~ /certbot.*\\.timer|snap\\.certbot.*\\.timer/ {if (NF>=2) {print $(NF-1); exit}}')"
+certbot_timers="$(systemctl list-timers --all --no-legend)"
+certbot_timer="$(printf '%s\n' "$certbot_timers" | awk 'tolower($0) ~ /certbot.*\\.timer|snap\\.certbot.*\\.timer/ {if (NF>=2) {print $(NF-1); exit}}')"
 if [ -z "$certbot_timer" ]; then
   echo "[10-healthcheck] certbot の timer が見つかりません。list-timers で環境の名称を確認してください。" >&2
+  echo "[10-healthcheck] systemd timers (certbot 抜粋):" >&2
+  printf '%s\n' "$certbot_timers" | awk 'tolower($0) ~ /certbot/ {print "  " $0}' >&2
   exit 1
 fi
 if ! systemctl is-active --quiet "$certbot_timer"; then
