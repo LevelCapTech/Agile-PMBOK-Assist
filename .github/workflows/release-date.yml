@@ -28,6 +28,15 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
 
+      - name: Verify workflow commit
+        run: |
+          set -euo pipefail
+          head_sha=$(git rev-parse HEAD)
+          if [[ "${head_sha}" != "${GITHUB_SHA}" ]]; then
+            echo "Workflow must run from HEAD. Expected ${GITHUB_SHA}, got ${head_sha}." >&2
+            exit 1
+          fi
+
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
@@ -128,10 +137,10 @@ jobs:
           set -euo pipefail
           range_from="${{ steps.release_meta.outputs.range_from }}"
           if [[ -n "${range_from}" ]]; then
-            npx conventional-changelog -p conventionalcommits --tag-prefix '' -o release-notes.md -- "${range_from}..HEAD"
+            npx conventional-changelog -p conventionalcommits -r 0 --tag-prefix '' -o release-notes.md -- "${range_from}..HEAD"
           else
             # No previous tag or starting point; fall back to default behavior.
-            npx conventional-changelog -p conventionalcommits --tag-prefix '' -o release-notes.md
+            npx conventional-changelog -p conventionalcommits -r 0 --tag-prefix '' -o release-notes.md
           fi
 
       - name: Build standalone
@@ -174,7 +183,7 @@ jobs:
                 return 0
               fi
 
-              if echo "${output}" | grep -E "HTTP 4[0-9]{2}" >/dev/null; then
+              if echo "${output}" | grep -E "HTTP 4[0-9]{2}|status 4[0-9]{2}" >/dev/null; then
                 echo "${output}"
                 echo "${description} failed with 4xx; no retry." >&2
                 return ${status}
