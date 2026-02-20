@@ -40,7 +40,7 @@
   - Release Notes は `conventional-changelog-cli`（内部で `conventional-changelog` を利用）を用い、`conventionalcommits` プリセット（例: `npx conventional-changelog -p conventionalcommits -r 0`）で生成し、直近タグから HEAD までを対象とする。既存タグが 1 つも存在しない初回リリース時は、リポジトリ初期コミットから HEAD までを対象とする。
   - npm コマンド（commitlint / conventional-changelog-cli）は `.github/workflows/ci-nextjs.yml` と同様に `mock/v1/web` を作業ディレクトリとして実行し、git タグ操作はリポジトリルートで行う。
 - エッジケース / 例外系 / リトライ方針:
-  - 同日の既存タグを `git tag -l "vYYYY.MM.DD*"` で取得し、未サフィックスは 0 とみなして最大サフィックス +1 を新タグに採用する。
+  - 同日の既存タグを `git tag -l "vYYYY.MM.DD*"` で取得し、当日一致タグが 0 件の場合は `vYYYY.MM.DD`（サフィックス無し）を新タグとし、1 件以上存在する場合は未サフィックスを 0 とみなした上で最大サフィックス値を求め、その最大サフィックス +1 を付与したタグ（例: `vYYYY.MM.DD-1` など）を新タグに採用する。
   - 同一コミットで既存 Release が存在する場合は処理済みとして終了する。
   - GitHub API を用いるタグ作成および Release 作成処理について、一時的な失敗（5xx / rate limit など）が発生した場合は最大 3 回までリトライし、各試行間に 5 秒の固定待機を挟む。永続的な 4xx エラーはリトライせず即時に失敗とし、最終的に解消しない場合は非 0 で終了する。
 - ログと観測性（漏洩防止を含む）:
