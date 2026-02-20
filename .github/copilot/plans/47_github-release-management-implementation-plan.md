@@ -16,7 +16,7 @@
   - GITHUB_TOKEN を用いた最小権限設計で実行できること。
   - 同日複数実行でもタグ衝突が起きない冪等性を担保すること。
   - 自動デプロイや npm publish を含めないこと。
-  - Node.js は 20.x に固定すること。
+  - Node.js は CI（`.github/workflows/ci-nextjs.yml`）と同一バージョンを使用すること（現時点では 24.x を想定）。
   - build 失敗時は Release 作成/asset 登録を行わない fail-fast を徹底すること。
   - `gh release upload --clobber` などの上書き系オプションを使用しないこと。
 
