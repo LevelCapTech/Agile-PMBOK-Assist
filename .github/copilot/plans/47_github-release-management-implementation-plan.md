@@ -10,7 +10,7 @@
   - Release 作成・タグ作成・Release Notes 生成・bundle 添付を単一 workflow で完結できること。
   - workflow_dispatch 実行時に Next.js standalone ビルドを行い、bundle を tar.gz 化して Release asset を登録できること。
   - bundle には `server.js` / `.next/static` / `public` / `package.json` が含まれること。
-  - 既存 Release が同一タグで存在する場合は workflow を失敗として停止すること。
+  - 既存 Release が同一タグで存在する場合は workflow を失敗させず、その Release に対して bundle asset を追記できること。
 - 非機能要件:
   - GITHUB_TOKEN を用いた最小権限設計で実行できること。
   - 同日複数実行でもタグ衝突が起きない冪等性を担保すること。
