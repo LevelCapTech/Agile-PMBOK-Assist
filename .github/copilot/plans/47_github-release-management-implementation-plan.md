@@ -33,7 +33,10 @@
 
 - 責務分離 / データフロー:
   - Workflow で日付取得・タグ解決・コミット検証・Release Notes 生成・Release 作成を順次実行する。
-  - Conventional Commits 検証は commitlint（config-conventional）で実施する。
+  - Conventional Commits 検証は commitlint（config-conventional）で実施し、以下のタイミングで強制する。
+    - ローカル: pre-push フック（例: husky）で、push 対象コミットに対して commitlint を実行し、不正なコミットは push 前に検出する。
+    - CI: main ブランチ向けすべての PR で commitlint を実行し、PR 内に不正なコミットが含まれる場合はジョブを失敗させてマージをブロックする。
+    - Release ワークフロー: Release 対象レンジ（直近タグ〜HEAD）のコミットに対しても commitlint を実行し、main に混入した不正コミットがある場合は Release を失敗として停止する最終ゲートとする。
   - Release Notes は `conventional-changelog` の conventionalcommits プリセットで生成し、直近タグから HEAD までを対象とする。
 - エッジケース / 例外系 / リトライ方針:
   - 同日の既存タグを `git tag -l "vYYYY.MM.DD*"` で取得し、未サフィックスは 0 とみなして最大サフィックス +1 を新タグに採用する。
