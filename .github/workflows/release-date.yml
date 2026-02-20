@@ -165,10 +165,18 @@ jobs:
         run: |
           set -euo pipefail
           bundle_listing=$(tar -tzf next-bundle.tgz)
-          echo "${bundle_listing}" | grep -qE '(^|\\./)server\\.js$'
-          echo "${bundle_listing}" | grep -qE '(^|\\./)package\\.json$'
-          echo "${bundle_listing}" | grep -qE '(^|\\./)public/'
-          echo "${bundle_listing}" | grep -qE '(^|\\./)\\.next/static/'
+          require_entry() {
+            local pattern="$1"
+            local label="$2"
+            if ! echo "${bundle_listing}" | grep -qE "${pattern}"; then
+              echo "Bundle archive missing ${label}." >&2
+              exit 1
+            fi
+          }
+          require_entry '(^|\\./)server\\.js$' "server.js"
+          require_entry '(^|\\./)package\\.json$' "package.json"
+          require_entry '(^|\\./)public/' "public/"
+          require_entry '(^|\\./)\\.next/static/' ".next/static/"
 
       - name: Create release and upload asset
         run: |
