@@ -11,7 +11,7 @@
   - workflow_dispatch 実行時に Next.js standalone ビルドを行い、bundle を tar.gz 化して Release asset を登録できること。
   - bundle には `server.js` / `.next/static` / `public` / `package.json` が含まれること。
   - 既存のタグまたは Release が存在する場合は workflow を必ず失敗させること。
-  - 既存 Release への asset 追記・上書き・差し替えを行わないこと。
+  - 既存タグの再利用・上書き、および既存 Release への asset 追記・上書き・差し替えを行わないこと。
 - 非機能要件:
   - GITHUB_TOKEN を用いた最小権限設計で実行できること。
   - 同日複数実行でもタグ衝突が起きない冪等性を担保すること。
@@ -57,7 +57,7 @@
     2. setup-node（Node 20 固定）
     3. npm ci
     4. JST 日付取得とタグ計算: `YYYY.MM.DD` / `YYYY.MM.DD-2` 以降
-    5. 既存タグ/Release 確認（存在する場合は失敗）
+    5. 既存タグと同名 Release を確認（いずれかが存在する場合は失敗）
     6. commitlint 実行
     7. Release Notes 生成
     8. npm run build（standalone 出力）
@@ -105,7 +105,7 @@ bundle/
   - `-1` を使わず `-2` から開始する理由は、初回リリースをサフィックス無しで固定し、2回目以降を明示的に区別するため。
   - 既存タグがある場合は `YYYY.MM.DD-2` 以降の枝番を対象とし、最小の未使用番号を新タグに採用する。例: `2026.02.20` が既にあれば次は `2026.02.20-2`、`2026.02.20-2` が存在する場合は `2026.02.20-3`、`2026.02.20` と `2026.02.20-5` のみが存在する場合は `2026.02.20-2` を採用する。欠番がなければ最大値 +1 とし、手動削除時の再利用を許容する。初回タグが削除された場合は `YYYY.MM.DD` を再利用し、初回タグが残ったまま Release が削除された場合は `YYYY.MM.DD-2` を採用する。
   - 欠番の再利用はタグ衝突回避と運用上の再作成を優先する方針とし、時系列は Release 作成時刻で判断する。
-  - レースコンディションの一次対策として、workflow は同一日付/タグの並列実行を concurrency で抑制し、既存タグ/Release 確認を build 前に実施する。
+  - レースコンディションの一次対策として、workflow は同一日付/タグの並列実行を concurrency で抑制し、既存タグ/Release 確認を build 前に実施する。concurrency group は `release-date-${TAG}` のようにタグ名を含めて定義する。
   - 採用予定タグまたは同名 Release が既に存在する場合は workflow を失敗させる（レースコンディションの最終ガード）。
   - GitHub API を用いるタグ作成および Release 作成処理について、一時的な失敗（5xx / rate limit など）が発生した場合は最大 3 回までリトライし、各試行間に 5 秒の固定待機を挟む。永続的な 4xx エラーはリトライせず即時に失敗とし、最終的に解消しない場合は非 0 で終了する。
   - `.next/standalone/server.js` が存在しない場合は bundle 生成を失敗させる。
