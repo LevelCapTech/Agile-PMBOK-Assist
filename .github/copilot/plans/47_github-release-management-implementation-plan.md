@@ -60,14 +60,16 @@
     9. asset 登録
   - GitHub Actions は `actions/checkout` / `actions/setup-node` / Release 登録用アクションをタグまたは commit SHA で固定する。
   - standalone 設定はリポジトリルートの `./next.config.ts` に `output: "standalone"` を追加し、既存設定を保持する。
-  - 以下は JS 表記のイメージであり、実装時は `next.config.ts` の書式に合わせる。
+  - 以下は `next.config.ts` の書式に合わせた例であり、実装時は既存設定を維持する。
 
-```js
-/** @type {import('next').NextConfig} */
-const nextConfig = {
+```ts
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
   output: "standalone",
 };
-module.exports = nextConfig;
+
+export default nextConfig;
 ```
 
   - bundle 構成は以下で固定する。
@@ -109,7 +111,7 @@ bundle/
 | No. | パス | 変更内容 |
 | --- | --- | --- |
 | 1 | .github/workflows/release-date.yml | 日付ベース Release 生成ワークフローを新規追加 |
-| 2 | mock/v1/web/.commitlintrc.cjs | Conventional Commits 検証ルールの追加 |
+| 2 | mock/v1/web/.commitlintrc.cjs | Conventional Commits 検証ルールの新規追加 |
 | 3 | mock/v1/web/package.json | commitlint/conventional-changelog 追加に伴う devDependencies 更新 |
 | 4 | ./next.config.ts | 既存設定を保持したまま `output: "standalone"` を追加して standalone 出力を有効化 |
 | 5 | .github/workflows/build-and-release.yml | tag push で build → bundle → Release asset 登録を行う workflow を追加 |
