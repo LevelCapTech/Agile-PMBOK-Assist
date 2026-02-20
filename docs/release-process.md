@@ -4,7 +4,7 @@
 
 - workflow: `.github/workflows/release-date.yml`
 - 実行方法: GitHub Actions の `Release (Date-based)` を `workflow_dispatch` で起動
-- タグ形式: `YYYY.MM.DD`（同日 2 回目以降は `YYYY.MM.DD-2` から枝番）
+- タグ形式: `YYYY.MM.DD`（同日 2 回目以降は `YYYY.MM.DD-2`, `YYYY.MM.DD-3` ... のように枝番をインクリメント）
 - 生成物: GitHub Release + Release Notes + `next-bundle.tgz`
 
 ## 実行手順
