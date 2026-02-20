@@ -37,6 +37,7 @@ then
   exit 1
 fi
 chmod 600 /etc/mysqld_exporter.cnf
+chown prometheus:prometheus /etc/mysqld_exporter.cnf
 umask "$original_umask"
 
 node_override_dir="/etc/systemd/system/prometheus-node-exporter.service.d"
