@@ -14,11 +14,15 @@
 
 ## 2. スコープと変更対象
 
+- リリース対象スコープ:
+  - `.github/copilot/05-structure/monorepo.md` で定義された monorepo 全体を対象とし、`app/` および `mock/v1/web` を含むリポジトリ全体のリリース情報を管理する。
+  - タグ `vYYYY.MM.DD[-N]` はリポジトリ単位で一意となるように付与し、アプリケーションごとの個別バージョンタグは本ワークフローの対象外とする。
+  - 本ワークフローは GitHub Release / タグ作成のみを行い、各アプリケーションのデプロイやパッケージ公開は別ワークフローに委ねる（本 plan のスコープ外）。
 - 変更ファイル（新規/修正/削除）:
   - DESIGN フェーズの成果物は本 plan ドキュメントのみ。
   - 実装フェーズで `.github/workflows/release-date.yml` などのワークフロー追加を想定。
 - 影響範囲・互換性リスク:
-  - Release 作成のみを対象とし、アプリ本体の挙動やデプロイには影響しない。
+  - monorepo 全体に対して Release 作成のみを対象とし、アプリ本体の挙動やデプロイには影響しない。
   - main ブランチの履歴が Conventional Commits に準拠していない場合、ワークフローが失敗する。
 - 外部依存・Secrets の扱い:
   - GitHub Actions の公式アクションと GITHUB_TOKEN のみを利用する。
