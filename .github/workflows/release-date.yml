@@ -71,7 +71,18 @@ jobs:
             done
 
             next_suffix=2
-            while [[ " ${suffixes[*]-} " =~ " ${next_suffix} " ]]; do
+            while true; do
+              found=0
+              for suffix in "${suffixes[@]}"; do
+                if [[ "${suffix}" == "${next_suffix}" ]]; then
+                  found=1
+                  break
+                fi
+              done
+
+              if [[ "${found}" -eq 0 ]]; then
+                break
+              fi
               next_suffix=$((next_suffix + 1))
             done
             next_tag="${RELEASE_DATE}-${next_suffix}"
