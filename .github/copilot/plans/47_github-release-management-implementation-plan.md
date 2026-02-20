@@ -4,7 +4,7 @@
 
 - 機能要件:
   - workflow_dispatch を起点に、日付ベースの GitHub Release を作成できること。
-  - タグ形式は初回 `YYYY.MM.DD` とし、同日 2 回目以降は `YYYY.MM.DD-2` から枝番を付与すること（`-1` は使用しない）。
+  - タグ形式は初回 `YYYY.MM.DD` とし、同日 2 回目以降は `YYYY.MM.DD-2` から枝番を付与すること。初回をサフィックス無しで固定するため `-1` は使用しない。
   - Conventional Commits を解析して Release Notes を自動生成すること。
   - 無効な Conventional Commits を検知した場合はワークフローを失敗として停止すること。
   - Release 作成・タグ作成・Release Notes 生成・bundle 添付を単一 workflow で完結できること。
@@ -50,7 +50,7 @@
     - Release ワークフロー: Release 対象レンジ（直近タグ〜HEAD）のコミットに対しても `npx commitlint --from <LAST_TAG> --to HEAD` を実行し、main に混入した不正コミットがある場合は Release を失敗として停止する最終ゲートとする。
   - Release Notes は `conventional-changelog-cli`（内部で `conventional-changelog` を利用）を用い、`conventionalcommits` プリセット（例: `npx conventional-changelog -p conventionalcommits -r 0`）で生成し、直近タグから HEAD まで（`git log <前回タグ>..HEAD` 相当）を対象とする。既存タグが 1 つも存在しない初回リリース時は、リポジトリ初期コミットから HEAD までを対象とする。
   - npm コマンド（commitlint / conventional-changelog-cli）は `.github/workflows/ci-nextjs.yml` と同様に `mock/v1/web` を作業ディレクトリとして実行し、git タグ操作はリポジトリルートで行う。
-  - Next.js standalone bundle Release asset 登録は日付ベース Release 管理と同一 workflow で実行し、以下の順序で処理する。
+  - Next.js standalone bundle Release asset 登録は日付ベース Release 管理と同一 workflow で実行し、以下の順序で処理する。既存Release確認はタグ算出後に実施し、build前に fail-fast とする。
     1. checkout
     2. setup-node（Node 20 固定）
     3. npm ci
@@ -101,7 +101,7 @@ bundle/
 - エッジケース / 例外系 / リトライ方針:
   - JST 日付で `git tag -l "YYYY.MM.DD*"` を取得し、当日一致タグが 0 件の場合は `YYYY.MM.DD`（サフィックス無し）を新タグとする。
   - `-1` を使わず `-2` から開始する理由は、初回リリースをサフィックス無しで固定し、2回目以降を明示的に区別するため。
-  - 既存タグがある場合は `YYYY.MM.DD-2` 以降の枝番を対象とし、最小の未使用番号を新タグに採用する。例: `2026.02.20` が既にあれば次は `2026.02.20-2`、`2026.02.20-2` が存在する場合は `2026.02.20-3`。欠番があれば最小の欠番を採用し、欠番がなければ最大値 +1 とする（手動削除時の再利用を許容するため）。
+  - 既存タグがある場合は `YYYY.MM.DD-2` 以降の枝番を対象とし、最小の未使用番号を新タグに採用する。例: `2026.02.20` が既にあれば次は `2026.02.20-2`、`2026.02.20-2` が存在する場合は `2026.02.20-3`、`2026.02.20` と `2026.02.20-5` のみが存在する場合は `2026.02.20-2` を採用する。欠番がなければ最大値 +1 とし、手動削除時の再利用を許容する。
   - 既存 Release がある場合は workflow を失敗させる。
   - GitHub API を用いるタグ作成および Release 作成処理について、一時的な失敗（5xx / rate limit など）が発生した場合は最大 3 回までリトライし、各試行間に 5 秒の固定待機を挟む。永続的な 4xx エラーはリトライせず即時に失敗とし、最終的に解消しない場合は非 0 で終了する。
   - `.next/standalone/server.js` が存在しない場合は bundle 生成を失敗させる。
