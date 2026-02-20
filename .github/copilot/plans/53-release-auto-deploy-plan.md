@@ -160,3 +160,16 @@ flowchart TD
   - Release asset の整合性検証（checksum 追加要否）。
 - ADR に残すべき判断:
   - polling 採用の理由（Webhook 不要、サーバー公開を抑制）を ADR に残すか検討。
+
+## コードレビューフィードバック対応
+
+### 追記
+
+- アプリ名（<app>）: `agile-pmbok-assist_repo`
+- 再起動対象 systemd service: `nextjs.service`
+- デプロイ済み判定（state file）:
+  - `/opt/agile-pmbok-assist_repo/.last_deployed_tag`
+- 実体切替（current symlink）:
+  - `/opt/agile-pmbok-assist_repo/current -> /opt/agile-pmbok-assist_repo/releases/<tag>`
+- デプロイは「成果物の入替 + 再起動」に限定し、**デプロイ先でのCI実行は行わない**（Release作成側で担保）。
+- ポーリング方式デプロイは「state file + current symlink + restart」で堅牢化する。
