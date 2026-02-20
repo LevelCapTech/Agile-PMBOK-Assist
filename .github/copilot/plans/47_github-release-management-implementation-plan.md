@@ -51,12 +51,13 @@
     - CI: main ブランチ向けすべての PR で `npx commitlint --from <BASE> --to HEAD` を実行し、PR 内に不正なコミットが含まれる場合はジョブを失敗させてマージをブロックする。
     - Release ワークフロー: Release 対象レンジ（直近タグ〜HEAD）のコミットに対しても `npx commitlint --from <LAST_TAG> --to HEAD` を実行し、main に混入した不正コミットがある場合は Release を失敗として停止する最終ゲートとする。
   - Release Notes は `conventional-changelog-cli`（内部で `conventional-changelog` を利用）を用い、`conventionalcommits` プリセット（例: `npx conventional-changelog -p conventionalcommits -r 0`）で生成し、直近タグから HEAD まで（`git log <前回タグ>..HEAD` 相当）を対象とする。既存タグが 1 つも存在しない初回リリース時は、リポジトリ初期コミットから HEAD までを対象とする。
-  - npm コマンド（commitlint / conventional-changelog-cli）は `.github/workflows/ci-nextjs.yml` と同様に `mock/v1/web` を作業ディレクトリとして実行し、git タグ操作はリポジトリルートで行う。
+  - npm コマンド（commitlint / conventional-changelog-cli）はリポジトリルートで実行し、git タグ操作もリポジトリルートで行う。
+  - workflow_dispatch の input で `release_date`（JST 日付）を受け取り、concurrency のキーとタグ計算の基準に使用する。
   - Next.js standalone bundle Release asset 登録は日付ベース Release 管理と同一 workflow で実行し、以下の順序で処理する。既存Release確認はタグ算出後に実施し、build前に fail-fast とする。
     1. checkout
     2. setup-node（Node 20 固定）
     3. npm ci（リポジトリルート）
-    4. JST 日付取得とタグ計算: `YYYY.MM.DD` / `YYYY.MM.DD-2` 以降
+    4. `release_date`（JST 日付）を基にタグ計算: `YYYY.MM.DD` / `YYYY.MM.DD-2` 以降
     5. 採用予定タグ（同名の Git tag）と同名 Release を確認（いずれかが存在する場合は失敗）
     6. commitlint 実行
     7. Release Notes 生成
@@ -122,11 +123,10 @@ bundle/
 | No. | パス | 変更内容 |
 | --- | --- | --- |
 | 1 | .github/workflows/release-date.yml | 日付ベース Release 生成と bundle 登録を行う単一 workflow に統合 |
-| 2 | mock/v1/web/.commitlintrc.cjs | Conventional Commits 検証ルールの新規追加 |
-| 3 | mock/v1/web/package.json | commitlint/conventional-changelog 追加に伴う devDependencies 更新 |
+| 2 | .commitlintrc.cjs | Conventional Commits 検証ルールの新規追加 |
+| 3 | package.json | commitlint/conventional-changelog 追加に伴う devDependencies 更新 |
 | 4 | ./next.config.ts | 既存設定を保持したまま `output: "standalone"` を追加して standalone 出力を有効化 |
 | 5 | docs/release-process.md | Release 作成手順・bundle 検証方法・失敗時対応の概要を明文化 |
-| 6 | package.json | build script を確認（変更不要の場合は維持） |
 
 ## 4. 設計UML
 
@@ -248,7 +248,7 @@ flowchart TD
 
 - ロールバック方法:
   - 誤ったタグや Release が生成された場合は GitHub Release とタグを削除する。
-  - 誤った bundle asset が登録された場合は Release から asset を削除する。
+  - 誤った bundle asset が登録された場合は Release とタグを削除して再実行する、または新しい枝番タグで再リリースする。
 - 監視・運用上の注意:
   - Release 作成ログに Secrets を出さない。
   - main ブランチを基準に運用し、デプロイや npm publish は行わない。
