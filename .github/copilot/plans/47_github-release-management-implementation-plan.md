@@ -55,7 +55,7 @@
   - workflow_dispatch の input で `release_date`（JST 日付）を受け取り、concurrency のキーとタグ計算の基準に使用する。
   - Next.js standalone bundle Release asset 登録は日付ベース Release 管理と同一 workflow で実行し、以下の順序で処理する。既存Release確認はタグ算出後に実施し、build前に fail-fast とする。
     1. checkout
-    2. setup-node（Node 20 固定）
+    2. setup-node（CI と同一の Node 24.x）
     3. npm ci（リポジトリルート）
     4. `release_date`（JST 日付）を基にタグ計算: `YYYY.MM.DD` / `YYYY.MM.DD-2` / `YYYY.MM.DD-3` ...（初回は `YYYY.MM.DD`、再リリースは `-2` 起点とし、`-1` は将来用途のため予約する）
     5. 採用予定タグ（同名の Git tag）と同名 Release を確認（いずれかが存在する場合は失敗）
