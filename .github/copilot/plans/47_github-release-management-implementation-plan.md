@@ -45,14 +45,14 @@
 ## 3. 設計方針
 
 - 責務分離 / データフロー:
-  - workflow_dispatch により手動実行し、JST 日付取得・同日既存タグ一覧確認・コミット検証・新タグ計算・Release Notes 生成・build/bundle 生成・Release 作成を順次実行する。
+  - workflow_dispatch により手動実行し、release_date 入力（JST 日付）受領・同日既存タグ一覧確認・コミット検証・新タグ計算・Release Notes 生成・build/bundle 生成・Release 作成を順次実行する。
   - Conventional Commits 検証は commitlint（`@commitlint/cli` + `@commitlint/config-conventional`）で実施し、以下のタイミングで強制する。
     - ローカル: pre-push フック（例: husky）で、push 対象コミットに対して `npx commitlint --from <BASE> --to HEAD` を実行し、不正なコミットは push 前に検出する。
     - CI: main ブランチ向けすべての PR で `npx commitlint --from <BASE> --to HEAD` を実行し、PR 内に不正なコミットが含まれる場合はジョブを失敗させてマージをブロックする。
     - Release ワークフロー: Release 対象レンジ（直近タグ〜HEAD）のコミットに対しても `npx commitlint --from <LAST_TAG> --to HEAD` を実行し、main に混入した不正コミットがある場合は Release を失敗として停止する最終ゲートとする。
   - Release Notes は `conventional-changelog-cli`（内部で `conventional-changelog` を利用）を用い、`conventionalcommits` プリセット（例: `npx conventional-changelog -p conventionalcommits -r 0`）で生成し、直近タグから HEAD まで（`git log <前回タグ>..HEAD` 相当）を対象とする。既存タグが 1 つも存在しない初回リリース時は、リポジトリ初期コミットから HEAD までを対象とする。
   - npm コマンド（commitlint / conventional-changelog-cli）はリポジトリルートで実行し、git タグ操作もリポジトリルートで行う。
-  - workflow_dispatch の input で `release_date`（JST 日付）を受け取り、concurrency のキーとタグ計算の基準に使用する。
+  - workflow_dispatch の input で `release_date`（JST 日付）を受け取り、concurrency のキーとタグ計算の基準に使用する。`release_date` は必須入力とし、未指定の場合は workflow を失敗させる。
   - Next.js standalone bundle Release asset 登録は日付ベース Release 管理と同一 workflow で実行し、以下の順序で処理する。既存Release確認はタグ算出後に実施し、build前に fail-fast とする。
     1. checkout
     2. setup-node（CI と同一の Node 24.x）
@@ -102,7 +102,7 @@ bundle/
   - tar.gz の生成は `tar -czf next-bundle.tgz -C bundle .` で行い、`tar -xzf next-bundle.tgz -C <確認用ディレクトリ>` で展開した際に展開先直下へ `server.js` などが配置される構成を固定する。
   - Release asset 登録は計算したタグを利用し、`gh release create` で Release 作成後に `gh release upload` で登録する。
 - エッジケース / 例外系 / リトライ方針:
-  - JST 日付で `git tag -l "YYYY.MM.DD*"` を取得し、当日一致タグが 0 件の場合は `YYYY.MM.DD`（サフィックス無し）を新タグとする。
+  - `release_date`（JST 日付）で `git tag -l "YYYY.MM.DD*"` を取得し、当日一致タグが 0 件の場合は `YYYY.MM.DD`（サフィックス無し）を新タグとする。
   - `-1` を使わず `-2` から開始する理由は、初回リリースをサフィックス無しで固定し、2回目以降を明示的に区別するため。
   - 同日既存タグがある場合は `YYYY.MM.DD-2` 以降の枝番を対象とし、最小の未使用番号を新タグに採用する。例: `2026.02.20` が既にあれば次は `2026.02.20-2`、`2026.02.20-2` が存在する場合は `2026.02.20-3`、`2026.02.20` と `2026.02.20-5` のみが存在する場合は `2026.02.20-2` を採用する。欠番がなければ最大値 +1 とし、手動削除時の再利用を許容する。初回タグが削除された場合は `YYYY.MM.DD` を再利用し、初回タグが残ったまま Release が削除された場合は `YYYY.MM.DD-2` を採用する（既存タグの上書きは行わない）。
   - 欠番の再利用はタグ衝突回避と運用上の再作成を優先する方針とし、時系列は Release 作成時刻で判断する。
@@ -140,7 +140,7 @@ sequenceDiagram
 
   Dev->>GH: workflow_dispatch
   GH->>Repo: checkout + fetch tags
-  GH->>GH: JST 日付取得
+  GH->>GH: release_date 入力受領
   GH->>Repo: 同日既存タグ検索
   GH->>GH: 新タグ計算 (YYYY.MM.DD / YYYY.MM.DD-2...)
   GH->>GH: 採用予定タグ/同名Release確認
@@ -166,7 +166,7 @@ sequenceDiagram
 ```mermaid
 flowchart TD
   Start([開始]) --> Trigger{workflow_dispatch}
-  Trigger --> Date[JST 日付取得]
+  Trigger --> Date[release_date 入力受領]
   Date --> Tags[同日既存タグ検索]
   Tags --> NextTag[次のタグ決定]
   NextTag --> CheckRelease{採用予定タグ/同名Release有無}
