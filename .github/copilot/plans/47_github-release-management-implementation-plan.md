@@ -32,7 +32,7 @@
   - 本番サーバー側の pull/unpack、デプロイ自動化、Docker 化、GHCR 登録は対象外とする。
 - 変更ファイル（新規/修正/削除）:
   - DESIGN フェーズの成果物は本 plan ドキュメントのみ。
-  - 実装フェーズで `.github/workflows/release-date.yml` を単一 workflow として更新する。
+  - 実装フェーズで `.github/workflows/release-date.yml` を単一 workflow として新規追加し、日付ベース Release 管理の SSOT とする。
   - 実装フェーズで `./next.config.ts`、`docs/release-process.md` の追加/更新を想定。
 - 影響範囲・互換性リスク:
   - monorepo 全体に対して Release 作成のみを対象とし、アプリ本体の挙動やデプロイには影響しない。
