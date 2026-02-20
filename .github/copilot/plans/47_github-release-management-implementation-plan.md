@@ -10,8 +10,8 @@
   - Release 作成・タグ作成・Release Notes 生成・bundle 添付を単一 workflow で完結できること。
   - workflow_dispatch 実行時に Next.js standalone ビルドを行い、bundle を tar.gz 化して Release asset を登録できること。
   - bundle には `server.js` / `.next/static` / `public` / `package.json` が含まれること。
-  - 既存のタグまたは Release が存在する場合は workflow を必ず失敗させること。
-  - 既存タグの再利用・上書き、および既存 Release への asset 追記・上書き・差し替えを行わないこと。
+  - 採用予定タグ（同名の Git tag）または同名 Release が存在する場合は workflow を必ず失敗させること。
+  - 採用予定タグの再利用・上書き、および同名 Release への asset 追記・上書き・差し替えを行わないこと。
 - 非機能要件:
   - GITHUB_TOKEN を用いた最小権限設計で実行できること。
   - 同日複数実行でもタグ衝突が起きない冪等性を担保すること。
@@ -45,7 +45,7 @@
 ## 3. 設計方針
 
 - 責務分離 / データフロー:
-  - workflow_dispatch により手動実行し、JST 日付取得・既存タグ確認・コミット検証・新タグ計算・Release Notes 生成・build/bundle 生成・Release 作成を順次実行する。
+  - workflow_dispatch により手動実行し、JST 日付取得・同日既存タグ一覧確認・コミット検証・新タグ計算・Release Notes 生成・build/bundle 生成・Release 作成を順次実行する。
   - Conventional Commits 検証は commitlint（`@commitlint/cli` + `@commitlint/config-conventional`）で実施し、以下のタイミングで強制する。
     - ローカル: pre-push フック（例: husky）で、push 対象コミットに対して `npx commitlint --from <BASE> --to HEAD` を実行し、不正なコミットは push 前に検出する。
     - CI: main ブランチ向けすべての PR で `npx commitlint --from <BASE> --to HEAD` を実行し、PR 内に不正なコミットが含まれる場合はジョブを失敗させてマージをブロックする。
@@ -57,7 +57,7 @@
     2. setup-node（Node 20 固定）
     3. npm ci
     4. JST 日付取得とタグ計算: `YYYY.MM.DD` / `YYYY.MM.DD-2` 以降
-    5. 既存タグと同名 Release を確認（いずれかが存在する場合は失敗）
+    5. 採用予定タグ（同名の Git tag）と同名 Release を確認（いずれかが存在する場合は失敗）
     6. commitlint 実行
     7. Release Notes 生成
     8. npm run build（standalone 出力）
@@ -103,13 +103,13 @@ bundle/
 - エッジケース / 例外系 / リトライ方針:
   - JST 日付で `git tag -l "YYYY.MM.DD*"` を取得し、当日一致タグが 0 件の場合は `YYYY.MM.DD`（サフィックス無し）を新タグとする。
   - `-1` を使わず `-2` から開始する理由は、初回リリースをサフィックス無しで固定し、2回目以降を明示的に区別するため。
-  - 既存タグがある場合は `YYYY.MM.DD-2` 以降の枝番を対象とし、最小の未使用番号を新タグに採用する。例: `2026.02.20` が既にあれば次は `2026.02.20-2`、`2026.02.20-2` が存在する場合は `2026.02.20-3`、`2026.02.20` と `2026.02.20-5` のみが存在する場合は `2026.02.20-2` を採用する。欠番がなければ最大値 +1 とし、手動削除時の再利用を許容する。初回タグが削除された場合は `YYYY.MM.DD` を再利用し、初回タグが残ったまま Release が削除された場合は `YYYY.MM.DD-2` を採用する（既存タグの上書きは行わない）。
+  - 同日既存タグがある場合は `YYYY.MM.DD-2` 以降の枝番を対象とし、最小の未使用番号を新タグに採用する。例: `2026.02.20` が既にあれば次は `2026.02.20-2`、`2026.02.20-2` が存在する場合は `2026.02.20-3`、`2026.02.20` と `2026.02.20-5` のみが存在する場合は `2026.02.20-2` を採用する。欠番がなければ最大値 +1 とし、手動削除時の再利用を許容する。初回タグが削除された場合は `YYYY.MM.DD` を再利用し、初回タグが残ったまま Release が削除された場合は `YYYY.MM.DD-2` を採用する（既存タグの上書きは行わない）。
   - 欠番の再利用はタグ衝突回避と運用上の再作成を優先する方針とし、時系列は Release 作成時刻で判断する。
-  - レースコンディションの一次対策として、workflow は同一日付/タグの並列実行を concurrency で抑制し、既存タグ/Release 確認を build 前に実施する。concurrency group は `release-date-${YYYY.MM.DD}` のように日付を含めて定義する。
-  - 採用予定タグまたは同名 Release が既に存在する場合は workflow を失敗させる（レースコンディションの最終ガード）。
+  - レースコンディションの一次対策として、workflow は同一日付/タグの並列実行を concurrency で抑制し、採用予定タグ/同名 Release 確認を build 前に実施する。concurrency group は `release-date-${YYYY.MM.DD}` のように日付を含めて定義する。
+  - 採用予定タグ（同名の Git tag）または同名 Release が既に存在する場合は workflow を失敗させる（レースコンディションの最終ガード）。
   - GitHub API を用いるタグ作成および Release 作成処理について、一時的な失敗（5xx / rate limit など）が発生した場合は最大 3 回までリトライし、各試行間に 5 秒の固定待機を挟む。永続的な 4xx エラーはリトライせず即時に失敗とし、最終的に解消しない場合は非 0 で終了する。
   - `.next/standalone/server.js` が存在しない場合は bundle 生成を失敗させる。
-  - `gh release view <tag>` または GitHub API で既存 Release を検知した場合は workflow を失敗させる。
+  - `gh release view <tag>` または GitHub API で同名 Release を検知した場合は workflow を失敗させる。
   - build 失敗や tar.gz 生成失敗時は Release 作成を行わない。
   - 依存コマンドは `set -euo pipefail` 相当で fail-fast を担保する。
 - ログと観測性（漏洩防止を含む）:
@@ -141,9 +141,9 @@ sequenceDiagram
   Dev->>GH: workflow_dispatch
   GH->>Repo: checkout + fetch tags
   GH->>GH: JST 日付取得
-  GH->>Repo: 既存タグ検索
+  GH->>Repo: 同日既存タグ検索
   GH->>GH: 新タグ計算 (YYYY.MM.DD / YYYY.MM.DD-2...)
-  GH->>GH: 既存タグ/Release確認
+  GH->>GH: 採用予定タグ/同名Release確認
   alt Releaseあり
     GH-->>Dev: 失敗として終了
   else Releaseなし
@@ -167,9 +167,9 @@ sequenceDiagram
 flowchart TD
   Start([開始]) --> Trigger{workflow_dispatch}
   Trigger --> Date[JST 日付取得]
-  Date --> Tags[既存タグ検索]
+  Date --> Tags[同日既存タグ検索]
   Tags --> NextTag[次のタグ決定]
-  NextTag --> CheckRelease{既存タグ/Release有無}
+  NextTag --> CheckRelease{採用予定タグ/同名Release有無}
   CheckRelease -->|あり| Fail([失敗])
   CheckRelease -->|なし| Lint[commitlint 実行]
   Lint -->|失敗| Fail
@@ -210,13 +210,13 @@ flowchart TD
   - 境界: 同日 2 回目の実行で `-2` が付いたタグが生成される。
   - 境界: 同日 3 回目の実行で `-3` が付いたタグが生成される。
   - 境界: `YYYY.MM.DD` と `YYYY.MM.DD-5` が存在する場合に `-2` が採用される。
-  - 回帰: 既存のタグがある状態でも既存 Release が重複作成されない。
+  - 回帰: 同日既存タグ一覧から採用予定タグを算出しても同名 Release が重複作成されない。
   - 正常: workflow_dispatch 実行で `next-bundle.tgz` が Release に登録される。
   - 例外: build 失敗時は Release が作成されない。
-  - 例外: 既存タグが存在する場合に workflow が失敗する。
-  - 境界: 既存 Release が存在する場合に workflow が失敗する。
+  - 例外: 採用予定タグ（同名の Git tag）が存在する場合に workflow が失敗する。
+  - 境界: 同名 Release が存在する場合に workflow が失敗する。
   - 回帰: bundle 内に `server.js` と `.next/static` が含まれる。
-  - 例外: 既存 Release が存在する場合に asset 追記・上書きを行わず fail する。
+  - 例外: 同名 Release が存在する場合に asset 追記・上書きを行わず fail する。
   - 例外: `gh release upload --clobber` など上書き系オプションを使わない。
 - モック / フィクスチャ方針:
   - GitHub Actions 上で実行し、モックは使用しない。
