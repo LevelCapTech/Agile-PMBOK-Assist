@@ -173,8 +173,10 @@ jobs:
               exit 1
             fi
           }
+          # File entries are checked with exact filename matches.
           require_entry '(^|\\./)server\\.js$' "server.js"
           require_entry '(^|\\./)package\\.json$' "package.json"
+          # Directory entries are checked by prefix to include their contents.
           require_entry '(^|\\./)public/' "public/"
           require_entry '(^|\\./)\\.next/static/' ".next/static/"
 
