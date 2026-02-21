@@ -31,6 +31,9 @@ if [[ ! "$pem_mode" =~ ^0*400$ && ! "$pem_mode" =~ ^0*600$ ]]; then
   echo "[31-release-poll-deploy] GITHUB_APP_PEM_PATH のパーミッションが不正です: $GITHUB_APP_PEM_PATH (mode=${pem_mode:-unknown})" >&2
   exit 1
 fi
+if [[ "$pem_mode" =~ ^0*600$ ]]; then
+  echo "[31-release-poll-deploy] GITHUB_APP_PEM_PATH は 400 を推奨します（現在: $pem_mode）。" >&2
+fi
 
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 release_deploy_source="${SCRIPT_DIR}/../40-web/40-release-poll-deploy.sh"
