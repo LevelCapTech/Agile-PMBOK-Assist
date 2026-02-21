@@ -18,6 +18,7 @@
 - 作成される Release asset は `next-bundle.tgz`。
 - bundle 構成は次を満たす。
   - `server.js`
+  - `.next/`（`cache` は除外）
   - `.next/static`
   - `.next/BUILD_ID`
   - `.next/required-server-files.json`
@@ -25,6 +26,7 @@
   - `.next/prerender-manifest.json`
   - `.next/build-manifest.json`
   - `.next/server/pages-manifest.json`
+  - `.next/server/app-paths-manifest.json`
   - `public`
   - `package.json`
 - bundle の確認は以下で行う。
