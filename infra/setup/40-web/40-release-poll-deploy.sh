@@ -139,7 +139,7 @@ validate_archive_paths() {
   local entry
   while IFS= read -r entry; do
     [ -z "$entry" ] && continue
-    if [[ "$entry" == /* ]] || [[ "$entry" == ".." ]] || [[ "$entry" == ../* ]] || [[ "$entry" == */../* ]] || [[ "$entry" == */.. ]]; then
+    if [[ "$entry" == /* ]] || [[ "$entry" == ".." ]] || [[ "$entry" == ../* ]] || [[ "$entry" == ./../* ]] || [[ "$entry" == */../* ]] || [[ "$entry" == */.. ]]; then
       log "ERROR" "archive-validate" "failed" "危険なパスが含まれています: ${entry}"
       return 1
     fi
@@ -170,6 +170,7 @@ fi
 
 mkdir -p "$APP_DIR" "$RELEASES_DIR"
 exec 9>"$LOCK_FILE"
+trap 'exec 9>&-' EXIT
 if ! flock -n 9; then
   log "ERROR" "lock" "failed" "別の deploy 処理が実行中です"
   exit 1
@@ -239,7 +240,7 @@ if [ ! -f "$target_complete_file" ]; then
     "${GITHUB_API_BASE_URL}/repos/${owner}/${repo}/releases/assets/${asset_id}" \
     -o "$archive_path"
 
-  validate_archive_paths "$archive_path"
+  validate_archive_paths "$archive_path" || exit 1
 
   staging_dir="${target_dir}.deploying"
   rm -rf "$staging_dir"
@@ -248,7 +249,10 @@ if [ ! -f "$target_complete_file" ]; then
   touch "${staging_dir}/.deploy-complete"
   rm -rf "$target_dir"
   mv "$staging_dir" "$target_dir"
-  chown -R "$APP_USER":"$APP_USER" "$target_dir"
+  chown -R "$APP_USER":"$APP_USER" "$target_dir" || {
+    log "ERROR" "ownership" "failed" "所有権変更に失敗しました: ${target_dir}"
+    exit 1
+  }
 fi
 
 previous_target="$current_target"
