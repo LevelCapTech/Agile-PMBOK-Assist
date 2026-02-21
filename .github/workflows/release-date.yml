@@ -208,9 +208,9 @@ jobs:
           echo "=== bundle find server.js ==="
           find bundle -maxdepth 6 -type f -name 'server.js' -print -exec ls -la {} \; || true
           echo "=== bundle tree (deeper) ==="
-          find bundle -maxdepth 4 -print | sed 's#^\./##' | sort | head -n 400
+          find bundle -maxdepth 4 -print | sed 's#^\./##' | sort | sed -n '1,400p'
           echo "=== tar listing (head) ==="
-          tar -tzf next-bundle.tgz | head -n 400
+          tar -tzf next-bundle.tgz | sed -n '1,400p'
           echo "=== tar grep server.js ==="
           tar -tzf next-bundle.tgz | grep -nE 'server\.js$' || true
           echo "=== tar grep package.json ==="
