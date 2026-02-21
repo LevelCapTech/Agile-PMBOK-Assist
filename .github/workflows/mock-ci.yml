@@ -1,4 +1,4 @@
-name: Mock CI
+name: モックCI
 
 on:
   pull_request:

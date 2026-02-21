@@ -1,4 +1,4 @@
-name: Infra Shell Audit
+name: インフラシェル監査
 
 on:
   pull_request:
