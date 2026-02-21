@@ -139,10 +139,12 @@ validate_archive_paths() {
   local entry
   while IFS= read -r entry; do
     [ -z "$entry" ] && continue
-    if [[ "$entry" == /* ]] || [[ "$entry" == ".." ]] || [[ "$entry" == ../* ]] || [[ "$entry" == */../* ]] || [[ "$entry" == */.. ]]; then
-      log "ERROR" "archive-validate" "failed" "危険なパスが含まれています: ${entry}"
-      return 1
-    fi
+    case "$entry" in
+      /*|..|../*|*/../*|*/..)
+        log "ERROR" "archive-validate" "failed" "危険なパスが含まれています: ${entry}"
+        return 1
+        ;;
+    esac
   done < <(tar -tzf "$archive_path")
   return 0
 }
@@ -168,10 +170,18 @@ if [ "$dry_run" = true ]; then
   exit 0
 fi
 
-mkdir -p "$APP_DIR" "$RELEASES_DIR"
-exec 9>"$LOCK_FILE"
-trap 'exec 9>&-; rm -f "$LOCK_FILE"' EXIT INT TERM
-if ! flock -n 9; then
+if [ ! -d "$APP_DIR" ]; then
+  install -d -m 755 -o "$APP_USER" -g "$APP_USER" "$APP_DIR"
+fi
+mkdir -p "$RELEASES_DIR"
+
+exec {lock_fd}>"$LOCK_FILE"
+cleanup_lock() {
+  exec {lock_fd}>&- || true
+  rm -f "$LOCK_FILE"
+}
+trap cleanup_lock EXIT INT TERM
+if ! flock -n "$lock_fd"; then
   log "ERROR" "lock" "failed" "別の deploy 処理が実行中です"
   exit 1
 fi
