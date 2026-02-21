@@ -289,7 +289,7 @@ cleanup_all() {
     rm -rf "$tmp_dir"
   fi
 }
-# ここで trap を上書きし、直前で定義した cleanup_all に lock と tmp_dir の後片付けを集約する。
+# 以降は以前の trap 定義を cleanup_all に上書きし、lock と tmp_dir の後片付けを集約する。
 trap 'cleanup_all' EXIT INT TERM
 
 if [ ! -f "$target_complete_file" ]; then
