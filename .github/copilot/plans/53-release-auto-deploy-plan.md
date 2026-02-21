@@ -18,7 +18,10 @@
 
 - 変更ファイル（新規/修正/削除）:
   - `infra/setup/40-web/40-release-poll-deploy.sh`（新規）: Release 取得・展開・symlink 切替・再起動・ロールバック処理。
+  - `infra/setup/20-runtime/31-release-poll-deploy.sh`（新規）: 既存 pull の unit/timer を停止/無効化し、Release polling deploy の前提を整える。
   - `infra/setup/40-web/30-nextjs-service.sh`（更新/置換）: systemd ユニット差し替え用の更新。
+  - `infra/bootstrap_20260220.sh`（新規）: 今回作業専用の bootstrap 実行スクリプト。
+  - `infra/setup/90-verify/10-healthcheck.sh`（更新）: `nextjs` の健全性チェックを有効化。
   - `docs/server-deployment.md`（新規）: 運用手順、ロールバック方法、監視観点。
   - シェル配置は `infra/` 配下に統一し、`scripts/` や `deploy/` 直置きは行わない。
 - 影響範囲・互換性リスク:
@@ -33,6 +36,7 @@
 - 責務分離 / データフロー:
   - `infra/setup/40-web/40-release-poll-deploy.sh` は「Release 検知 → 取得 → 展開 → 切替 → 再起動」を一貫して担当する。
   - Release 検知は **polling** を採用（systemd timer もしくは cron）。Webhook 依存を避けつつ Release asset デプロイを正とするため、既存 `agile-pmbok-assist-pull.timer` は停止/無効化する。
+  - `infra/setup/20-runtime/31-release-poll-deploy.sh` で `agile-pmbok-assist-pull.service` / `agile-pmbok-assist-pull.timer` を停止/無効化し、`infra/setup/40-web/40-release-poll-deploy.sh` の登録を行う。
   - GitHub API 利用: GitHub App の JWT を生成し、`POST /app/installations/{id}/access_tokens` で installation token を取得。`GET /repos/{owner}/{repo}/releases/latest` から最新 Release を取得し、`next-bundle.tgz` の asset を `Accept: application/octet-stream` でダウンロード。
 - 展開ディレクトリ設計:
   - `/opt/agile-pmbok-assist_repo/releases/<tag>` に展開。
@@ -61,8 +65,11 @@
 | No. | パス | 変更内容 |
 | --- | -- | ---- |
 | 1 | `infra/setup/40-web/40-release-poll-deploy.sh` | Release 取得・展開・symlink 切替・再起動・ロールバックを実装 | 
-| 2 | `infra/setup/40-web/30-nextjs-service.sh` | systemd ユニット差し替え（WorkingDirectory / ExecStart / StopSignal など） | 
-| 3 | `docs/server-deployment.md` | 手順書・運用/監視・ロールバック方法の記載 | 
+| 2 | `infra/setup/20-runtime/31-release-poll-deploy.sh` | 既存 pull の unit/timer を停止/無効化し、Release polling deploy を登録 | 
+| 3 | `infra/setup/40-web/30-nextjs-service.sh` | systemd ユニット差し替え（WorkingDirectory / ExecStart / StopSignal など） | 
+| 4 | `infra/bootstrap_20260220.sh` | 今回作業専用の bootstrap 実行スクリプト | 
+| 5 | `infra/setup/90-verify/10-healthcheck.sh` | `nextjs` の健全性チェックを有効化 | 
+| 6 | `docs/server-deployment.md` | 手順書・運用/監視・ロールバック方法の記載 | 
 
 ## 4. 設計UML
 
@@ -115,7 +122,9 @@ flowchart TD
 | ---- | --- | ----- | ----------------------- | --------- | --------------- |
 | H-01 | GitHub App 資格情報の配置 | API 認証を可能にする | GitHub App の Private Key を `/etc/agile-pmbok/app.private-key.pem` に配置し、`APP_ID` と `INSTALLATION_ID` を `/etc/agile-pmbok/deploy.env` に設定する | 秘密鍵の権限が 600 であること | `infra/setup/40-web/40-release-poll-deploy.sh --check-auth` が成功する |
 | H-02 | systemd ユニット差し替え | Next.js 起動を管理する | `infra/setup/40-web/30-nextjs-service.sh` を更新し、`/etc/systemd/system/nextjs.service` を差し替えた後に `systemctl daemon-reload` と `systemctl restart nextjs.service` を実行 | `systemctl status nextjs.service` が active | 起動後に HTTP 200 を返す |
-| H-03 | 定期実行設定 | Release 検知を自動化 | systemd timer または cron で `infra/setup/40-web/40-release-poll-deploy.sh` を 5〜10 分間隔で実行 | 実行ログが定期的に出力される | 期待する頻度でログが残る |
+| H-03 | Release polling deploy の登録 | pull の停止と release polling deploy を登録する | `infra/setup/20-runtime/31-release-poll-deploy.sh` を実行し、`agile-pmbok-assist-pull.service` / `agile-pmbok-assist-pull.timer` を停止・無効化した上で、`infra/setup/40-web/40-release-poll-deploy.sh` の登録を完了する | `agile-pmbok-assist-pull.timer` が inactive であること | `systemctl list-timers --all | grep -E 'agile-pmbok-assist-pull'` で停止を確認 |
+| H-04 | 定期実行設定 | Release 検知を自動化 | systemd timer または cron で `infra/setup/40-web/40-release-poll-deploy.sh` を 5〜10 分間隔で実行 | 実行ログが定期的に出力される | 期待する頻度でログが残る |
+| H-05 | bootstrap 実行 | 差し替え作業を安全に再実行する | `sudo ENV_FILE=infra/.env bash infra/bootstrap_20260220.sh` を実行し、`systemctl daemon-reload` → `systemctl restart nextjs.service` → `systemctl status nextjs.service --no-pager -l` と `infra/setup/90-verify/10-healthcheck.sh` を完了させる | `nextjs` が active であること | `infra/setup/90-verify/10-healthcheck.sh` が成功する |
 
 ### 5.1 使用する情報・資料
 
@@ -134,6 +143,7 @@ flowchart TD
 - モック / フィクスチャ方針:
   - 実装 PR では `--dry-run` モードとモック URL を用意し、GitHub API を直接叩かない検証経路を準備する。
 - テスト追加の実行コマンド（例: `python -m pytest`）:
+  - `bash -n infra/setup/20-runtime/31-release-poll-deploy.sh`
   - `bash -n infra/setup/40-web/40-release-poll-deploy.sh`
   - `./infra/setup/40-web/40-release-poll-deploy.sh --dry-run`
 
