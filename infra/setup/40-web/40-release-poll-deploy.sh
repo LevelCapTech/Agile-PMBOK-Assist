@@ -163,7 +163,7 @@ validate_archive_links() {
     log "ERROR" "archive-validate" "failed" "アーカイブの検査に失敗しました: ${archive_path}"
     return 1
   fi
-  if printf '%s\n' "$tar_list" | grep -E -q '^[lh][-rwx]'; then
+  if printf '%s\n' "$tar_list" | grep -E -q '^[lh]'; then
     log "ERROR" "archive-validate" "failed" "symlink / hardlink を含むため拒否します"
     return 1
   fi
