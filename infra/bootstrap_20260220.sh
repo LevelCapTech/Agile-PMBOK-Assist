@@ -50,7 +50,7 @@ done
 
 systemctl daemon-reload
 systemctl start agile-pmbok-assist-release-deploy.service
-systemctl restart nextjs.service
+systemctl start nextjs.service || systemctl restart nextjs.service
 systemctl status nextjs.service --no-pager -l
 
 healthcheck_path="$SCRIPT_DIR/setup/90-verify/10-healthcheck.sh"
