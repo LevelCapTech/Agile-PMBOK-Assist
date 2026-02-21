@@ -51,7 +51,7 @@ User=__APP_USER__
 WorkingDirectory=__WORKING_DIR__
 Environment=NODE_ENV=production
 EnvironmentFile=__APP_ENV_FILE__
-ExecStart=/bin/sh -c './node_modules/.bin/next start -p "$PORT"'
+ExecStart=/usr/bin/node server.js
 Restart=always
 RestartSec=5
 KillSignal=SIGTERM
