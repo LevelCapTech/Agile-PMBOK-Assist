@@ -7,6 +7,11 @@ on:
         description: "Release date (JST, YYYY.MM.DD)"
         required: true
         type: string
+      enforce_commitlint:
+        description: "Enforce Conventional Commits with commitlint"
+        required: true
+        type: boolean
+        default: true
 
 permissions:
   contents: write
@@ -23,7 +28,7 @@ jobs:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           fetch-tags: true
@@ -38,7 +43,7 @@ jobs:
           fi
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v4
         with:
           node-version: "24"
           cache: npm
@@ -128,6 +133,7 @@ jobs:
           fi
 
       - name: Commitlint
+        if: ${{ github.event.inputs.enforce_commitlint == 'true' }}
         run: |
           set -euo pipefail
           npx commitlint --from "${{ steps.release_meta.outputs.range_from }}" --to HEAD
@@ -139,10 +145,20 @@ jobs:
         run: npm audit
 
       - name: Generate release notes
+        if: ${{ github.event.inputs.enforce_commitlint == 'true' }}
         run: |
           set -euo pipefail
           range_from="${{ steps.release_meta.outputs.range_from }}"
           npx conventional-changelog -p conventionalcommits -r 0 --tag-prefix '' -o release-notes.md -- "${range_from}..HEAD"
+      - name: Generate release notes (fallback)
+        if: ${{ github.event.inputs.enforce_commitlint != 'true' }}
+        run: |
+          set -euo pipefail
+          range_from="${{ steps.release_meta.outputs.range_from }}"
+          git log --pretty=format:"- %s (%h)" "${range_from}..HEAD" > release-notes.md
+          if [[ ! -s release-notes.md ]]; then
+            echo "- 変更履歴なし" > release-notes.md
+          fi
 
       - name: Build standalone
         run: npm run build
