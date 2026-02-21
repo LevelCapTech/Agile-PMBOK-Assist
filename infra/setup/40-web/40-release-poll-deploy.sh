@@ -162,7 +162,7 @@ validate_archive_links() {
     log "ERROR" "archive-validate" "failed" "アーカイブの検査に失敗しました: ${archive_path}"
     return 1
   fi
-  if tar -tvzf "$archive_path" 2>/dev/null | grep -E -q '^(l|.* link to )'; then
+  if tar -tvzf "$archive_path" 2>/dev/null | grep -E -q '^[lh]'; then
     log "ERROR" "archive-validate" "failed" "symlink / hardlink を含むため拒否します"
     return 1
   fi
