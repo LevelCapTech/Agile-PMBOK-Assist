@@ -39,7 +39,7 @@ jobs:
       - name: Build
         working-directory: mock/${{ env.MOCK_VERSION }}/web
         env:
-          VITE_BASE_PATH: /agile-pmbok-assist/
+          VITE_BASE_PATH: /Agile-PMBOK-Assist/
         run: npm run build
 
       - name: Prepare gh-pages artifacts
