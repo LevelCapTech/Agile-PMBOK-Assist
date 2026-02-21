@@ -158,18 +158,21 @@ validate_archive_paths() {
 
 validate_archive_links() {
   local archive_path="$1"
-  local line mode type
-  while IFS= read -r line; do
-    [ -z "$line" ] && continue
-    mode="${line%% *}"
-    type="${mode:0:1}"
-    case "$type" in
-      l|h)
-        log "ERROR" "archive-validate" "failed" "symlink/hardlink を含むため拒否します: ${line}"
-        return 1
-        ;;
-    esac
-  done < <(tar -tvzf "$archive_path")
+  local link_lines
+  link_lines="$(
+    tar -tvzf "$archive_path" | awk '
+      NF > 0 {
+        type = substr($1, 1, 1)
+        if (type == "l" || type == "h") {
+          print $0
+        }
+      }
+    '
+  )" || return 1
+  if [ -n "$link_lines" ]; then
+    log "ERROR" "archive-validate" "failed" "symlink/hardlink を含むため拒否します: ${link_lines}"
+    return 1
+  fi
   return 0
 }
 
