@@ -309,8 +309,14 @@ if ! restart_service; then
   if [ -n "$previous_target" ] && [ -d "$previous_target" ]; then
     switch_current_link "$previous_target"
     systemctl restart "$DEPLOY_SERVICE_NAME" || true
+    log "ERROR" "restart" "failed" "サービス再起動に失敗したため current をロールバックしました"
+  else
+    # 初回デプロイなど、ロールバック先がない場合は current シンボリックリンクを削除して安全な状態に戻す
+    if [ -L "$CURRENT_LINK" ] || [ -e "$CURRENT_LINK" ]; then
+      rm -f "$CURRENT_LINK"
+    fi
+    log "ERROR" "restart" "failed" "サービス再起動に失敗したため current を削除しました"
   fi
-  log "ERROR" "restart" "failed" "サービス再起動に失敗したため current をロールバックしました"
   exit 1
 fi
 
