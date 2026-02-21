@@ -1,4 +1,4 @@
-name: Release (Date-based)
+name: リリース（日付ベース）
 
 on:
   workflow_dispatch:
