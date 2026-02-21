@@ -30,6 +30,7 @@ source "$ENV_FILE"
 set +a
 
 steps=(
+  "setup/20-runtime/31-release-poll-deploy.sh"
   "setup/40-web/30-nextjs-service.sh"
 )
 
