@@ -289,6 +289,7 @@ cleanup_all() {
     rm -rf "$tmp_dir"
   fi
 }
+# ここで trap を上書きし、lock と tmp_dir の両方を cleanup_all に統合する。
 trap 'cleanup_all' EXIT INT TERM
 
 if [ ! -f "$target_complete_file" ]; then
@@ -314,6 +315,9 @@ if [ ! -f "$target_complete_file" ]; then
   }
   rm -rf "$target_dir"
   mv "$staging_dir" "$target_dir"
+else
+  # 展開済み tag への再切替ケースでは、展開処理を省略して current 切替と restart のみ行う。
+  log "INFO" "deploy-skip-extract" "success" "tag=${release_tag} は展開済みのため切替のみ実施します"
 fi
 
 previous_target="$current_target"
