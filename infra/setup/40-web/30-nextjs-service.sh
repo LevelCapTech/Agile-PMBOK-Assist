@@ -79,4 +79,4 @@ cat <<LOGROTATE > /etc/logrotate.d/nextjs
 LOGROTATE
 
 systemctl daemon-reload
-systemctl enable --now nextjs.service
+systemctl enable nextjs.service

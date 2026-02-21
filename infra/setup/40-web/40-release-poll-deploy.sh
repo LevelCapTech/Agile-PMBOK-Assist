@@ -158,35 +158,14 @@ validate_archive_paths() {
 
 validate_archive_links() {
   local archive_path="$1"
-  local tmpdir
-
-  tmpdir="$(mktemp -d)" || {
-    log "ERROR" "archive-validate" "failed" "一時ディレクトリの作成に失敗しました"
-    return 1
-  }
-
-  # 一時ディレクトリに展開して symlink / hardlink を検出する
-  if ! tar -xzf "$archive_path" -C "$tmpdir"; then
-    log "ERROR" "archive-validate" "failed" "アーカイブの展開に失敗しました: ${archive_path}"
-    rm -rf "$tmpdir"
+  if ! tar -tvzf "$archive_path" >/dev/null 2>&1; then
+    log "ERROR" "archive-validate" "failed" "アーカイブの検査に失敗しました: ${archive_path}"
     return 1
   fi
-
-  # symlink 検出
-  if find "$tmpdir" \( -type l -o -xtype l \) -print -quit | grep -q .; then
-    log "ERROR" "archive-validate" "failed" "symlink を含むため拒否します"
-    rm -rf "$tmpdir"
+  if tar -tvzf "$archive_path" 2>/dev/null | grep -E -q '^(l|.* link to )'; then
+    log "ERROR" "archive-validate" "failed" "symlink / hardlink を含むため拒否します"
     return 1
   fi
-
-  # hardlink 検出: リンク数が 1 を超える通常ファイルを検出
-  if find "$tmpdir" -type f -links +1 -print -quit | grep -q .; then
-    log "ERROR" "archive-validate" "failed" "hardlink を含むため拒否します"
-    rm -rf "$tmpdir"
-    return 1
-  fi
-
-  rm -rf "$tmpdir"
   return 0
 }
 
