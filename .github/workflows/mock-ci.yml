@@ -55,7 +55,7 @@ jobs:
 
       - name: Install dependencies
         working-directory: mock/v1/web
-        run: npm ci
+        run: npm ci --legacy-peer-deps
 
       - name: Typecheck (mock/v1/web/tsconfig.json)
         working-directory: mock/v1/web
