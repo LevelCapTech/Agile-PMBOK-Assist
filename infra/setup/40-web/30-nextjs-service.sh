@@ -43,6 +43,7 @@ cat <<SERVICE > "$service_file"
 Description=Next.js SSR Application
 Wants=network-online.target mysql.service
 After=network-online.target mysql.service
+ConditionPathExists=${working_dir}
 
 [Service]
 Type=simple

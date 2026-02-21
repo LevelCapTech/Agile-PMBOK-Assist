@@ -8,6 +8,7 @@ if [ "$(id -u)" -ne 0 ]; then
 fi
 
 : "${APP_DIR:?APP_DIR が未設定です}"
+: "${APP_USER:?APP_USER が未設定です}"
 : "${GITHUB_APP_ID:?GITHUB_APP_ID が未設定です}"
 : "${GITHUB_INSTALLATION_ID:?GITHUB_INSTALLATION_ID が未設定です}"
 : "${GITHUB_APP_PEM_PATH:?GITHUB_APP_PEM_PATH が未設定です}"
@@ -15,6 +16,10 @@ fi
 
 if [[ "$APP_DIR" != /* ]]; then
   echo "[31-release-poll-deploy] APP_DIR は絶対パスで指定してください。" >&2
+  exit 1
+fi
+if ! id -u "$APP_USER" >/dev/null 2>&1; then
+  echo "[31-release-poll-deploy] APP_USER が存在しません: $APP_USER" >&2
   exit 1
 fi
 if [ ! -f "$GITHUB_APP_PEM_PATH" ]; then
@@ -37,6 +42,7 @@ deploy_env_file="${deploy_env_dir}/release-deploy.env"
 install -d -m 700 "$deploy_env_dir"
 cat <<ENV > "$deploy_env_file"
 APP_DIR=${APP_DIR}
+APP_USER=${APP_USER}
 APP_REPO_URL=${APP_REPO_URL}
 GITHUB_APP_ID=${GITHUB_APP_ID}
 GITHUB_INSTALLATION_ID=${GITHUB_INSTALLATION_ID}

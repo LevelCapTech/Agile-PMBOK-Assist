@@ -10,6 +10,7 @@ IFS=$'\n\t'
 STATE_FILE="${APP_DIR}/.last_deployed_tag"
 RELEASES_DIR="${APP_DIR}/releases"
 CURRENT_LINK="${APP_DIR}/current"
+LOCK_FILE="${APP_DIR}/.deploy.lock"
 
 dry_run=false
 check_auth=false
@@ -56,12 +57,17 @@ if [[ "$APP_DIR" != /* ]]; then
 fi
 
 if [ "$dry_run" = false ]; then
+  : "${APP_USER:?APP_USER が未設定です}"
   : "${GITHUB_APP_ID:?GITHUB_APP_ID が未設定です}"
   : "${GITHUB_INSTALLATION_ID:?GITHUB_INSTALLATION_ID が未設定です}"
   : "${GITHUB_APP_PEM_PATH:?GITHUB_APP_PEM_PATH が未設定です}"
+  if ! id -u "$APP_USER" >/dev/null 2>&1; then
+    echo "[40-release-poll-deploy] APP_USER が存在しません: $APP_USER" >&2
+    exit 1
+  fi
 fi
 
-for name in curl jq openssl tar systemctl; do
+for name in curl jq openssl tar systemctl flock; do
   if ! command -v "$name" >/dev/null 2>&1; then
     echo "[40-release-poll-deploy] 必要コマンドが見つかりません: $name" >&2
     exit 1
@@ -128,6 +134,19 @@ restart_service() {
   systemctl is-active --quiet "$DEPLOY_SERVICE_NAME"
 }
 
+validate_archive_paths() {
+  local archive_path="$1"
+  local entry
+  while IFS= read -r entry; do
+    [ -z "$entry" ] && continue
+    if [[ "$entry" == /* ]] || [[ "$entry" == ".." ]] || [[ "$entry" == ../* ]] || [[ "$entry" == */../* ]] || [[ "$entry" == */.. ]]; then
+      log "ERROR" "archive-validate" "failed" "危険なパスが含まれています: ${entry}"
+      return 1
+    fi
+  done < <(tar -tzf "$archive_path")
+  return 0
+}
+
 rollback_to_tag() {
   local tag="$1"
   local target_dir="${RELEASES_DIR}/${tag}"
@@ -144,15 +163,20 @@ rollback_to_tag() {
   log "INFO" "rollback" "success" "tag=${tag}"
 }
 
-mkdir -p "$RELEASES_DIR"
-
-if [ -n "$rollback_tag" ]; then
-  rollback_to_tag "$rollback_tag"
+if [ "$dry_run" = true ]; then
+  log "INFO" "dry-run" "success" "repo=${owner}/${repo} asset=${RELEASE_ASSET_NAME}"
   exit 0
 fi
 
-if [ "$dry_run" = true ]; then
-  log "INFO" "dry-run" "success" "repo=${owner}/${repo} asset=${RELEASE_ASSET_NAME}"
+mkdir -p "$APP_DIR" "$RELEASES_DIR"
+exec 9>"$LOCK_FILE"
+if ! flock -n 9; then
+  log "ERROR" "lock" "failed" "別の deploy 処理が実行中です"
+  exit 1
+fi
+
+if [ -n "$rollback_tag" ]; then
+  rollback_to_tag "$rollback_tag"
   exit 0
 fi
 
@@ -215,6 +239,8 @@ if [ ! -f "$target_complete_file" ]; then
     "${GITHUB_API_BASE_URL}/repos/${owner}/${repo}/releases/assets/${asset_id}" \
     -o "$archive_path"
 
+  validate_archive_paths "$archive_path"
+
   staging_dir="${target_dir}.deploying"
   rm -rf "$staging_dir"
   mkdir -p "$staging_dir"
@@ -222,6 +248,7 @@ if [ ! -f "$target_complete_file" ]; then
   touch "${staging_dir}/.deploy-complete"
   rm -rf "$target_dir"
   mv "$staging_dir" "$target_dir"
+  chown -R "$APP_USER":"$APP_USER" "$target_dir"
 fi
 
 previous_target="$current_target"
