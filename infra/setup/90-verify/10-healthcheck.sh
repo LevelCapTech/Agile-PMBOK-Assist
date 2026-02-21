@@ -10,7 +10,7 @@ fi
 services=(
   mysql
   nginx
-  # nextjs
+  nextjs
   fail2ban
   prometheus-node-exporter
   prometheus-mysqld-exporter
