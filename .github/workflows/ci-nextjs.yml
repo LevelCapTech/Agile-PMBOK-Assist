@@ -2,14 +2,14 @@ name: CI (Next.js / Node 24)
 
 on:
   pull_request:
+    paths-ignore:
+      - "mock/**"
   push:
     branches: [main]
+    paths-ignore:
+      - "mock/**"
   workflow_dispatch:
     inputs:
-      appDir:
-        description: "App directory to build"
-        required: false
-        default: "mock/v1/web"
       runTests:
         description: "Run tests"
         required: false
@@ -27,39 +27,23 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      APP_DIR: ${{ github.event.inputs.appDir || 'mock/v1/web' }}
       RUN_TESTS: ${{ github.event.inputs.runTests || 'true' }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v4
         with:
           node-version: "24"
           cache: npm
-          cache-dependency-path: ${{ env.APP_DIR }}/package-lock.json
-
-      - name: Verify lockfile
-        run: test -f "${{ env.APP_DIR }}/package-lock.json"
+          cache-dependency-path: package-lock.json
 
       - name: Install dependencies
-        working-directory: ${{ env.APP_DIR }}
         run: npm ci
 
       - name: Lint
-        working-directory: ${{ env.APP_DIR }}
         run: npm run lint
 
-      - name: Typecheck
-        working-directory: ${{ env.APP_DIR }}
-        run: npm run typecheck
-
-      - name: Test
-        if: ${{ env.RUN_TESTS == 'true' }}
-        working-directory: ${{ env.APP_DIR }}
-        run: npm run test
-
       - name: Build
-        working-directory: ${{ env.APP_DIR }}
         run: npm run build
