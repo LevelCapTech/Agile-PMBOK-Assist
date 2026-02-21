@@ -94,7 +94,7 @@ cat <<TIMER > "$timer_file"
 Description=Periodic release polling deploy for agile-pmbok-assist
 
 [Timer]
-OnBootSec=1min
+OnBootSec=3min
 OnUnitActiveSec=5min
 Persistent=true
 
