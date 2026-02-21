@@ -12,6 +12,11 @@ on:
         required: true
         type: boolean
         default: true
+      enforce_lint:
+        description: "Enforce lint (fail on lint errors). Set false to skip lint gate and allow release to proceed."
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -139,6 +144,12 @@ jobs:
           npx commitlint --from "${{ steps.release_meta.outputs.range_from }}" --to HEAD
 
       - name: Lint
+        if: ${{ github.event.inputs.enforce_lint == 'true' }}
+        run: npm run lint
+
+      - name: Lint (warn-only)
+        if: ${{ github.event.inputs.enforce_lint != 'true' }}
+        continue-on-error: true
         run: npm run lint
 
       - name: Security audit
