@@ -50,7 +50,7 @@ User=${APP_USER}
 WorkingDirectory=${working_dir}
 Environment=NODE_ENV=production
 EnvironmentFile=${APP_ENV_FILE}
-ExecStart=/usr/bin/npm run start
+ExecStart=./node_modules/.bin/next start
 Restart=always
 RestartSec=5
 KillSignal=SIGTERM
