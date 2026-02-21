@@ -281,6 +281,10 @@ if [ ! -f "$target_complete_file" ]; then
     "${GITHUB_API_BASE_URL}/repos/${owner}/${repo}/releases/assets/${asset_id}" \
     -o "$archive_path"
 
+  if [ ! -s "$archive_path" ]; then
+    log "ERROR" "download" "failed" "アセットのダウンロードに失敗しました: path=${archive_path}"
+    exit 1
+  fi
   validate_archive_paths "$archive_path" || exit 1
   validate_archive_links "$archive_path" || exit 1
 
