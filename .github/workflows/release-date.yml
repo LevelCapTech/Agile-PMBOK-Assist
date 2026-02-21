@@ -230,10 +230,10 @@ jobs:
             fi
           }
 
-          require_entry '(^|\\./)server\\.js$' "server.js"
-          require_entry '(^|\\./)package\\.json$' "package.json"
-          require_entry '(^|\\./)public/' "public/"
-          require_entry '(^|\\./)\\.next/static/' ".next/static/"
+          require_entry '(^|\./)server\.js$' "server.js"
+          require_entry '(^|\./)package\.json$' "package.json"
+          require_entry '(^|\./)public/' "public/"
+          require_entry '(^|\./)\.next/static/' ".next/static/"
 
       - name: Create release and upload asset
         run: |
