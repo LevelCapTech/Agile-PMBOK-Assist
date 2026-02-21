@@ -132,6 +132,7 @@ create_installation_token() {
 switch_current_link() {
   local target_dir="$1"
   local link_next="${CURRENT_LINK}.next"
+  rm -f "$link_next"
   ln -sfn "$target_dir" "$link_next"
   mv -Tf "$link_next" "$CURRENT_LINK"
 }
