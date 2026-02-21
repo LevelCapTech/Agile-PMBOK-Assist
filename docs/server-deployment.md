@@ -14,7 +14,17 @@ sudo systemctl start agile-pmbok-assist-release-deploy.service
 
 ## ロールバック
 
+- ロールバック可能なリリースタグは `/opt/agile-pmbok-assist_repo/releases` 配下に作成されます。
+- `.deploy-complete` マーカーファイルが存在するタグのみをロールバック対象として選択してください。
+
 ```bash
+# ロールバック候補の一覧（リリースディレクトリを確認）
+ls -la /opt/agile-pmbok-assist_repo/releases
+
+# デプロイ完了済みリリースのみを確認（.deploy-complete が存在するもの）
+find /opt/agile-pmbok-assist_repo/releases -maxdepth 2 -type f -name '.deploy-complete'
+
+# 確認したタグを指定してロールバックを実行
 sudo /usr/local/bin/agile-pmbok-assist-release-poll-deploy.sh --rollback <tag>
 ```
 
