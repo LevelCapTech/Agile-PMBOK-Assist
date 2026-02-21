@@ -316,7 +316,7 @@ if ! restart_service; then
   if [ -n "$previous_target" ] && [ -d "$previous_target" ]; then
     switch_current_link "$previous_target"
     if systemctl restart "$DEPLOY_SERVICE_NAME" && systemctl is-active --quiet "$DEPLOY_SERVICE_NAME"; then
-      log "ERROR" "restart" "failed" "サービス再起動に失敗したため current をロールバックし、旧リリースで復旧しました"
+      log "ERROR" "restart" "recovered" "サービス再起動に失敗したため current をロールバックし、旧リリースで復旧しました"
     else
       log "ERROR" "restart" "failed" "current はロールバックしましたが、サービスは停止状態です"
     fi
