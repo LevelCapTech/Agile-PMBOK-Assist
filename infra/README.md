@@ -46,7 +46,7 @@ sudo bash infra/setup/90-verify/10-healthcheck.sh
 - SSH は SSH_ALLOW_IPS 指定時は許可 IP のみに制限し、未指定の場合は全 IP 許可の構成です。
 - fail2ban と鍵認証を前提に運用し、ブロック状況の監視を必須としてください（`setup/10-security/30-fail2ban.sh`、`setup/10-security/10-ssh.sh` を参照）。
 - `10-ssh.sh` は初期設定済み（PermitRootLogin no 前提）の確認のみ実行します（PubkeyAuthentication yes を検証）。
-- GitHub App の Installation Token を使って HTTPS で pull します。`GITHUB_APP_ID`、`GITHUB_INSTALLATION_ID`、`GITHUB_APP_PEM_PATH` を `.env` に設定し、`APP_REPO_URL` は HTTPS 形式にしてください。
+- GitHub App の Installation Token を使って Release asset を HTTPS で取得します。`GITHUB_APP_ID`、`GITHUB_INSTALLATION_ID`、`GITHUB_APP_PEM_PATH` を `.env` に設定し、`APP_REPO_URL` は HTTPS 形式にしてください。
 - `agile-pmbok-assist-release-deploy.timer` は 5 分間隔で release を監視します。不要な場合は `systemctl disable --now agile-pmbok-assist-release-deploy.timer` で停止してください。
 - GitHub App の短命トークンはメモリ上の残留を完全には防げないため、高セキュリティ環境では tmpfs 配置やメモリ保護ツールの導入を検討してください。
 
