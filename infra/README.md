@@ -20,8 +20,7 @@
 1. `infra/.env.sample` を `infra/.env` にコピーし、実値に更新する
 2. `infra/bootstrap.sh` を実行する
 3. `systemctl start agile-pmbok-assist-release-deploy.service` で初回 release deploy を実行する
-4. `infra/setup/40-web/deploy.sh` を実行する（初回のみ）
-5. `infra/setup/90-verify/10-healthcheck.sh` で起動確認する
+4. `infra/setup/90-verify/10-healthcheck.sh` で起動確認する
 
 GitHub App からの初回 clone 手順は [CLONE_GUIDE.md](CLONE_GUIDE.md) を参照してください。
 
