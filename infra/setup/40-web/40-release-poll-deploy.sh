@@ -181,7 +181,6 @@ cleanup_lock() {
   if [ -n "${lock_fd:-}" ]; then
     exec {lock_fd}>&- || true
   fi
-  rm -f "$LOCK_FILE"
 }
 trap cleanup_lock EXIT INT TERM
 if ! flock -n "$lock_fd"; then
