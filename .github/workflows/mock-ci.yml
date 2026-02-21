@@ -18,6 +18,25 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  mock-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Lint mock (mock-specific config)
+        run: npx eslint --config eslint.config.mock.mjs mock/
+
   mock-web-build:
     runs-on: ubuntu-latest
     steps:
@@ -38,11 +57,7 @@ jobs:
         working-directory: mock/v1/web
         run: npm ci
 
-      - name: Lint
-        working-directory: mock/v1/web
-        run: npm run lint
-
-      - name: Typecheck
+      - name: Typecheck (mock/v1/web/tsconfig.json)
         working-directory: mock/v1/web
         run: npm run typecheck
 

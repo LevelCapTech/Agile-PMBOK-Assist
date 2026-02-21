@@ -1,8 +1,0 @@
-{
-  "extends": "./tsconfig.json",
-  "compilerOptions": {
-    "noEmit": true
-  },
-  "include": ["mock/**/*.ts", "mock/**/*.tsx", "mock/**/*.mts"],
-  "exclude": ["node_modules"]
-}
