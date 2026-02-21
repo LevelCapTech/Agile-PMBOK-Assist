@@ -27,7 +27,13 @@ while [ $# -gt 0 ]; do
       ;;
     --rollback)
       shift
-      rollback_tag="${1:-}"
+      case "${1:-}" in
+        ""|--*)
+          echo "[40-release-poll-deploy] --rollback オプションにはタグを指定してください。" >&2
+          exit 1
+          ;;
+      esac
+      rollback_tag="$1"
       ;;
     *)
       echo "[40-release-poll-deploy] 未対応オプションです: $1" >&2
