@@ -63,9 +63,8 @@ ENV
 chmod 600 "$deploy_env_file"
 
 for unit in agile-pmbok-assist-pull.timer agile-pmbok-assist-pull.service; do
-  if systemctl list-unit-files --type=service --type=timer | grep -q "^${unit}"; then
-    systemctl disable --now "$unit" || true
-  fi
+  systemctl stop "$unit" 2>/dev/null || true
+  systemctl disable "$unit" 2>/dev/null || true
 done
 
 service_file="/etc/systemd/system/agile-pmbok-assist-release-deploy.service"
