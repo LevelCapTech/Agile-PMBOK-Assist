@@ -199,6 +199,7 @@ jobs:
           cp .next/routes-manifest.json bundle/.next/routes-manifest.json
           cp .next/prerender-manifest.json bundle/.next/prerender-manifest.json
           cp .next/build-manifest.json bundle/.next/build-manifest.json
+          cp -R .next/server bundle/.next/server
           cp -R public bundle/public
           cp package.json bundle/package.json
           test -f bundle/server.js
@@ -244,6 +245,7 @@ jobs:
           require_entry '(^|\./)\.next/routes-manifest\.json$' ".next/routes-manifest.json"
           require_entry '(^|\./)\.next/prerender-manifest\.json$' ".next/prerender-manifest.json"
           require_entry '(^|\./)\.next/build-manifest\.json$' ".next/build-manifest.json"
+          require_entry '(^|\./)\.next/server/pages-manifest\.json$' ".next/server/pages-manifest.json"
 
       - name: Create release and upload asset
         run: |

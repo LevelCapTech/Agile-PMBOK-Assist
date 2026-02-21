@@ -24,6 +24,7 @@
   - `.next/routes-manifest.json`
   - `.next/prerender-manifest.json`
   - `.next/build-manifest.json`
+  - `.next/server/pages-manifest.json`
   - `public`
   - `package.json`
 - bundle の確認は以下で行う。
