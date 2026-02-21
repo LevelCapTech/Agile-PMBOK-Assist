@@ -194,6 +194,8 @@ jobs:
           cp -R .next/standalone/* bundle/
           mkdir -p bundle/.next
           cp -R .next/static bundle/.next/static
+          cp .next/BUILD_ID bundle/.next/BUILD_ID
+          cp .next/required-server-files.json bundle/.next/required-server-files.json
           cp -R public bundle/public
           cp package.json bundle/package.json
           test -f bundle/server.js
@@ -234,6 +236,8 @@ jobs:
           require_entry '(^|\./)package\.json$' "package.json"
           require_entry '(^|\./)public/' "public/"
           require_entry '(^|\./)\.next/static/' ".next/static/"
+          require_entry '(^|\./)\.next/BUILD_ID$' ".next/BUILD_ID"
+          require_entry '(^|\./)\.next/required-server-files\.json$' ".next/required-server-files.json"
 
       - name: Create release and upload asset
         run: |

@@ -19,6 +19,8 @@
 - bundle 構成は次を満たす。
   - `server.js`
   - `.next/static`
+  - `.next/BUILD_ID`
+  - `.next/required-server-files.json`
   - `public`
   - `package.json`
 - bundle の確認は以下で行う。
