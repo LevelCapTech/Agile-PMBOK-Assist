@@ -38,19 +38,19 @@ if [ -f "$service_file" ]; then
   cp "$service_file" "${service_file}.bak.$(date +%s)"
 fi
 
-cat <<SERVICE > "$service_file"
+cat <<'SERVICE' > "$service_file"
 [Unit]
 Description=Next.js SSR Application
 Wants=network-online.target mysql.service
 After=network-online.target mysql.service
-ConditionPathExists=${working_dir}
+ConditionPathExists=__WORKING_DIR__
 
 [Service]
 Type=simple
-User=${APP_USER}
-WorkingDirectory=${working_dir}
+User=__APP_USER__
+WorkingDirectory=__WORKING_DIR__
 Environment=NODE_ENV=production
-EnvironmentFile=${APP_ENV_FILE}
+EnvironmentFile=__APP_ENV_FILE__
 ExecStart=/bin/sh -c './node_modules/.bin/next start -p "$PORT"'
 Restart=always
 RestartSec=5
@@ -63,6 +63,10 @@ StandardError=journal
 [Install]
 WantedBy=multi-user.target
 SERVICE
+
+sed -i "s|__APP_USER__|${APP_USER}|" "$service_file"
+sed -i "s|__WORKING_DIR__|${working_dir}|" "$service_file"
+sed -i "s|__APP_ENV_FILE__|${APP_ENV_FILE}|" "$service_file"
 
 mkdir -p /var/log/nextjs
 chown "$APP_USER":"$APP_USER" /var/log/nextjs
