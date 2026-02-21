@@ -114,7 +114,7 @@ b64url() {
 create_installation_token() {
   local now iat exp header payload unsigned sig jwt
   now="$(date +%s)"
-  # JWT は時刻同期を前提とするため、NTP などでサーバー時刻を正確に保つこと。
+  # JWT は時刻同期を前提とするため、NTP や chrony でサーバー時刻を正確に保つこと。
   iat=$((now-60))
   exp=$((now+540))
   header="$(printf '{"alg":"RS256","typ":"JWT"}' | b64url)"
