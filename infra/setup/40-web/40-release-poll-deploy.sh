@@ -124,7 +124,7 @@ switch_current_link() {
 }
 
 restart_service() {
-  systemctl try-restart "$DEPLOY_SERVICE_NAME"
+  systemctl restart "$DEPLOY_SERVICE_NAME"
   systemctl is-active --quiet "$DEPLOY_SERVICE_NAME"
 }
 
