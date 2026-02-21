@@ -15,6 +15,7 @@ LOCK_FILE="${APP_DIR}/.deploy.lock"
 dry_run=false
 check_auth=false
 rollback_tag=""
+lock_fd=""
 
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -177,7 +178,9 @@ mkdir -p "$RELEASES_DIR"
 
 exec {lock_fd}>"$LOCK_FILE"
 cleanup_lock() {
-  exec {lock_fd}>&- || true
+  if [ -n "${lock_fd:-}" ]; then
+    exec {lock_fd}>&- || true
+  fi
   rm -f "$LOCK_FILE"
 }
 trap cleanup_lock EXIT INT TERM
