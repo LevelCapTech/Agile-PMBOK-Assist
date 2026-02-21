@@ -199,6 +199,23 @@ jobs:
           test -f bundle/server.js
           tar -czf next-bundle.tgz -C bundle .
 
+      - name: Debug bundle and archive listing
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "=== bundle tree (top) ==="
+          ls -la bundle || true
+          echo "=== bundle find server.js ==="
+          find bundle -maxdepth 6 -type f -name 'server.js' -print -exec ls -la {} \; || true
+          echo "=== bundle tree (deeper) ==="
+          find bundle -maxdepth 4 -print | sed 's#^\./##' | sort | head -n 400
+          echo "=== tar listing (head) ==="
+          tar -tzf next-bundle.tgz | head -n 400
+          echo "=== tar grep server.js ==="
+          tar -tzf next-bundle.tgz | grep -nE 'server\.js$' || true
+          echo "=== tar grep package.json ==="
+          tar -tzf next-bundle.tgz | grep -nE 'package\.json$' || true
+
       - name: Verify bundle archive
         run: |
           set -euo pipefail
