@@ -265,7 +265,7 @@ if [ ! -f "$target_complete_file" ]; then
   staging_dir="${target_dir}.deploying"
   rm -rf "$staging_dir"
   mkdir -p "$staging_dir"
-  tar -xzf "$archive_path" -C "$staging_dir"
+  tar --no-same-owner --no-same-permissions -xzf "$archive_path" -C "$staging_dir"
   touch "${staging_dir}/.deploy-complete"
   chown -R "$APP_USER":"$APP_USER" "$staging_dir" || {
     log "ERROR" "ownership" "failed" "所有権変更に失敗しました: ${staging_dir}"
