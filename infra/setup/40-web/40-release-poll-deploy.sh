@@ -318,5 +318,16 @@ if ! restart_service; then
   exit 1
 fi
 
-printf '%s\n' "$release_tag" > "$STATE_FILE"
+tmp_state_file="${STATE_FILE}.tmp"
+if ! printf '%s\n' "$release_tag" > "$tmp_state_file"; then
+  log "ERROR" "state-file" "write_failed" "STATE_FILE への書き込みに失敗しました: ${tmp_state_file}"
+  exit 1
+fi
+written_tag="$(cat "$tmp_state_file" 2>/dev/null || true)"
+if [ "$written_tag" != "$release_tag" ]; then
+  log "ERROR" "state-file" "verify_failed" "STATE_FILE の内容検証に失敗しました: expected=${release_tag} actual=${written_tag:-<empty>}"
+  rm -f "$tmp_state_file"
+  exit 1
+fi
+mv "$tmp_state_file" "$STATE_FILE"
 log "INFO" "deploy" "success" "tag=${release_tag}"
