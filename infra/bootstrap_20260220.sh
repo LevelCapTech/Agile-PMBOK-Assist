@@ -30,6 +30,7 @@ source "$ENV_FILE"
 set +a
 
 steps=(
+  "setup/20-runtime/31-release-poll-deploy.sh"
   "setup/40-web/30-nextjs-service.sh"
 )
 
@@ -48,7 +49,8 @@ for step in "${steps[@]}"; do
 done
 
 systemctl daemon-reload
-systemctl restart nextjs.service
+systemctl start agile-pmbok-assist-release-deploy.service
+systemctl start nextjs.service || systemctl restart nextjs.service
 systemctl status nextjs.service --no-pager -l
 
 healthcheck_path="$SCRIPT_DIR/setup/90-verify/10-healthcheck.sh"

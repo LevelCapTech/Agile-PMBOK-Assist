@@ -33,6 +33,7 @@ if [[ "$APP_ENV_FILE" != /* ]]; then
 fi
 
 service_file="/etc/systemd/system/nextjs.service"
+working_dir="${APP_DIR}/current"
 if [ -f "$service_file" ]; then
   cp "$service_file" "${service_file}.bak.$(date +%s)"
 fi
@@ -42,16 +43,19 @@ cat <<SERVICE > "$service_file"
 Description=Next.js SSR Application
 Wants=network-online.target mysql.service
 After=network-online.target mysql.service
+ConditionPathExists=${working_dir}
 
 [Service]
 Type=simple
 User=${APP_USER}
-WorkingDirectory=${APP_DIR}
+WorkingDirectory=${working_dir}
 Environment=NODE_ENV=production
 EnvironmentFile=${APP_ENV_FILE}
-ExecStart=/usr/bin/node ${APP_DIR}/node_modules/next/dist/bin/next start -p \${PORT}
+ExecStart=/bin/sh -c './node_modules/.bin/next start -p "$PORT"'
 Restart=always
 RestartSec=5
+KillSignal=SIGTERM
+TimeoutStopSec=30
 LimitNOFILE=65535
 StandardOutput=journal
 StandardError=journal
@@ -75,4 +79,4 @@ cat <<LOGROTATE > /etc/logrotate.d/nextjs
 LOGROTATE
 
 systemctl daemon-reload
-systemctl enable --now nextjs.service
+systemctl enable nextjs.service
