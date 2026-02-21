@@ -139,7 +139,7 @@ validate_archive_paths() {
   local entry
   while IFS= read -r entry; do
     [ -z "$entry" ] && continue
-    if [[ "$entry" == /* ]] || [[ "$entry" == ".." ]] || [[ "$entry" == ../* ]] || [[ "$entry" == ./../* ]] || [[ "$entry" == */../* ]] || [[ "$entry" == */.. ]]; then
+    if [[ "$entry" == /* ]] || [[ "$entry" == ".." ]] || [[ "$entry" == ../* ]] || [[ "$entry" == */../* ]] || [[ "$entry" == */.. ]]; then
       log "ERROR" "archive-validate" "failed" "危険なパスが含まれています: ${entry}"
       return 1
     fi
@@ -170,7 +170,7 @@ fi
 
 mkdir -p "$APP_DIR" "$RELEASES_DIR"
 exec 9>"$LOCK_FILE"
-trap 'exec 9>&-' EXIT
+trap 'exec 9>&-; rm -f "$LOCK_FILE"' EXIT INT TERM
 if ! flock -n 9; then
   log "ERROR" "lock" "failed" "別の deploy 処理が実行中です"
   exit 1
@@ -247,12 +247,12 @@ if [ ! -f "$target_complete_file" ]; then
   mkdir -p "$staging_dir"
   tar -xzf "$archive_path" -C "$staging_dir"
   touch "${staging_dir}/.deploy-complete"
-  rm -rf "$target_dir"
-  mv "$staging_dir" "$target_dir"
-  chown -R "$APP_USER":"$APP_USER" "$target_dir" || {
-    log "ERROR" "ownership" "failed" "所有権変更に失敗しました: ${target_dir}"
+  chown -R "$APP_USER":"$APP_USER" "$staging_dir" || {
+    log "ERROR" "ownership" "failed" "所有権変更に失敗しました: ${staging_dir}"
     exit 1
   }
+  rm -rf "$target_dir"
+  mv "$staging_dir" "$target_dir"
 fi
 
 previous_target="$current_target"
