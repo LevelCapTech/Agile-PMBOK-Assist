@@ -291,6 +291,7 @@ if [ ! -f "$target_complete_file" ]; then
   touch "${staging_dir}/.deploy-complete"
   chown -R "$APP_USER":"$APP_USER" "$staging_dir" || {
     log "ERROR" "ownership" "failed" "所有権変更に失敗しました: ${staging_dir}"
+    rm -rf "$staging_dir"
     exit 1
   }
   rm -rf "$target_dir"
