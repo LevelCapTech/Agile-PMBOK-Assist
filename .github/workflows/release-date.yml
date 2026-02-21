@@ -219,20 +219,19 @@ jobs:
       - name: Verify bundle archive
         run: |
           set -euo pipefail
-          bundle_listing=$(tar -tzf next-bundle.tgz)
+          tar -tzf next-bundle.tgz > bundle-listing.txt
+
           require_entry() {
             local pattern="$1"
             local label="$2"
-            if ! echo "${bundle_listing}" | grep -qE "${pattern}"; then
+            if ! grep -qE "${pattern}" bundle-listing.txt; then
               echo "Bundle archive missing ${label}." >&2
               exit 1
             fi
           }
-          # `(^|\\./)` matches both root entries and tar outputs prefixed with `./`.
-          # File entries are checked with exact filename matches.
+
           require_entry '(^|\\./)server\\.js$' "server.js"
           require_entry '(^|\\./)package\\.json$' "package.json"
-          # Directory entries are checked by prefix to include their contents.
           require_entry '(^|\\./)public/' "public/"
           require_entry '(^|\\./)\\.next/static/' ".next/static/"
 
