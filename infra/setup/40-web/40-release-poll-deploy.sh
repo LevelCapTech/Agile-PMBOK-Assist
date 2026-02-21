@@ -238,10 +238,18 @@ if [ -f "$target_complete_file" ] && [ "$current_target" = "$target_dir" ]; then
 fi
 
 tmp_dir="$(mktemp -d)"
-cleanup() {
-  rm -rf "$tmp_dir"
+cleanup_all() {
+  # 既存の lock 用クリーンアップが定義されていれば必ず呼び出す
+  if type cleanup_lock >/dev/null 2>&1; then
+    cleanup_lock
+  fi
+
+  # 一時ディレクトリを安全に削除
+  if [ -n "${tmp_dir:-}" ] && [ -d "$tmp_dir" ]; then
+    rm -rf "$tmp_dir"
+  fi
 }
-trap cleanup EXIT
+trap 'cleanup_all' EXIT INT TERM
 
 if [ ! -f "$target_complete_file" ]; then
   archive_path="${tmp_dir}/${RELEASE_ASSET_NAME}"
