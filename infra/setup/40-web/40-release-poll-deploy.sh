@@ -114,6 +114,7 @@ b64url() {
 create_installation_token() {
   local now iat exp header payload unsigned sig jwt
   now="$(date +%s)"
+  # JWT は時刻同期を前提とするため、NTP などでサーバー時刻を正確に保つこと。
   iat=$((now-60))
   exp=$((now+540))
   header="$(printf '{"alg":"RS256","typ":"JWT"}' | b64url)"
@@ -210,10 +211,12 @@ if ! flock -n "$lock_fd"; then
 fi
 
 if [ -n "$rollback_tag" ]; then
+  # rollback も lock 取得後にのみ実行し、timer 実行との競合を防ぐ。
   rollback_to_tag "$rollback_tag"
   exit 0
 fi
 
+# token は短命利用のみとし、ログや引数へ出力しない。
 token="$(create_installation_token)"
 if [ -z "$token" ] || [ "$token" = "null" ]; then
   log "ERROR" "auth" "failed" "installation token 取得に失敗しました"
@@ -261,7 +264,7 @@ fi
 tmp_dir="$(mktemp -d)"
 cleanup_all() {
   # 既存の lock 用クリーンアップが定義されていれば必ず呼び出す
-  if type cleanup_lock >/dev/null 2>&1; then
+  if declare -F cleanup_lock >/dev/null 2>&1; then
     cleanup_lock
   fi
 
@@ -312,8 +315,11 @@ switch_current_link "$target_dir"
 if ! restart_service; then
   if [ -n "$previous_target" ] && [ -d "$previous_target" ]; then
     switch_current_link "$previous_target"
-    systemctl restart "$DEPLOY_SERVICE_NAME" || true
-    log "ERROR" "restart" "failed" "サービス再起動に失敗したため current をロールバックしました"
+    if systemctl restart "$DEPLOY_SERVICE_NAME" && systemctl is-active --quiet "$DEPLOY_SERVICE_NAME"; then
+      log "ERROR" "restart" "failed" "サービス再起動に失敗したため current をロールバックし、旧リリースで復旧しました"
+    else
+      log "ERROR" "restart" "failed" "current はロールバックしましたが、サービスは停止状態です"
+    fi
   else
     # 初回デプロイなど、ロールバック先がない場合は current シンボリックリンクを削除して安全な状態に戻す
     if [ -L "$CURRENT_LINK" ] || [ -e "$CURRENT_LINK" ]; then
