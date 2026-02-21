@@ -16,7 +16,12 @@ on:
         description: "Enforce lint (fail on lint errors). Set false to skip lint gate and allow release to proceed."
         required: false
         type: boolean
-        default: false
+        default: true
+      enforce_audit:
+        description: "Enforce npm audit (fail on vulnerabilities). Set false to skip audit gate and allow release to proceed."
+        required: false
+        type: boolean
+        default: true
 
 permissions:
   contents: write
@@ -153,6 +158,12 @@ jobs:
         run: npm run lint
 
       - name: Security audit
+        if: ${{ github.event.inputs.enforce_audit == 'true' }}
+        run: npm audit
+
+      - name: Security audit (warn-only)
+        if: ${{ github.event.inputs.enforce_audit != 'true' }}
+        continue-on-error: true
         run: npm audit
 
       - name: Generate release notes
