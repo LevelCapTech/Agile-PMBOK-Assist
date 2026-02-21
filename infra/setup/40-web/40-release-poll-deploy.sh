@@ -156,6 +156,23 @@ validate_archive_paths() {
   return 0
 }
 
+validate_archive_links() {
+  local archive_path="$1"
+  local line mode type
+  while IFS= read -r line; do
+    [ -z "$line" ] && continue
+    mode="${line%% *}"
+    type="${mode:0:1}"
+    case "$type" in
+      l|h)
+        log "ERROR" "archive-validate" "failed" "symlink/hardlink を含むため拒否します: ${line}"
+        return 1
+        ;;
+    esac
+  done < <(tar -tvzf "$archive_path")
+  return 0
+}
+
 rollback_to_tag() {
   local tag="$1"
   local target_dir="${RELEASES_DIR}/${tag}"
@@ -267,6 +284,7 @@ if [ ! -f "$target_complete_file" ]; then
     -o "$archive_path"
 
   validate_archive_paths "$archive_path" || exit 1
+  validate_archive_links "$archive_path" || exit 1
 
   staging_dir="${target_dir}.deploying"
   rm -rf "$staging_dir"

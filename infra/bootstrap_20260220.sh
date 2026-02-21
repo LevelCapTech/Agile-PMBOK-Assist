@@ -49,6 +49,7 @@ for step in "${steps[@]}"; do
 done
 
 systemctl daemon-reload
+systemctl start agile-pmbok-assist-release-deploy.service
 systemctl restart nextjs.service
 systemctl status nextjs.service --no-pager -l
 
