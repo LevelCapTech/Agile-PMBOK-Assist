@@ -3,10 +3,10 @@
 ## 1. 機能要件 / 非機能要件
 
 - 機能要件:
-  - Upstream(public) デモとして `dashboard` 1ページの追加手順を SSOT 化する。
+  - Upstream(public) デモとして `dashboard`1ページの追加手順を SSOT 化する。
   - ページ追加時の 4 点セット（docs / contracts / ui / app page）を再利用可能な型として定義する。
   - ダッシュボード画面を構成する領域（共通ヘッダ、左ペインメニュー、プロジェクト一覧、メンバー一覧、予算執行状況、設定ボタン）の責務分割を定義する。
-  - DI は `AppProvider` のみで依存解決し、`pages/dashboard.tsx` は contracts + ui + AppContext 以外を参照しない方針を固定する。
+  - DI は `AppProvider` のみで依存解決し、`pages/dashboard.tsx` は `packages/contracts` / `packages/ui` / `providers/AppContext` 以外を参照しない方針を固定する。
 - 非機能要件:
   - private 実装/社内依存を持ち込まない（public 完結）。
   - 既存挙動の互換性を維持し、導入後もページ追加を同一手順で横展開できる。
@@ -26,7 +26,7 @@
 
 - 責務分離 / データフロー:
   - `packages/contracts` は interface/type のみを定義し、取得方法（fetch/URL/認証）は定義しない。
-  - `apps/demo-web/providers/public/createPublicDeps.ts` は public 完成実装としてモックデータを返し、DataSource の具象を閉じ込める。
+  - `apps/demo-web/providers/public/createPublicDeps.ts` は public 完結実装としてモックデータを返し、DataSource の具象を閉じ込める。
   - `apps/demo-web/providers/AppProvider.tsx` が唯一の Composition Root として `deps` を生成し `AppContext` に注入する。
   - `apps/demo-web/pages/dashboard.tsx` は `useAppContext()` で `deps.dashboardDataSource` を受け取り、UI ページに `props` として渡すだけにする（ロジック最小化）。
   - `packages/ui/src/pages/dashboard/DashboardPage.tsx` は表示責務に集中し、画面構成を Atoms/Molecules/Organisms へ分割する。
@@ -54,7 +54,7 @@
 | 10 | `packages/ui/src/organisms/SettingsActions/SettingsActions.tsx` | 設定ボタン群 UI |
 | 11 | `apps/demo-web/providers/public/createPublicDeps.ts` | public モック DataSource 実装 |
 | 12 | `apps/demo-web/providers/AppContext.tsx` | `deps` の型付き Context 定義 |
-| 13 | `apps/demo-web/providers/AppProvider.tsx` | DI 固定（唯一の依存解決点） |
+| 13 | `apps/demo-web/providers/AppProvider.tsx` | DI 接続（唯一の依存解決点） |
 | 14 | `apps/demo-web/pages/dashboard.tsx` | ルーティングページ（Context→UI の橋渡しのみ） |
 
 ### 3.2 契約インターフェース（実装エンジニア向け固定案）
@@ -136,7 +136,7 @@ flowchart TD
 | H-01 | docs 作成 | ページ追加手順を固定化 | `.github/copilot/plans/<slug>.md` をテンプレート準拠で作成し、4 点セット・責務・データフローを記述する | テンプレート準拠、非ゴール逸脱なし | plan がレビュー可能状態 |
 | H-02 | contracts 実装 | 契約境界の固定 | `packages/contracts/src/pages/dashboard.ts` に interface/type のみを実装し、具象語を排除する | 実装コード混入なし | 型チェックで参照可能 |
 | H-03 | public deps 実装 | public 完結の DI 入力作成 | `createPublicDeps` で dashboard 用 DataSource をモック実装し、戻り値を contracts 型へ一致させる | private 参照なし | `AppProvider` から利用可能 |
-| H-04 | AppProvider 接続 | DI 入口を単一点化 | `AppProvider` で deps を生成し Context へ渡す。ページ側で new しない | DI が AppProvider のみ | コードレビューで禁止 import なし |
+| H-04 | AppProvider 接続 | DI 入口を単一点化 | `AppProvider` で deps を生成し Context へ渡す。ページ側で new しない | DI が AppProvider のみ | `pages/dashboard.tsx` の import を確認し、`packages/contracts` / `packages/ui` / `providers/AppContext` 以外の参照が0件 |
 | H-05 | UI ページ実装 | 画面構成の再利用可能化 | DashboardPage と Organisms を分割し、共通ヘッダ/左ペイン/4領域を表示する | Atoms/Moleculesは見た目責務中心 | Story/画面確認で表示一致 |
 | H-06 | app page 実装 | pages 方式ルーティング確定 | `pages/dashboard.tsx` を作成し、Context 取得→UI 渡しのみに限定する | contracts/ui/AppContext 以外 import なし | lint/typecheck/build 通過 |
 
