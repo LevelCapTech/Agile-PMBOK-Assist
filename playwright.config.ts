@@ -10,5 +10,6 @@ export default defineConfig({
     command: "npm run build && npm run start -- --port 4100",
     port: 4100,
     reuseExistingServer: !process.env.CI,
+    timeout: 120_000,
   },
 });
