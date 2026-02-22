@@ -279,7 +279,7 @@ packages/
 ## deps（依存束）の設計（Upstream内で完結）
 
 * `AppContext` は `deps` を型付きで提供する
-* `createPublicDeps`（または `createClientDeps`）は “public完成実装”として、各ページ用の DataSource を返す（モックOK）
+* `createClientDeps` は “public完成実装”として、各ページ用の DataSource を返す（モックOK）
 
 ## 品質ゲート
 
