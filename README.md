@@ -18,7 +18,65 @@ bun dev
 
 `app/page.tsx` を編集するとページが自動的に更新されます。
 
-このプロジェクトは [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) を使用して、Vercel の新しいフォントファミリーである [Geist](https://vercel.com/font) を最適化して読み込みます。
+このプロジェクトはシステムフォントを利用しており、オフライン環境でもビルドできるようにしています。
+
+## ローカル動作確認（.devcontainer）
+
+1. VS Code で Dev Container（`.devcontainer`）を起動します。
+2. リポジトリルートで依存関係をインストールします。
+
+```bash
+npm install
+```
+
+### Storybook/Docs
+
+```bash
+npm run storybook
+```
+
+ブラウザで `http://localhost:6006` を開きます。ポートが開けない場合は VS Code のポートフォワードで `6006` を追加してください。
+
+### UI: Storybook Docs
+
+Storybook 画面で `Components/StatusMessage` の Docs を開くか、`http://localhost:6006/?path=/docs/components-statusmessage--docs` にアクセスします。
+
+### Vitest/Coverage
+
+```bash
+npm run test
+npm run test:coverage
+```
+
+`coverage/` 配下にレポートが生成されます。
+
+### Playwright/E2E
+
+初回のみブラウザをインストールします。
+
+```bash
+npm run test:e2e:install
+```
+
+```bash
+npm run test:e2e
+```
+
+E2E 実行時は `http://localhost:4100` を利用します。必要に応じてポートフォワードで `4100` を追加してください。
+
+### Codecov/Visual
+
+ローカルでは `npm run test:coverage` で `coverage/lcov.info` を生成します。Codecov へのアップロードや Chromatic/Percy の実行は CI で行います。ローカルで実行する場合は、以下のトークンを環境変数に設定してから実行してください。
+
+```bash
+export CHROMATIC_PROJECT_TOKEN=...
+export PERCY_TOKEN=...
+```
+
+```bash
+npm run chromatic
+npm run percy
+```
 
 ## さらに学ぶ
 
