@@ -12,11 +12,12 @@ assignees: ''
 
 Upstream(public) デモアプリを作成する。
 本プロジェクトは Dependency Inversion Principle に基づき、 Composition Root（AppProvider）で依存を解決する Plugin 型アーキテクチャを採用する。
+このIssueの目的は「設計内容を製造Agentへ漏れなく引き継ぐこと」であり、実装そのものは行わない。
 
 以下を SSOT として固定する。
 
 * Plugin型（DIP）: 依存解決は Composition Root（AppProvider）のみ
-* ページは contracts（契約）と public UI のみで構成できる
+* ページ設計は contracts（契約）/ public UI / AppContext の責務分離で構成する
 
 ## 成果物
 - `.github/copilot/80-templates/implementation-plan.md` に準拠した plan ドキュメントを`.github/copilot/plans/75-page-dashboard.md`として作成する。
@@ -47,7 +48,7 @@ Upstream(public) デモアプリを作成する。
 1. 「ページを追加する手順」が **SSOT化**されている
 2. contracts と UI と DI が **規約通りに分離**されている
 3. `.github/copilot/plans/<slug>.md` をコピーしてページを増やせる
-4. サンプルとして `dashboard` 1ページだけ作成し、型と流れを確定する（※このページ自体が目的ではなく“型の検証”）
+4. サンプルとして `dashboard` 1ページ分の**設計**だけを行い、型と流れを確定する（※このページ自体が目的ではなく“型の検証”）
 
 ## 非ゴール
 
@@ -59,7 +60,7 @@ Upstream(public) デモアプリを作成する。
 ### Dependency Injection Rule
 
 * 依存性注入（依存解決）は `AppProvider.tsx` のみ
-* `app/*/page.tsx` は **contracts と public UI と AppContext のみ**を参照可能とする
+* `app/*/page.tsx` は **contracts と AppContext のみ**を参照可能とし、public UI の import 可否は `.github/instructions/**/*.instructions.md` の制約に従う
 * `contracts/*` は interface/type のみ（実装、URL、認証、fetchなどの具体語禁止）
 * `packages/ui/*` は public UI（会社固有前提なし）
 
@@ -83,7 +84,7 @@ Upstream(public) デモアプリを作成する。
 
 * Next.js アプリのルートは repo 直下で固定。だけど UI/Contracts は同一repo内のローカルパッケージとして `packages/` に切る。
 * 本repoは「`apps/` 配下にアプリを置く monorepo 形」は採用しない（＝アプリは repo 直下）。ただし `packages/` にローカルパッケージ（`ui` / `contracts` / `plugins`）を同居させる。
-* `src/providers` はアプリ全体（Root layout 相当）の Provider 群、`app/**/providers.tsx` は画面スコープの Provider / Composition Root とする。
+* `src/providers` はアプリ全体（Root layout 相当）の Provider 群、`app/**/providers.tsx` は画面スコープの Provider とする（Composition Root としての依存解決は `AppProvider.tsx` のみ）。
 * UI はアトミックデザインを採用する。
 
   * Hooks は Organisms 以上（または Container）で許可。
@@ -104,7 +105,7 @@ app/
   dashboard/
     page.tsx              # /dashboard（Server）
     layout.tsx            # /dashboard 配下のレイアウト
-    providers.tsx         # (use client) 画面スコープContextのComposition Root
+    providers.tsx         # (use client) 画面スコープContext Provider（依存解決はしない）
     _components/          # ルート専用の薄い部品
       DashboardShell.tsx  # (use client) state/compose only
 
@@ -268,7 +269,7 @@ packages/
 
 ## 型定義（SSOTとして固定）
 
-各ページは必ず次の 4 点セットで追加する。
+各ページは実装時に次の 4 点セットを基本とする（本Issueでは追加せず、planに定義する）。
 
 1. docs: `.github/copilot/plans/<slug>.md`（ページ仕様）
 2. contracts: `packages/contracts/src/pages/<slug>.ts`（interface/typeのみ）
@@ -278,17 +279,17 @@ packages/
 ## deps（依存束）の設計（Upstream内で完結）
 
 * `AppContext` は `deps` を型付きで提供する
-* `createPublicDeps` は “public完成実装”として、各ページ用の DataSource を返す（モックOK）
+* `createPublicDeps`（または `createClientDeps`）は “public完成実装”として、各ページ用の DataSource を返す（モックOK）
 
 ## 品質ゲート
 
-* lint/typecheck/build が通る
-* `app/dashboard/page.tsx` は contracts と ui と AppContext 以外に依存しない
-* `contracts` に実装コードがない
-* DIは AppProvider に固定されている
+* plan に lint/typecheck/build/test/security の実行計画が明記されている
+* 実装Issueで `app/dashboard/page.tsx` の依存制約を検証できる受け入れ条件が定義されている
+* 実装Issueで `contracts` に実装コードが入らないことを検証できる受け入れ条件が定義されている
+* 実装Issueで DI が AppProvider に固定されることを検証できる受け入れ条件が定義されている
 
 ## Done
 
-* dashboard サンプルで「docs→contracts→ui→page→AppProvider」の流れが確定している
+* dashboard サンプルで「docs→contracts→ui→page→AppProvider」の設計フローが確定している
 * 契約のプロパティが明確である
 * ルーティングが明確である
