@@ -57,13 +57,11 @@ Upstream(public) デモアプリの画面設計を作成する。
 
 1. 「ページを追加する手順」が **SSOT化**されている
 2. contracts と UI と DI が **規約通りに分離**されている
-3. `.github/copilot/plans/<issue-number>-page-<slug>.md` をコピーしてページを増やせる
-4. サンプルとして 1ページ分の**設計**だけを行い、型と流れを確定する（※このページ自体が目的ではなく“型の検証”）
+3. `.github/copilot/plans/<issue-number>-page-<slug>.md` の機能設計書を新規作成している
 
 ## 非ゴール
 
 * private 実装、DB接続、認証、社内API等の導入
-* 複数ページの実装（サンプル1ページで型を確定したら、個別Issueで量産）
 
 ## SSOT規範（必須）
 
