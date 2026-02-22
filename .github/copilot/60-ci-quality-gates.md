@@ -32,3 +32,9 @@
   - `packages/contracts` 参照は `@upstream/contracts` エイリアス以外を fail とする。
   - UI コンポーネントの `export default` を fail とする（Named Export のみ許可）。
   - UI コンポーネントの `index.ts` 経由 import を fail とする（直接ファイル import のみ許可）。
+  - `app/` / `src/` / `pages/` で `index.ts` など barrel 再エクスポート経由 import を fail とする（直接ファイル import のみ許可）。
+- Next.js 物理境界ルールの確認手順（例）:
+  - browser API / client-only hooks を使用するファイルで、先頭に `"use client"` が無い場合は fail とする。
+  - cookie/session 読取が `getServerSideProps` / Route Handler / Server Component 以外に存在する場合は fail とする。
+  - DI 起点が `pages/_app.tsx` または `app/layout.tsx` 以外に分散している場合は fail とする。
+  - `page.tsx` / `pages/*.tsx` で DI 生成（`new` や `create*Deps`）を行っている場合は fail とする。
