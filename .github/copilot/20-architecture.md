@@ -29,6 +29,10 @@ flowchart TD
 - `page` は橋渡し責務のみに限定し、業務ロジックを持たない。
 - 具象依存（fetch/storage/logger等）は `providers/plugins` に閉じ込める。
 - `contracts` は interface/type のみを定義し、I/O実装を含めない。
+- 例外から契約エラーへの変換は `providers/plugins` に固定し、`page/ui` では変換しない。
+- `contracts` はエラー型定義のみを持ち、変換ロジックを持たない。
+- Server境界専用情報（cookie/session等）を Client 側で直接参照しない。
+- Client境界専用API（window/document/localStorage等）を Server 実行パスで使用しない。
 - 実装・設計の記述が上記に反する場合は、テンプレート記載より本章を優先して修正する。
 
 ## テンプレートの役割分離
