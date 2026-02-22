@@ -20,6 +20,23 @@ bun dev
 
 このプロジェクトは [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) を使用して、Vercel の新しいフォントファミリーである [Geist](https://vercel.com/font) を最適化して読み込みます。
 
+## ローカル（Dev Container）での実行手順
+
+Dev Container（`.devcontainer`）を利用する場合は、コンテナ起動後に以下のコマンドを実行してください。
+
+```bash
+npm ci
+npx playwright install --with-deps
+```
+
+主な実行コマンドは次のとおりです。
+
+- `npm run lint`
+- `npm run test`
+- `npm run test:e2e`（`http://localhost:4100` を利用）
+- `npm run storybook`（`http://localhost:6006`）
+- `npm run build-storybook`
+
 ## さらに学ぶ
 
 Next.js の詳細は次の資料をご覧ください。
