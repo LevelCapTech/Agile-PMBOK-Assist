@@ -60,8 +60,8 @@ Upstream(public) デモアプリを作成する。
 ### Dependency Injection Rule
 
 * 依存性注入（依存解決）は `AppProvider.tsx` のみ
-* `app/*/page.tsx` は **contracts と AppContext のみ**を参照可能とし、public UI の import 可否は `.github/instructions/**/*.instructions.md` の制約に従う
-* `contracts/*` は interface/type のみ（実装、URL、認証、fetchなどの具体語禁止）
+* `app/*/page.tsx` は **`packages/contracts/*` と AppContext のみ**を参照可能とし、public UI の import 可否は `.github/instructions/**/*.instructions.md` の制約に従う
+* `packages/contracts/*` は interface/type のみ（実装、URL、認証、fetchなどの具体語禁止）
 * `packages/ui/*` は public UI（会社固有前提なし）
 
 ### CSSフレームワーク
