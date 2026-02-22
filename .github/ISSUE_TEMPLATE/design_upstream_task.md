@@ -4,6 +4,18 @@ about: NextJS画面設計向けのイシューテンプレートです
 title: "[DESIGN] Upstream Demo: ★ここに画面名★"
 ---
 
+<!--
+置換手順:
+1. ★ここに画面名★: 対象画面名に置換する（例: 進捗ダッシュボード）。
+2. <issue-number>: GitHub Issue番号に置換する（例: 75）。
+3. <slug>: ルート/ファイル名用のkebab-caseに置換する（例: progress-dashboard）。
+4. <mock-path>: 対象画面に対応するモックファイルパスに置換する（例: mock/v1/web/src/app/progress-dashboard/page.jsx）。
+5. <PageName>: Reactコンポーネント名のPascalCaseに置換する（例: ProgressDashboard）。
+6. <部品名>: 画面に必要な部品名へ置換する（必要な個数に増減してよい）。
+
+プレースホルダー種類: 6種類（★ここに画面名★ / <issue-number> / <slug> / <mock-path> / <PageName> / <部品名>）
+-->
+
 # [DESIGN] Upstream Demo: ★ここに画面名★画面
 
 ## 目的
@@ -18,8 +30,8 @@ Upstream(public) デモアプリの画面設計を作成する。
 * ページ設計は contracts（契約）/ public UI / AppContext の責務分離で構成する
 
 ## 成果物
-- `.github/copilot/80-templates/implementation-plan.md` に準拠した plan ドキュメントを`.github/copilot/plans/<slug>.md`として作成する（例: `.github/copilot/plans/75-page-dashboard.md`）。
-- ファイル追加は、`.github/copilot/plans/<slug>.md`のみとする。
+- `.github/copilot/80-templates/implementation-plan.md` に準拠した plan ドキュメントを`.github/copilot/plans/<issue-number>-page-<slug>.md`として作成する。
+- ファイル追加は、`.github/copilot/plans/<issue-number>-page-<slug>.md`のみとする。
 - コード修正・他のファイルの追加・編集を禁止する！
 
 ## 前提 / スコープ
@@ -30,22 +42,22 @@ Upstream(public) デモアプリの画面設計を作成する。
 
 ### モック画面
 
-モック画面 `mock/v1/web/src/app/page.jsx` を参考に対象画面を設計する。
+モック画面 `<mock-path>` を参考に対象画面を設計する。
 
-対象画面は下記の機能があります。
+対象画面は下記の部品を持つ。
 
-* プロジェクト一覧
-* メンバー一覧
-* 予算執行状況
-* 設定ボタン
-* 共通ヘッダ
-* 左ペインのメニュー
+* `<部品名>`
+* `<部品名>`
+* `<部品名>`
+* `<部品名>`
+* `<部品名>`
+* `<部品名>`
 
 ## ゴール（このIssueで達成）
 
 1. 「ページを追加する手順」が **SSOT化**されている
 2. contracts と UI と DI が **規約通りに分離**されている
-3. `.github/copilot/plans/<slug>.md` をコピーしてページを増やせる
+3. `.github/copilot/plans/<issue-number>-page-<slug>.md` をコピーしてページを増やせる
 4. サンプルとして 1ページ分の**設計**だけを行い、型と流れを確定する（※このページ自体が目的ではなく“型の検証”）
 
 ## 非ゴール
@@ -100,9 +112,9 @@ Upstream(public) デモアプリの画面設計を作成する。
 app/
   layout.tsx              # Root layout（Server）
   page.tsx                # /（Server）
-  dashboard/
-    page.tsx              # /dashboard（Server）
-    layout.tsx            # /dashboard 配下のレイアウト
+  <slug>/
+    page.tsx              # /<slug>（Server）
+    layout.tsx            # /<slug> 配下のレイアウト
     providers.tsx         # (use client) 画面スコープContext Provider（依存解決はしない）
     _components/          # ルート専用の薄い部品
       DashboardShell.tsx  # (use client) state/compose only
@@ -141,13 +153,13 @@ packages/
       dto/                 # 表示/転送向けのDTO（ドメインと分離したい場合）
         ProjectDto.ts      # DTO: Project 表示/転送用
       pages/
-        dashboard.ts       # ページ単位の契約（Route単位）
+        <slug>.ts         # ページ単位の契約（Route単位）
 
   ui/
     src/
       pages/                # 見た目のページ（App Routerのpage.tsxとは別）/画面スコープのContext（フィルタ状態や選択状態など）を提供
-        DashboardPage/
-          DashboardPage.tsx
+        <PageName>Page/
+          <PageName>Page.tsx
       atoms/                # state を持つ場合も UI状態（hover, open等）のみとする/ドメイン状態・データ取得・副作用は禁止
         ProjectName/
           ProjectName.tsx
@@ -190,7 +202,7 @@ packages/
 
 例：
 
-* `app/dashboard/page.tsx` は `DashboardPage`（UI）に props を渡す or サーバでデータ取得して渡す。
+* `app/<slug>/page.tsx` は `<PageName>Page`（UI）に props を渡す or サーバでデータ取得して渡す。
 
 #### `src/composition/`（依存生成の中心）
 
@@ -263,14 +275,14 @@ packages/
 * 表示用/転送用の DTO（ドメインと分離したい場合）。
 
 > ページ単位の contracts は「必須」ではなく、必要が出たら **composition** として追加する位置づけが安全。
-> 例：`contracts/src/pages/dashboard.ts` は、`SearchProjects` 等を束ねるだけの薄い合成契約にする。
+> 例：`contracts/src/pages/<slug>.ts` は、`SearchProjects` 等を束ねるだけの薄い合成契約にする。
 
 
 ## 型定義（SSOTとして固定）
 
 各ページは実装時に次の 4 点セットを基本とする（本Issueでは追加せず、planに定義する）。
 
-1. docs: `.github/copilot/plans/<slug>.md`（ページ仕様）
+1. docs: `.github/copilot/plans/<issue-number>-page-<slug>.md`（ページ仕様）
 2. contracts: `packages/contracts/src/pages/<slug>.ts`（interface/typeのみ）
 3. ui: `packages/ui/src/pages/<slug>/<PageName>Page.tsx`（public UI）
 4. app page: `app/<slug>/page.tsx`（Contextからdeps取得してUIへ渡すだけ）
@@ -283,7 +295,7 @@ packages/
 ## 品質ゲート
 
 * plan に lint/typecheck/build/test/security の実行計画が明記されている
-* plan に `app/dashboard/page.tsx` の依存制約を検証できる受け入れ条件が明記されている
+* plan に `app/<slug>/page.tsx` の依存制約を検証できる受け入れ条件が明記されている
 * plan に `contracts` に実装コードが入らないことを検証できる受け入れ条件が明記されている
 * plan に DI が AppProvider に固定されることを検証できる受け入れ条件が明記されている
 
