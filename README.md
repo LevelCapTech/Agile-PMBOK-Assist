@@ -18,8 +18,6 @@ bun dev
 
 `app/page.tsx` を編集するとページが自動的に更新されます。
 
-このプロジェクトは [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) を使用して、Vercel の新しいフォントファミリーである [Geist](https://vercel.com/font) を最適化して読み込みます。
-
 ## ローカル（Dev Container）での実行手順
 
 Dev Container（`.devcontainer`）を利用する場合は、コンテナ起動後に以下のコマンドを実行してください。
