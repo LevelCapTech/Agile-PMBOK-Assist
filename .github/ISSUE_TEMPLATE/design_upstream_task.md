@@ -273,7 +273,7 @@ packages/
 1. docs: `.github/copilot/plans/<slug>.md`（ページ仕様）
 2. contracts: `packages/contracts/src/pages/<slug>.ts`（interface/typeのみ）
 3. ui: `packages/ui/src/pages/<slug>/<PageName>Page.tsx`（public UI）
-4. app page: `apps/demo-web/pages/<slug>.tsx`（Contextからdeps取得してUIへ渡すだけ）
+4. app page: `app/<slug>/page.tsx`（Contextからdeps取得してUIへ渡すだけ）
 
 ## deps（依存束）の設計（Upstream内で完結）
 
