@@ -78,6 +78,51 @@ npm run chromatic
 npm run percy
 ```
 
+## GitHub 設定手順（CI 連携）
+
+### Secrets 登録（Codecov/Chromatic/Percy）
+
+1. GitHub の対象リポジトリを開き、`Settings` をクリックします。
+2. 左メニューの `Secrets and variables` > `Actions` を開きます。
+3. `New repository secret` をクリックし、以下の Secrets を追加します。
+
+| Secret 名 | 取得元 | メモ |
+| --- | --- | --- |
+| `CODECOV_TOKEN` | Codecov の Repository Settings | Public リポジトリでもトークンを使う設定にしています。 |
+| `CHROMATIC_PROJECT_TOKEN` | Chromatic の Project Settings | 初回作成後に発行されます。 |
+| `PERCY_TOKEN` | Percy の Project Settings | 初回作成後に発行されます。 |
+
+### Branch Protection の必須チェック設定
+
+1. GitHub の対象リポジトリで `Settings` をクリックします。
+2. 左メニューの `Branches` を開き、`Branch protection rules` の `Add rule` を選択します。
+3. `Branch name pattern` に `main` を入力します。
+4. `Require status checks to pass before merging` を有効化し、次のチェックを選択します。
+   - `codecov/project`
+   - `codecov/components`
+   - `codecov/features`
+   - `codecov/hooks`
+   - `codecov/lib`
+   - `lint`
+   - `test`
+   - `test:e2e`
+   - `build-storybook`
+5. `Save changes` をクリックして保存します。
+
+### Chromatic 初回プロジェクト作成
+
+1. https://www.chromatic.com/ にアクセスし、GitHub アカウントでサインインします。
+2. ダッシュボードで `New project` を選択し、対象の GitHub リポジトリを連携します（GitHub App の許可が求められる場合は許可します）。
+3. プロジェクト作成後、`Project Settings` の `Project token` をコピーします。
+4. GitHub の Secrets に `CHROMATIC_PROJECT_TOKEN` として登録します。
+
+### Percy 初回プロジェクト作成
+
+1. https://percy.io/ にアクセスし、GitHub アカウントでサインインします（BrowserStack アカウント作成が必要な場合は作成します）。
+2. ダッシュボードで `Create project` を選択し、対象の GitHub リポジトリを連携します。
+3. プロジェクト作成後、`Project Settings` の `PERCY_TOKEN` をコピーします。
+4. GitHub の Secrets に `PERCY_TOKEN` として登録します。
+
 ## さらに学ぶ
 
 Next.js の詳細は次の資料をご覧ください。
