@@ -11,6 +11,8 @@ const eslintConfig = defineConfig([
     ".next/**",
     "out/**",
     "build/**",
+    "coverage/**",
+    "storybook-static/**",
     "next-env.d.ts",
     // Mock is not part of the release build; linted separately in mock-ci.
     "mock/**",

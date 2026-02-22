@@ -45,5 +45,38 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Unit tests
+        run: npm run test
+
+      - name: Install Playwright browsers
+        run: npm run test:e2e:install
+
+      - name: E2E tests
+        run: npm run test:e2e
+
+      - name: Coverage tests
+        run: npm run test:coverage
+
       - name: Build
         run: npm run build
+
+      - name: Build Storybook
+        run: npm run build-storybook
+
+      - name: Chromatic
+        env:
+          CHROMATIC_PROJECT_TOKEN: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
+        run: npm run chromatic
+
+      - name: Percy
+        env:
+          PERCY_TOKEN: ${{ secrets.PERCY_TOKEN }}
+        run: npm run percy
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./coverage/lcov.info
+          flags: components,features,hooks,lib
+          fail_ci_if_error: true
+          token: ${{ secrets.CODECOV_TOKEN }}

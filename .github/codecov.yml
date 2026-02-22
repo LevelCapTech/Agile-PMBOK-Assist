@@ -1,0 +1,33 @@
+coverage:
+  status:
+    project:
+      components:
+        target: 75%
+      features:
+        target: 70%
+      hooks:
+        target: 70%
+      lib:
+        target: 70%
+    patch:
+      default:
+        target: 80%
+
+flags:
+  components:
+    paths:
+      - src/components/**
+  features:
+    paths:
+      - src/features/**
+  hooks:
+    paths:
+      - src/hooks/**
+  lib:
+    paths:
+      - src/lib/**
+
+comment:
+  layout: "reach,diff,flags,tree"
+  behavior: default
+  require_changes: false

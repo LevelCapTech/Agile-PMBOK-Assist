@@ -16,6 +16,8 @@
 
 # testing
 /coverage
+/playwright-report
+/test-results
 
 # next.js
 /.next/
@@ -23,6 +25,7 @@
 
 # production
 /build
+/storybook-static
 /mock/v1/web/dist
 
 # misc
