@@ -114,6 +114,15 @@
 | Out-of-Scope | 複数ページ同時実装 | 非ゴール |
 | Out-of-Scope | 既存トップページ再設計 | 本Issue対象外 |
 
+### 4.1 実装責務マッピング
+
+| 実装責務 | 主担当レイヤ | 完了判定 |
+| --- | --- | --- |
+| 画面入力契約の定義 | `packages/contracts` | `DashboardDataSource` と `DashboardViewModel` が型として定義される |
+| 依存注入と配布 | `src/providers` | AppProviderからdashboard depsがContext配布される |
+| 画面橋渡し | `app/dashboard/page.tsx` | deps取得→props変換→UI呼び出しのみを実施する |
+| 画面描画 | `packages/ui` | propsだけで6機能を描画できる |
+
 ### 4.2 実装時の影響範囲・互換性リスク
 
 | 影響対象 | 結論（影響あり/なし/未確定） | 影響内容 |
@@ -359,9 +368,12 @@ export interface DashboardDataSource {
 }
 
 export interface DashboardViewRequest {
-  route: "/dashboard";
-  locale: "ja-JP";
-  timezone: "Asia/Tokyo";
+  /** 例: "/dashboard" */
+  route: string;
+  /** BCP47 locale 例: "ja-JP", "en-US" */
+  locale: string;
+  /** IANA timezone 例: "Asia/Tokyo", "UTC" */
+  timezone: string;
 }
 
 export interface DashboardViewModel {
@@ -376,8 +388,11 @@ export interface DashboardViewModel {
 }
 
 export type DashboardContractErrorCode =
+  /** 必須フィールド不足や型不整合など契約データ不正 */
   | "invalid_data"
+  /** DataSourceからの取得失敗（通信不能・依存障害） */
   | "data_source_unavailable"
+  /** 設定アクションIDが未定義 */
   | "action_not_found";
 
 export interface DashboardContractError {
