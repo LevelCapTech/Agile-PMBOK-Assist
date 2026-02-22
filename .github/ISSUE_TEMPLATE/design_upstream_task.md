@@ -27,7 +27,7 @@ Upstream(public) デモアプリを作成する。
 ## 前提 / スコープ
 
 * Upstream(public) のみ（private の存在/実装は一切書かない）
-* ルーティングは App Router（**app/** 方式）を採用（希望に合わせる）
+* ルーティングは App Router（**app/** 方式）のみを採用する
 * モックデータは可（ただし publicデモとして動く完成実装）
 
 ### モック画面
