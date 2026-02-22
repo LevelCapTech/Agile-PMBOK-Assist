@@ -2,8 +2,6 @@
 name: NextJS画面設計イシューテンプレート(Upstream Demo用)
 about: NextJS画面設計向けのイシューテンプレートです
 title: "[DESIGN] Upstream Demo: ★ここに画面名★"
-labels: ''
-assignees: ''
 ---
 
 # [DESIGN] Upstream Demo: ★ここに画面名★画面
@@ -34,7 +32,7 @@ Upstream(public) デモアプリの画面設計を作成する。
 
 モック画面 `mock/v1/web/src/app/page.jsx` を参考に対象画面を設計する。
 
-下記の領域をMoleculeコンポーネントとして管理する
+対象画面は下記の機能があります。
 
 * プロジェクト一覧
 * メンバー一覧
