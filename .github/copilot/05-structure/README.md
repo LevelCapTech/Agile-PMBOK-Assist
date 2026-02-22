@@ -9,9 +9,9 @@
 
 ## 切り替え方法
 
-1. 本レイヤ内の対象ファイル（例: `05-structure/monorepo.md` や `05-structure/polyrepo.md`）を選択する。
+1. 本レイヤ内の対象ファイル（例: `05-structure/nextjsrepo.md` や `05-structure/polyrepo.md`）を選択する。
 2. `.github/copilot/00-index.md` の参照順リストにある  
-   `[構成定義レイヤ](05-structure/monorepo.md)` などの Markdown リンクを、利用する構成モードのファイルに差し替える。
+   `[構成定義レイヤ](05-structure/nextjsrepo.md)` などの Markdown リンクを、利用する構成モードのファイルに差し替える。
 3. 切り替え後、必要に応じて CI・テストの設定やドキュメント内リンクを構成モードに合わせて更新する。
 
-初期状態ではモノレポ構成（`monorepo.md`）を参照します。ポリレポ構成（`polyrepo.md`）は将来切り替え用として保持し、未実装状態でも削除しないでください。
+初期状態ではモノレポ構成（`nextjsrepo.md`）を参照します。ポリレポ構成（`polyrepo.md`）は将来切り替え用として保持し、未実装状態でも削除しないでください。

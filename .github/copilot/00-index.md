@@ -5,7 +5,7 @@
 ## 参照順（優先度順）
 ※ 構成定義レイヤはリポジトリ全体の前提となるため最初に参照してください。番号は通常の昇順で付与しています。
 
-1. [構成定義レイヤ](05-structure/monorepo.md) — モノレポ運用ルール
+1. [構成定義レイヤ](05-structure/nextjsrepo.md) — モノレポ運用ルール
 2. [copilot-instructions.md](../copilot-instructions.md) — 規範層（短く強いルール）
 3. [.github/instructions/**/*.instructions.md](../instructions) — 補助的な設計/背景資料レイヤ（`applyTo` は適用範囲を示すメタ情報）
 4. [10-requirements.md](10-requirements.md) — 要件とスコープ/受入条件
