@@ -11,5 +11,32 @@
 - Secrets・個人情報をコード/ログ/ドキュメントに出さない。ログは構造化し、例外は握り潰さず意味のあるメッセージで扱う。
 - 互換性を壊さない方針がデフォルト。破壊的変更が必要なときは移行策を plan に明記する。
 - 実装前に `.github/copilot/80-templates/implementation-plan.md` を満たす plan を作成・確認する（設計Issue）。実装Issueでは plan から逸脱しない。
+- 設計成果物の提出前に、テンプレート記号（`<<...>>`）が残っていないことを確認する。確認手順:
+  - 対象ファイルを指定して `rg -n '<<[^>]+>>' <設計成果物.md>` を実行し、ヒット0件であること。
+  - ヒットがある場合は、該当セルを確定値または `TBD（理由/決定条件/期限）` へ置換して再確認する。
+- 設計図の具体性ルール（全TBD禁止）:
+  - `5.7 シーケンス図` は、各図で `PARAM` / `RETURN` / `ERROR` の少なくとも一部を確定値で記載し、全行を `TBD（理由/決定条件/期限）` にしない。
+  - `5.8.1 メソッド一覧` は、最低3件を具体メソッド名（`TBD` 以外）で記載する。
+  - `5.8 メソッドフロー` は、最低3図で `START METHOD` / `INPUT` / `PROCESS` / `RETURN` の少なくとも1項目以上を具体値で記載し、全図テンプレ流用を禁止する。
+  - `TBD` は未確定箇所に限定し、章全体・図全体・一覧全体を `TBD` で埋める記述を禁止する。
+- 設計Issueでは「設計作業そのもの（設計する/設計完了/検討する/レビューする）」を要件・ゴールに書かない。設計対象は実装で変わる機能/画面/API/データ契約のみ記載する。
+- 設計Issueのゴール/要件は「実装後に観測可能・テスト可能」な受入条件で記載する。各要件はテストケースと対応付け、判定不能な曖昧語を禁止する。
+- Dependency Inversion Principle の固定ルール:
+  - `page` は橋渡し責務のみに限定し、業務ロジックを持たない。
+  - DI の起点は Next.js ライフサイクル上で `app/layout.tsx` に固定する。`AppProvider` はその起点でのみ適用する。
+  - `app/*/page.tsx` は DI コンテナを生成せず、`AppContext` から依存を受け取って `ui` へ渡す薄いラッパーに限定する。
+  - 具象依存（fetch/storage/logger等）は `providers/plugins` に閉じ込める。
+  - `contracts` は interface/type のみを定義し、I/O実装を含めない。
+  - 例外から契約エラーへの変換は `providers/plugins` で行い、`page/ui` で生例外を直接判定しない。
+  - `contracts` はエラー型定義のみを持ち、例外変換ロジックを持たない。
+  - Client 実行前提のファイルは先頭に `"use client"` を置く。`"use client"` なしのファイルで browser API や client-only hooks を使用しない。
+  - cookie/session 読み取りは Server 実行境界（Route Handler / Server Component）に限定する。
+  - Server境界専用情報（cookie/session等）を Client 側で直接参照しない。
+  - Client境界専用API（window/document/localStorage等）を Server 実行パスで使用しない。
+- import / export 固定ルール:
+  - `packages/contracts` への参照は相対パスを禁止し、必ず `@contracts/*` エイリアスを使用する。
+  - UI コンポーネントは Named Export（`export const Xxx = ...`）に統一し、`export default` を禁止する。
+  - UI コンポーネント参照は `index.ts` 経由を禁止し、コンポーネントファイルを直接 import する。
+  - `app/` / `src/` から境界をまたぐ import では `index.ts` などの barrel 再エクスポート経由を禁止し、定義ファイルを直接 import する。
 - 型・例外・入力検証・テスト追加を必須とし、`.github/instructions/**/*.instructions.md` の実務ルールを守る。
 - Done 定義: lint / typecheck / test / security など CI 品質ゲートが全て緑、受入条件をテストで担保、関連ドキュメントを更新すること。
