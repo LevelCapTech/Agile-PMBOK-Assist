@@ -8,6 +8,7 @@
 - **security**: `npm audit` など依存脆弱性スキャン
 - **design-doc-sanity**: 設計成果物 Markdown にテンプレート記号（`<<...>>`）が残っていないことを検査
 - **architecture-lint**: import 境界・エイリアス・UI export 規約の静的検査を実行
+- **design-diagram-sanity**: シーケンス図/メソッド一覧/メソッドフローが全TBDになっていないことを検査
 
 ## 運用ルール
 - すべての必須ジョブをブランチ保護の required status checks に設定し、失敗時はマージ不可。
@@ -18,6 +19,15 @@
   - `rg -n '<<[^>]+>>' .github/copilot/plans docs/draft --glob '*.md'`
   - テンプレートファイル（`80-templates/*.md`）は検査対象外とし、成果物のみを対象にする。
   - 1件でもヒットした場合は fail とし、該当箇所を確定値または `TBD（理由/決定条件/期限）` へ置換する。
+- 設計図の全TBD検査手順（例）:
+  - シーケンス図（`5.7`）で、`PARAM` / `RETURN` / `ERROR` がすべて `TBD（理由/決定条件/期限）` の場合は fail とする。
+  - メソッド一覧（`5.8.1`）で、`FLOW-*` 行のメソッド名が全件 `TBD（理由/決定条件/期限）` の場合は fail とする。
+  - メソッドフロー（`5.8`）で、`START METHOD` / `INPUT` / `PROCESS` / `RETURN` が全図 `TBD（理由/決定条件/期限）` の場合は fail とする。
+  - 簡易確認コマンド例:
+    - `rg -n 'PARAM: TBD（理由/決定条件/期限）|RETURN: TBD（理由/決定条件/期限）|ERROR: TBD（理由/決定条件/期限）' <設計成果物.md>`
+    - `rg -n '^\\| FLOW-[0-9]{2} \\| TBD（理由/決定条件/期限） \\|' <設計成果物.md>`
+    - `rg -n 'START METHOD: TBD（理由/決定条件/期限）|INPUT: TBD（理由/決定条件/期限）|PROCESS: TBD（理由/決定条件/期限）|RETURN: TBD（理由/決定条件/期限）' <設計成果物.md>`
+  - 上記ヒットが対象章の行数と一致する場合は fail とし、最低3件以上を具体値へ更新する。
 - import / export 規約の確認手順（例）:
   - `packages/contracts` 参照は `@upstream/contracts` エイリアス以外を fail とする。
   - UI コンポーネントの `export default` を fail とする（Named Export のみ許可）。
