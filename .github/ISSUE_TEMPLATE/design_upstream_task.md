@@ -284,9 +284,9 @@ packages/
 ## 品質ゲート
 
 * plan に lint/typecheck/build/test/security の実行計画が明記されている
-* 実装Issueで `app/dashboard/page.tsx` の依存制約を検証できる受け入れ条件が定義されている
-* 実装Issueで `contracts` に実装コードが入らないことを検証できる受け入れ条件が定義されている
-* 実装Issueで DI が AppProvider に固定されることを検証できる受け入れ条件が定義されている
+* plan に `app/dashboard/page.tsx` の依存制約を検証できる受け入れ条件が明記されている
+* plan に `contracts` に実装コードが入らないことを検証できる受け入れ条件が明記されている
+* plan に DI が AppProvider に固定されることを検証できる受け入れ条件が明記されている
 
 ## Done
 
