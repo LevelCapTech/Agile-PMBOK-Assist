@@ -301,7 +301,28 @@
 | 5 | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> |
 | 6 | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> |
 
-#### 5.1.3 ログと観測性（漏洩防止を含む / 詳細）
+#### 5.1.3 Atomic Design UI部品一覧（dashboard）
+
+| レイヤ | UI部品名（設計上の候補） | 主責務 | 対応機能 |
+| --- | --- | --- | --- |
+| templates | <<unknown>> | <<unknown>> | <<unknown>> |
+| organisms | <<unknown>> | <<unknown>> | <<unknown>> |
+| organisms | <<unknown>> | <<unknown>> | <<unknown>> |
+| organisms | <<unknown>> | <<unknown>> | <<unknown>> |
+| organisms | <<unknown>> | <<unknown>> | <<unknown>> |
+| organisms | <<unknown>> | <<unknown>> | <<unknown>> |
+| organisms | <<unknown>> | <<unknown>> | <<unknown>> |
+| molecules | <<unknown>> | <<unknown>> | <<unknown>> |
+| molecules | <<unknown>> | <<unknown>> | <<unknown>> |
+| molecules | <<unknown>> | <<unknown>> | <<unknown>> |
+| molecules | <<unknown>> | <<unknown>> | <<unknown>> |
+| atoms | <<unknown>> | <<unknown>> | <<unknown>> |
+| atoms | <<unknown>> | <<unknown>> | <<unknown>> |
+| atoms | <<unknown>> | <<unknown>> | <<unknown>> |
+| atoms | <<unknown>> | <<unknown>> | <<unknown>> |
+| atoms | <<unknown>> | <<unknown>> | <<unknown>> |
+
+#### 5.1.4 ログと観測性（漏洩防止を含む / 詳細）
 
 | 記載形式 | 選択（A/B） |
 | --- | --- |
@@ -457,7 +478,7 @@
 
 | 境界テーマ | 文章セクション | 表セクション | 図セクション | 整合判定（OK/NG） |
 | --- | --- | --- | --- | --- |
-| ログ責務（どの層で出力するか） | `5.1.3` | `5.6` | `5.7.4` | <<unknown>> |
+| ログ責務（どの層で出力するか） | `5.1.4` | `5.6` | `5.7.4` | <<unknown>> |
 | 例外->契約エラー変換責務 | `5.1.2` | `5.6.1` | `5.7.3` | <<unknown>> |
 | Server/Client境界 | `5.5.1` | `8.3` | `5.7.2` | <<unknown>> |
 
