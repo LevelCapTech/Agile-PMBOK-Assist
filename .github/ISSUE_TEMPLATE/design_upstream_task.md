@@ -19,7 +19,7 @@ Upstream(public) デモアプリを作成する。
 * ページは contracts（契約）と public UI のみで構成できる
 
 ## 成果物
-- `.github/copilot/80-templates/implementation-plan.md` に準拠した plan ドキュメントを`.github/copilot/plans/75-page-dashboard.md`を修正する。
+- `.github/copilot/80-templates/implementation-plan.md` に準拠した plan ドキュメントを`.github/copilot/plans/75-page-dashboard.md`として作成する。
 - ファイル追加は、`.github/copilot/plans/75-page-dashboard.md`のみとする。
 - コード修正・他のファイルの追加・編集を禁止する！
 
