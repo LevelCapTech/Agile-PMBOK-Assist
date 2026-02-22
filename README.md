@@ -84,13 +84,19 @@ npm run percy
 
 1. GitHub の対象リポジトリを開き、`Settings` をクリックします。
 2. 左メニューの `Secrets and variables` > `Actions` を開きます。
-3. `New repository secret` をクリックし、以下の Secrets を追加します。
+3. `New repository secret` をクリックし、以下の Secrets を追加します（追加後に `Add secret` を押して保存します）。
 
 | Secret 名 | 取得元 | メモ |
 | --- | --- | --- |
 | `CODECOV_TOKEN` | Codecov の Repository Settings | Public リポジトリでもトークンを使う設定にしています。 |
 | `CHROMATIC_PROJECT_TOKEN` | Chromatic の Project Settings | 初回作成後に発行されます。 |
 | `PERCY_TOKEN` | Percy の Project Settings | 初回作成後に発行されます。 |
+
+#### Codecov トークン取得手順
+
+1. https://app.codecov.io/ にアクセスし、GitHub アカウントでサインインします。
+2. 対象リポジトリを開き、`Settings` > `General` を開きます。
+3. `Repository upload token` をコピーし、`CODECOV_TOKEN` として登録します。
 
 ### Branch Protection の必須チェック設定
 
@@ -113,15 +119,17 @@ npm run percy
 
 1. https://www.chromatic.com/ にアクセスし、GitHub アカウントでサインインします。
 2. ダッシュボードで `New project` を選択し、対象の GitHub リポジトリを連携します（GitHub App の許可が求められる場合は許可します）。
-3. プロジェクト作成後、`Project Settings` の `Project token` をコピーします。
-4. GitHub の Secrets に `CHROMATIC_PROJECT_TOKEN` として登録します。
+3. プロジェクト作成時に「What kind of project is this?」が表示された場合は **Storybook** を選択します（本リポジトリは Storybook 静的ビルドを利用します）。
+4. セットアップ完了後、`Project Settings` の `Project token` をコピーします。
+5. GitHub の Secrets に `CHROMATIC_PROJECT_TOKEN` として登録します。
 
 ### Percy 初回プロジェクト作成
 
 1. https://percy.io/ にアクセスし、GitHub アカウントでサインインします（BrowserStack アカウント作成が必要な場合は作成します）。
 2. ダッシュボードで `Create project` を選択し、対象の GitHub リポジトリを連携します。
-3. プロジェクト作成後、`Project Settings` の `PERCY_TOKEN` をコピーします。
-4. GitHub の Secrets に `PERCY_TOKEN` として登録します。
+3. `What kind of project is this?` が表示された場合は **Storybook** を選択します（本リポジトリは `percy storybook:static` で実行します）。
+4. プロジェクト作成後、`Project Settings` の `PERCY_TOKEN` をコピーします。
+5. GitHub の Secrets に `PERCY_TOKEN` として登録します。
 
 ## さらに学ぶ
 
