@@ -59,7 +59,7 @@ Upstream(public) デモアプリを作成する。
 ### Dependency Injection Rule
 
 * 依存性注入（依存解決）は `AppProvider.tsx` のみ
-* `pages/*` は **contracts と public UI と AppContext のみ**参照可能
+* `app/*/page.tsx` は **contracts と public UI と AppContext のみ**を参照可能とする
 * `contracts/*` は interface/type のみ（実装、URL、認証、fetchなどの具体語禁止）
 * `packages/ui/*` は public UI（会社固有前提なし）
 
