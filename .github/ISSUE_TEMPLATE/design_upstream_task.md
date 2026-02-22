@@ -299,6 +299,19 @@ packages/
 * plan に `contracts` に実装コードが入らないことを検証できる受け入れ条件が明記されている
 * plan に DI が AppProvider に固定されることを検証できる受け入れ条件が明記されている
 
+## テスト設計（Design Issueで必須記載）
+
+plan には必ず次を明記する。
+
+* 対象: どのページ/コンポーネント/ユースケースをテストするか（一覧）
+* 方式: Unit(UI) / Unit(Domain, Usecase) / Integration(Route Handler) / Integration(MSW or nock or undici mock) / E2E(Playwright) のどれで守るか
+* ケース: 成功/失敗/空/遅延（最低ライン） + 必要箇所はリトライ
+* モック方針: Next依存のモック、APIモック（MSW or nock or undici mock）の置き場、共通ヘルパ
+* 実行コマンド: リポジトリルート起点（watch/ci/coverage を含む）
+* Storybook: 対象UI部品の Story 作成方針（どの状態を Story 化するか）
+* バックエンド統合: Route Handler 直接呼び出し時のテストDBまたはトランザクション方針
+* カバレッジ境界: `packages/` / `src/` / `app/` の対象方針（Server Component の扱いを明記）
+
 ## Done
 
 * 対象画面で「docs→contracts→ui→page→AppProvider」の設計フローが確定している
