@@ -25,6 +25,12 @@ flowchart TD
 - 実装・テスト計画: `80-templates/implementation-plan.md`
 - レビュー本文（人間向け）: `.github/PULL_REQUEST_TEMPLATE/*.md`
 
+## DIP固定ルール（全フェーズ共通）
+- `page` は橋渡し責務のみに限定し、業務ロジックを持たない。
+- 具象依存（fetch/storage/logger等）は `providers/plugins` に閉じ込める。
+- `contracts` は interface/type のみを定義し、I/O実装を含めない。
+- 実装・設計の記述が上記に反する場合は、テンプレート記載より本章を優先して修正する。
+
 ## テンプレートの役割分離
 - PRテンプレートは「人間レビューのための説明」を記録する。
 - `80-templates/implementation-plan.md` は「設計Agentから製造Agentへの実装仕様引き渡し」を記録する。

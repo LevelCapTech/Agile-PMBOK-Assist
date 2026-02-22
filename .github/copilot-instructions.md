@@ -13,5 +13,9 @@
 - 実装前に `.github/copilot/80-templates/implementation-plan.md` を満たす plan を作成・確認する（設計Issue）。実装Issueでは plan から逸脱しない。
 - 設計Issueでは「設計作業そのもの（設計する/設計完了/検討する/レビューする）」を要件・ゴールに書かない。設計対象は実装で変わる機能/画面/API/データ契約のみ記載する。
 - 設計Issueのゴール/要件は「実装後に観測可能・テスト可能」な受入条件で記載する。各要件はテストケースと対応付け、判定不能な曖昧語を禁止する。
+- Dependency Inversion Principle の固定ルール:
+  - `page` は橋渡し責務のみに限定し、業務ロジックを持たない。
+  - 具象依存（fetch/storage/logger等）は `providers/plugins` に閉じ込める。
+  - `contracts` は interface/type のみを定義し、I/O実装を含めない。
 - 型・例外・入力検証・テスト追加を必須とし、`.github/instructions/**/*.instructions.md` の実務ルールを守る。
 - Done 定義: lint / typecheck / test / security など CI 品質ゲートが全て緑、受入条件をテストで担保、関連ドキュメントを更新すること。

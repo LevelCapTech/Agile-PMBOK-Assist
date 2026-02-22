@@ -208,6 +208,27 @@
 
 ## 5. アーキテクチャ設計
 
+### 5.0 DI生成経路（テキスト必須）
+
+| 区分（記載例/追記No） | 生成/受け渡し主体 | 入力（契約/型/設定） | 出力（契約/型/設定） | 境界制約（禁止事項を含む） |
+| --- | --- | --- | --- | --- |
+| 記載例 | `AppProvider` | 設定/環境値 | `deps` 生成開始 | `page` から `deps` を生成しない |
+| 記載例 | `createPublicDeps` 等のDIファクトリ | Provider入力 | 具象実装入り `deps` | 具象はこの境界外へ露出しない |
+| 記載例 | `AppContext.Provider` | `deps` | Context配布 | Context値を加工しない |
+| 記載例 | `pages/<slug>.tsx` | `useAppContext()` | UIへのprops | `contracts/ui/AppContext` 以外の具象import禁止 |
+| 記載例 | `ui/pages/<Slug>Page.tsx` | 画面props | 表示 | DataSource呼び出し/DI生成をしない |
+| 01 | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> |
+| 02 | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> |
+| 03 | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> |
+| 04 | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> |
+| 05 | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> |
+
+運用補足: 本表は必須。シーケンス図より先に確定し、`5.7` の図と差分がないことを確認する。
+運用補足: 上5行の記載例は削除する、 `<<unknown>>` 行を追加して記載する。
+運用補足: 追記行は `01` から採番し、欠番を作らない。
+運用補足: 同一主体は全章で同一表記に統一する（表記ゆれ禁止）。
+運用補足: 未確定値は `TBD（理由/決定条件/期限）` を使用し、空欄を禁止する。
+
 ### 5.1 設計判断
 
 #### 5.1.1 責務分離 / データフロー（詳細）
@@ -352,20 +373,37 @@
 ### 5.7 シーケンス図（Mermaid / 複数必須）
 
 運用補足: 正常系・異常系で participant 名を統一し、図ごとに別名へ置換しない。
+運用補足: 図は境界保護の確認に必要な粒度へ限定し、UI内部の見た目分岐など変動が大きい詳細は書かない。
 
 | 必須項目 | 記載ルール |
 | --- | --- |
+| DI生成経路 | 必須（`AppProvider -> DIファクトリ -> AppContext -> Page -> UI` を明記） |
 | 正常系 | 必須（最低1本） |
 | 異常系 | 必須（最低2本。業務エラー系/システムエラー系） |
 | パラメータ | 各呼び出しメッセージに `PARAM` を明記 |
 | 戻り値 | 各応答メッセージに `RETURN` を明記 |
 | エラー返却 | 各異常系で `ERROR` の返却値とハンドリング先を明記 |
 
+#### 5.7.0 DI生成経路（テキスト再掲 / 必須）
+
+| No | 開始主体 | 終了主体 | 経路文字列（`A -> B -> C`） | 境界チェック観点 | 対応シーケンス図ID |
+| --- | --- | --- | --- | --- | --- |
+| 記載例 | `AppProvider -> createPublicDeps -> AppContext.Provider -> pages/<slug>.tsx -> ui/pages/<Slug>Page.tsx` | 具象が `page/ui/contracts` に漏れていないこと |
+| 01 | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | SEQ-01 |
+| 02 | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | SEQ-02 |
+| 03 | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | SEQ-02 |
+| 04 | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | SEQ-02 |
+| 05 | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | SEQ-02 |
+
+運用補足: 記載例の行は削除する
+運用補足: 経路文字列は `AppProvider -> DIファクトリ -> AppContext -> Page -> UI` を基準として記載する。
+運用補足: 経路文字列は `主体名` を `->` で連結した1行形式で記載する。
+
 #### 5.7.1 シーケンス対象一覧
 
 | 図ID | 種別（正常/異常） | 起点（画面/API） | 終点（UseCase/外部I/O） | 対応要件ID（FR/NFR） |
 | --- | --- | --- | --- | --- |
-| SEQ-01 | 正常 | <<unknown>> | <<unknown>> | <<unknown>> |
+| SEQ-01 | 正常（DI生成経路） | <<unknown>> | <<unknown>> | <<unknown>> |
 | SEQ-02 | 異常 | <<unknown>> | <<unknown>> | <<unknown>> |
 | SEQ-03 | 異常 | <<unknown>> | <<unknown>> | <<unknown>> |
 
@@ -377,19 +415,23 @@
 ```mermaid
 sequenceDiagram
   actor User
-  participant Page
-  participant UseCase
-  participant Adapter
-  participant External
+  participant Source
+  participant Composer
+  participant Context
+  participant Entry
+  participant Gateway
+  participant View
 
-  User->>Page: execute PARAM: <<unknown>>
-  Page->>UseCase: invoke PARAM: <<unknown>>
-  UseCase->>Adapter: call PARAM: <<unknown>>
-  Adapter->>External: request PARAM: <<unknown>>
-  External-->>Adapter: RETURN: <<unknown>>
-  Adapter-->>UseCase: RETURN: <<unknown>>
-  UseCase-->>Page: RETURN: <<unknown>>
-  Page-->>User: RETURN: <<unknown>>
+  Source->>Composer: execute PARAM: <<unknown>>
+  Composer-->>Source: RETURN: <<unknown>>
+  Source->>Context: provide PARAM: <<unknown>>
+  User->>Entry: execute PARAM: <<unknown>>
+  Entry->>Context: read PARAM: <<unknown>>
+  Context-->>Entry: RETURN: <<unknown>>
+  Entry->>Gateway: call PARAM: <<unknown>>
+  Gateway-->>Entry: RETURN: <<unknown>>
+  Entry->>View: render PARAM: <<unknown>>
+  Entry-->>User: RETURN: <<unknown>>
 ```
 
 #### 5.7.3 異常系シーケンス（業務エラー）
@@ -443,13 +485,15 @@ sequenceDiagram
 | 入出力 | 各メソッドの入力/出力を明記 |
 | 例外処理 | 例外時の戻り値または伝播先を明記 |
 
+運用補足: 図は境界維持に効くメソッドを優先し、少なくとも2本は `provider/context/page/contracts` の境界に関わるメソッドを対象にする。
+運用補足: UIの細かな表示分岐のみを図示することは禁止。境界/契約に影響する分岐を記載する。
+
 #### 5.8.1 メソッド一覧
 
 | 図ID | メソッド名 | 層（page/usecase/adapter等） | 対応要件ID（FR/NFR） |
 | --- | --- | --- | --- |
 | FLOW-01 | <<unknown>> | <<unknown>> | <<unknown>> |
 | FLOW-02 | <<unknown>> | <<unknown>> | <<unknown>> |
-| FLOW-03 | <<unknown>> | <<unknown>> | <<unknown>> |
 | FLOW-03 | <<unknown>> | <<unknown>> | <<unknown>> |
 | FLOW-04 | <<unknown>> | <<unknown>> | <<unknown>> |
 | FLOW-05 | <<unknown>> | <<unknown>> | <<unknown>> |
