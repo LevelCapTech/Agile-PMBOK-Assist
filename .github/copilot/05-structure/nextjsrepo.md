@@ -1,6 +1,6 @@
 # Next.js Repo 構成定義 — Upstream Demo SSOT
 
-> NOTE: 本書は `.github/ISSUE_TEMPLATE/design_upstream_task.md` を正とする構成定義レイヤです。  
+> NOTE: 本書は Next.js Repo 構成定義レイヤの SSOT であり、`.github/ISSUE_TEMPLATE/design_upstream_task.md` は本書と整合するように保守します。  
 > RULE / DO NOT / EXAMPLE / NOTE のタグを使って規範を明示します。
 
 ---
