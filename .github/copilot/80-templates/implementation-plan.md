@@ -847,18 +847,21 @@ classDiagram
 
 ##### 6.3.3.2 プロパティ詳細定義（全項目を行で列挙）
 
-| ドメイン | エンティティ名 | プロパティ物理名（path可） | TypeScript型（完全表記） | 必須（Y/N） | Nullable（Y/N） | 説明 | 例 |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> |
-| <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> |
-| <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> |
-| <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> |
-| <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> |
-| <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> |
-| <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> |
-| <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> |
-| <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> |
-| <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> |
+| ドメイン | エンティティ名 | プロパティ物理名（path可） | TypeScript型（完全表記） | 利用コンポーネント/型定義名（ui） | 必須（Y/N） | Nullable（Y/N） | 説明 | 例 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> |
+| <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> |
+| <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> |
+| <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> |
+| <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> |
+| <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> |
+| <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> |
+| <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> |
+| <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> |
+| <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> |
+
+運用補足: `利用コンポーネント/型定義名（ui）` には `DashboardPage` / `ProjectList` などの利用先コンポーネント名、または `ProjectListProps` など ui 側型定義名を必ず記載する。
+運用補足: `DashboardPageData` の部分集合をそのまま渡す場合も、再定義する場合も、どちらの方針かが判別できる名前で統一する。
 
 ##### 6.3.3.3 複合型/ネスト型の展開定義（Node.js向け）
 
@@ -918,6 +921,7 @@ classDiagram
 | 10 | path/to/target.ts | <<unknown>> | <<unknown>> | <<unknown>> | <<unknown>> |
 
 運用補足: 区分は `app` / `src` / `contracts` / `ui` / `plugins` / `other` のいずれか1つ。変更タイプは `追加` / `変更` / `削除` のみ。
+運用補足: `createPublicDeps.ts` などモックデータ実装を含む行では、実装内容にデータバリエーション要件を明記する（例: 各一覧は最低3件以上、`status` は `open` と `closed` を最低1件ずつ含める）。
 
 ### 8.2 実装手順（順序付き）
 
@@ -946,9 +950,10 @@ classDiagram
 
 | 項目 | 設定内容 | 検証方法 |
 | --- | --- | --- |
-| `no-restricted-imports` 方針 | <<unknown>> | <<unknown>> |
-| path alias 方針（`@contracts/@ui/@app` など） | <<unknown>> | <<unknown>> |
-| CIでの強制（lint必須/違反時fail） | <<unknown>> | <<unknown>> |
+| `no-restricted-imports` 方針 | `pages` / `ui` から `providers/plugins` 具象への直接importを禁止する | ESLint |
+| path alias 方針（`@contracts/@ui/@app` など） | `packages/contracts` 参照は相対パス禁止。必ず `@upstream/contracts` を使用（例: `import type { DashboardDataSource } from "@upstream/contracts/pages/dashboard";`） | ESLint + Typecheck |
+| UI export 方針（default export禁止） | UIコンポーネントは Named Export（`export const Xxx = ...`）に統一し、`index.ts` 経由 import を禁止して直接ファイル参照する | ESLint |
+| CIでの強制（lint必須/違反時fail） | `no-restricted-imports` / default export禁止 / `index.ts` 経由禁止の違反を lint fail として PR をブロックする | GitHub Actions |
 
 ---
 

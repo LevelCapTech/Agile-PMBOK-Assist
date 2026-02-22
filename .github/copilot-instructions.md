@@ -24,5 +24,9 @@
   - `contracts` はエラー型定義のみを持ち、例外変換ロジックを持たない。
   - Server境界専用情報（cookie/session等）を Client 側で直接参照しない。
   - Client境界専用API（window/document/localStorage等）を Server 実行パスで使用しない。
+- import / export 固定ルール:
+  - `packages/contracts` への参照は相対パスを禁止し、必ず `@upstream/contracts` エイリアスを使用する。
+  - UI コンポーネントは Named Export（`export const Xxx = ...`）に統一し、`export default` を禁止する。
+  - UI コンポーネント参照は `index.ts` 経由を禁止し、コンポーネントファイルを直接 import する。
 - 型・例外・入力検証・テスト追加を必須とし、`.github/instructions/**/*.instructions.md` の実務ルールを守る。
 - Done 定義: lint / typecheck / test / security など CI 品質ゲートが全て緑、受入条件をテストで担保、関連ドキュメントを更新すること。
