@@ -16,4 +16,4 @@
 - `app/theme.ts`: MUI テーマの既定値を管理する（カラーやタイポの変更はここに集約）。
 - `app/providers.tsx`: `ThemeProvider` / `CssBaseline` を適用する。
 - `app/layout.tsx`: SSR 用の `AppRouterCacheProvider` を配置し、スタイル注入順を固定する。
-- `.storybook/preview.tsx`: Storybook で `StyledEngineProvider` を併用しつつ MUI テーマが適用されるよう Decorator を設定する。
+- `.storybook/preview.tsx`: Storybook でも `StyledEngineProvider(injectFirst)` と CSS Layers 設定を組み合わせて MUI のスタイルを `@layer mui` に配置し、本番と同じ上書き順（MUI → Tailwind utilities）でプレビューできるように Decorator を設定する。
