@@ -45,11 +45,11 @@ jobs:
       - name: Lint
         run: npm run lint
 
-      - name: Install Playwright Browsers
-        run: npx playwright install --with-deps
-
       - name: Test
         run: npm run test
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
 
       - name: Test (E2E)
         run: npm run test:e2e
