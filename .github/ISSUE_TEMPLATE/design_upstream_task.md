@@ -6,11 +6,11 @@ labels: ''
 assignees: ''
 ---
 
-# [DESIGN] Upstream Demo: ダッシュボード画面
+# [DESIGN] Upstream Demo: ★ここに画面名★画面
 
 ## 目的
 
-Upstream(public) デモアプリを作成する。
+Upstream(public) デモアプリの画面設計を作成する。
 本プロジェクトは Dependency Inversion Principle に基づき、 Composition Root（AppProvider）で依存を解決する Plugin 型アーキテクチャを採用する。
 このIssueの目的は「設計内容を製造Agentへ漏れなく引き継ぐこと」であり、実装そのものは行わない。
 
@@ -20,19 +20,19 @@ Upstream(public) デモアプリを作成する。
 * ページ設計は contracts（契約）/ public UI / AppContext の責務分離で構成する
 
 ## 成果物
-- `.github/copilot/80-templates/implementation-plan.md` に準拠した plan ドキュメントを`.github/copilot/plans/75-page-dashboard.md`として作成する。
-- ファイル追加は、`.github/copilot/plans/75-page-dashboard.md`のみとする。
+- `.github/copilot/80-templates/implementation-plan.md` に準拠した plan ドキュメントを`.github/copilot/plans/<slug>.md`として作成する（例: `.github/copilot/plans/75-page-dashboard.md`）。
+- ファイル追加は、`.github/copilot/plans/<slug>.md`のみとする。
 - コード修正・他のファイルの追加・編集を禁止する！
 
 ## 前提 / スコープ
 
 * Upstream(public) のみ（private の存在/実装は一切書かない）
 * ルーティングは App Router（**app/** 方式）のみを採用する
-* モックデータは可（ただし publicデモとして動く完成実装）
+* モックデータは可（実装Issueで publicデモとして動く完成実装にする）
 
 ### モック画面
 
-モック画面 `mock/v1/web/src/app/page.jsx` を参考にダッシュボード画面を作成する。
+モック画面 `mock/v1/web/src/app/page.jsx` を参考に対象画面を設計する。
 
 下記の領域をモレキュール（Molecule）コンポーネントとして管理する
 
@@ -48,7 +48,7 @@ Upstream(public) デモアプリを作成する。
 1. 「ページを追加する手順」が **SSOT化**されている
 2. contracts と UI と DI が **規約通りに分離**されている
 3. `.github/copilot/plans/<slug>.md` をコピーしてページを増やせる
-4. サンプルとして `dashboard` 1ページ分の**設計**だけを行い、型と流れを確定する（※このページ自体が目的ではなく“型の検証”）
+4. サンプルとして 1ページ分の**設計**だけを行い、型と流れを確定する（※このページ自体が目的ではなく“型の検証”）
 
 ## 非ゴール
 
@@ -60,7 +60,7 @@ Upstream(public) デモアプリを作成する。
 ### Dependency Injection Rule
 
 * 依存性注入（依存解決）は `AppProvider.tsx` のみ
-* `app/*/page.tsx` は **`packages/contracts/*` と AppContext のみ**を参照可能とし、public UI の import 可否は `.github/instructions/**/*.instructions.md` の制約に従う
+* `app/*/page.tsx` は **`packages/contracts/*` と `packages/ui/*` と AppContext** を参照可能とする
 * `packages/contracts/*` は interface/type のみ（実装、URL、認証、fetchなどの具体語禁止）
 * `packages/ui/*` は public UI（会社固有前提なし）
 
@@ -193,9 +193,9 @@ packages/
 
 * `app/dashboard/page.tsx` は `DashboardPage`（UI）に props を渡す or サーバでデータ取得して渡す。
 
-#### `src/composition/`（Composition Root：依存解決の中心）
+#### `src/composition/`（依存生成の中心）
 
-* 依存（ports の実装）を組み立て、usecase を生成し、必要なら plugin を登録。
+* 依存（ports の実装）を組み立て、usecase を生成し、必要なら plugin を登録する（ここで生成した依存を `AppProvider.tsx` から利用する）。
 * App Router の Server/Client の違いに合わせて入口を分ける。
 
 推奨ファイル：
@@ -212,7 +212,7 @@ packages/
 
 分業の明確化：
 
-* `src/composition` は **container 生成（依存解決）**
+* `src/composition` は **container 生成（依存生成）**
 * `src/providers` は **container を React ツリーへ注入（Provider）**
 
 ### plugins パッケージ（実装の差し替え：必須）
