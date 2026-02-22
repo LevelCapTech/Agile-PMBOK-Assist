@@ -1,15 +1,16 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
+import { AppProvider } from "@app/providers/AppProvider";
+
 import { MuiTailwindSample } from "./MuiTailwindSample";
-import { Providers } from "./providers";
 
 describe("MuiTailwindSample", () => {
   it("renders the MUI button label", () => {
     render(
-      <Providers>
+      <AppProvider enableAppRouterCache={false}>
         <MuiTailwindSample />
-      </Providers>
+      </AppProvider>
     );
 
     expect(

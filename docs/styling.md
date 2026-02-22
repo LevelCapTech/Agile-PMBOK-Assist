@@ -8,12 +8,12 @@
 
 ## スタイル順序の固定
 
-- `app/layout.tsx` の `AppRouterCacheProvider` で `enableCssLayer: true` を指定し、MUI のスタイルを `@layer mui` として注入する。
+- `src/providers/AppProvider.tsx` で `AppRouterCacheProvider` に `enableCssLayer: true` を指定し、MUI のスタイルを `@layer mui` として注入する。
 - `app/globals.css` の先頭で `@layer theme, base, mui, components, utilities;` を宣言し、Tailwind の utilities で上書きできる順序を固定する。
 
 ## 追加ファイルの責務
 
-- `app/theme.ts`: MUI テーマの既定値を管理する（カラーやタイポの変更はここに集約）。
-- `app/providers.tsx`: `ThemeProvider` / `CssBaseline` を適用する。
-- `app/layout.tsx`: SSR 用の `AppRouterCacheProvider` を配置し、スタイル注入順を固定する。
+- `src/providers/appTheme.ts`: MUI テーマの既定値を管理する（カラーやタイポの変更はここに集約）。
+- `src/providers/AppProvider.tsx`: `AppRouterCacheProvider` / `ThemeProvider` / `CssBaseline` を適用する。
+- `app/layout.tsx`: DI 起点として `AppProvider` を配置し、スタイル注入順を固定する。
 - `.storybook/preview.tsx`: Storybook でも `StyledEngineProvider(injectFirst)` と CSS Layers 設定を組み合わせて MUI のスタイルを `@layer mui` に配置し、本番と同じ上書き順（MUI → Tailwind utilities）でプレビューできるように Decorator を設定する。

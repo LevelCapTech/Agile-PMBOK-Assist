@@ -1,6 +1,6 @@
 import Image from "next/image";
 
-import { MuiTailwindSample } from "./MuiTailwindSample";
+import { MuiTailwindSample } from "@ui/atoms/MuiTailwindSample";
 
 export default function Home() {
   return (

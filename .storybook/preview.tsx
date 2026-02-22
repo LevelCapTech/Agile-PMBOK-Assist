@@ -4,7 +4,7 @@ import type { Preview } from "@storybook/react";
 import createCache from "@emotion/cache";
 import { CacheProvider } from "@emotion/react";
 
-import { appTheme } from "../app/theme";
+import { appTheme } from "../src/providers/appTheme";
 import "../app/globals.css";
 
 const muiCache = createCache({
@@ -19,7 +19,7 @@ const preview: Preview = {
   decorators: [
     (Story) => (
       <CacheProvider value={muiCache}>
-        <StyledEngineProvider injectFirst>
+        <StyledEngineProvider enableCssLayer injectFirst>
           <ThemeProvider theme={appTheme}>
             <CssBaseline />
             <Story />

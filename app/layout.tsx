@@ -1,7 +1,6 @@
-import { AppRouterCacheProvider } from "@mui/material-nextjs/v16-appRouter";
 import type { Metadata } from "next";
 
-import { Providers } from "./providers";
+import { AppProvider } from "@app/providers/AppProvider";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -17,9 +16,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="antialiased">
-        <AppRouterCacheProvider options={{ enableCssLayer: true }}>
-          <Providers>{children}</Providers>
-        </AppRouterCacheProvider>
+        <AppProvider>{children}</AppProvider>
       </body>
     </html>
   );
