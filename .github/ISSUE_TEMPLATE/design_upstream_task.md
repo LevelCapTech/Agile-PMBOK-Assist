@@ -283,7 +283,7 @@ packages/
 ## 品質ゲート
 
 * lint/typecheck/build が通る
-* `pages/dashboard.tsx` は contracts と ui と AppContext 以外に依存しない
+* `app/dashboard/page.tsx` は contracts と ui と AppContext 以外に依存しない
 * `contracts` に実装コードがない
 * DIは AppProvider に固定されている
 
