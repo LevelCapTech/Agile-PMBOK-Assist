@@ -18,7 +18,7 @@ bun dev
 
 `app/page.tsx` を編集するとページが自動的に更新されます。
 
-## ローカル（Dev Container）での実行手順
+## セットアップと実行手順（ローカル/Dev Container）
 
 Dev Container（`.devcontainer`）を利用する場合は、コンテナ起動後に以下のコマンドを実行してください。
 
