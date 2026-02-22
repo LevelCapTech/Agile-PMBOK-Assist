@@ -291,6 +291,6 @@ packages/
 
 ## Done
 
-* dashboard サンプルで「docs→contracts→ui→page→AppProvider」の設計フローが確定している
+* 対象画面で「docs→contracts→ui→page→AppProvider」の設計フローが確定している
 * 契約のプロパティが明確である
 * ルーティングが明確である
