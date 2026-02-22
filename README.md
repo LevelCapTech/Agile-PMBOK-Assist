@@ -35,6 +35,10 @@ npx playwright install --with-deps
 - `npm run storybook`（`http://localhost:6006`）
 - `npm run build-storybook`
 
+## スタイリング
+
+Tailwind v4 と MUI（Emotion）の併用ルールは [docs/styling.md](docs/styling.md) にまとめています。
+
 ## さらに学ぶ
 
 Next.js の詳細は次の資料をご覧ください。
