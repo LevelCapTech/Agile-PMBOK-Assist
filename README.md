@@ -83,7 +83,7 @@ npm run percy
 ### Secrets 登録（Codecov/Chromatic/Percy）
 
 1. GitHub の対象リポジトリを開き、`Settings` をクリックします。
-2. 左メニューの `Secrets and variables` > `Actions` を開きます。
+2. 左メニューの `Secrets and variables` > `Actions` を開き、`Repository secrets` タブを選択します（`Environment secrets` は使いません）。
 3. `New repository secret` をクリックし、以下の Secrets を追加します（追加後に `Add secret` を押して保存します）。
 
 | Secret 名 | 取得元 | メモ |
