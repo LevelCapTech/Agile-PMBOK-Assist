@@ -23,20 +23,20 @@
 - 設計Issueのゴール/要件は「実装後に観測可能・テスト可能」な受入条件で記載する。各要件はテストケースと対応付け、判定不能な曖昧語を禁止する。
 - Dependency Inversion Principle の固定ルール:
   - `page` は橋渡し責務のみに限定し、業務ロジックを持たない。
-  - DI の起点は Next.js ライフサイクル上で固定する（Pages Router: `pages/_app.tsx`、App Router: `app/layout.tsx`）。`AppProvider` はその起点でのみ適用する。
-  - `page.tsx` / `pages/*.tsx` は DI コンテナを生成せず、`AppContext` から依存を受け取って `ui` へ渡す薄いラッパーに限定する。
+  - DI の起点は Next.js ライフサイクル上で `app/layout.tsx` に固定する。`AppProvider` はその起点でのみ適用する。
+  - `app/*/page.tsx` は DI コンテナを生成せず、`AppContext` から依存を受け取って `ui` へ渡す薄いラッパーに限定する。
   - 具象依存（fetch/storage/logger等）は `providers/plugins` に閉じ込める。
   - `contracts` は interface/type のみを定義し、I/O実装を含めない。
   - 例外から契約エラーへの変換は `providers/plugins` で行い、`page/ui` で生例外を直接判定しない。
   - `contracts` はエラー型定義のみを持ち、例外変換ロジックを持たない。
   - Client 実行前提のファイルは先頭に `"use client"` を置く。`"use client"` なしのファイルで browser API や client-only hooks を使用しない。
-  - cookie/session 読み取りは Server 実行境界（`getServerSideProps` / Route Handler / Server Component）に限定する。
+  - cookie/session 読み取りは Server 実行境界（Route Handler / Server Component）に限定する。
   - Server境界専用情報（cookie/session等）を Client 側で直接参照しない。
   - Client境界専用API（window/document/localStorage等）を Server 実行パスで使用しない。
 - import / export 固定ルール:
-  - `packages/contracts` への参照は相対パスを禁止し、必ず `@upstream/contracts` エイリアスを使用する。
+  - `packages/contracts` への参照は相対パスを禁止し、必ず `@contracts/*` エイリアスを使用する。
   - UI コンポーネントは Named Export（`export const Xxx = ...`）に統一し、`export default` を禁止する。
   - UI コンポーネント参照は `index.ts` 経由を禁止し、コンポーネントファイルを直接 import する。
-  - `app/` / `src/` / `pages/` から境界をまたぐ import では `index.ts` などの barrel 再エクスポート経由を禁止し、定義ファイルを直接 import する。
+  - `app/` / `src/` から境界をまたぐ import では `index.ts` などの barrel 再エクスポート経由を禁止し、定義ファイルを直接 import する。
 - 型・例外・入力検証・テスト追加を必須とし、`.github/instructions/**/*.instructions.md` の実務ルールを守る。
 - Done 定義: lint / typecheck / test / security など CI 品質ゲートが全て緑、受入条件をテストで担保、関連ドキュメントを更新すること。

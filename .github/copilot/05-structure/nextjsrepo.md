@@ -92,7 +92,7 @@ repo-root/
 ---
 
 ## 5. packages & TypeScript paths
-- RULE: import path の単一情報源は `tsconfig.base.json` の `compilerOptions.paths` とする。
+- RULE: import path の単一情報源は `tsconfig.json` の `compilerOptions.paths` とする。
 - RULE: `packages/contracts` / `packages/ui` / `packages/plugins` はパッケージ境界を維持し、エイリアス経由で参照する。
 - RULE: 推奨エイリアスは以下を使用する。
   - `@contracts/*` -> `packages/contracts/src/*`
@@ -101,7 +101,7 @@ repo-root/
   - `@app/*` -> `src/*`
 - DO NOT: `../` で `app` と `packages` を横断する相対 import を行わない。
 - DO NOT: `app/*/page.tsx` から `packages/contracts/*` / `packages/ui/*` / `AppContext` 以外を直接参照しない。
-- EXAMPLE: `tsconfig.base.json` の最小例
+- EXAMPLE: `tsconfig.json` の最小例
 ```json
 {
   "compilerOptions": {

@@ -29,12 +29,12 @@
     - `rg -n 'START METHOD: TBD（理由/決定条件/期限）|INPUT: TBD（理由/決定条件/期限）|PROCESS: TBD（理由/決定条件/期限）|RETURN: TBD（理由/決定条件/期限）' <設計成果物.md>`
   - 上記ヒットが対象章の行数と一致する場合は fail とし、最低3件以上を具体値へ更新する。
 - import / export 規約の確認手順（例）:
-  - `packages/contracts` 参照は `@upstream/contracts` エイリアス以外を fail とする。
+  - `packages/contracts` 参照は `@contracts/*` エイリアス以外を fail とする。
   - UI コンポーネントの `export default` を fail とする（Named Export のみ許可）。
   - UI コンポーネントの `index.ts` 経由 import を fail とする（直接ファイル import のみ許可）。
-  - `app/` / `src/` / `pages/` で `index.ts` など barrel 再エクスポート経由 import を fail とする（直接ファイル import のみ許可）。
+  - `app/` / `src/` で `index.ts` など barrel 再エクスポート経由 import を fail とする（直接ファイル import のみ許可）。
 - Next.js 物理境界ルールの確認手順（例）:
   - browser API / client-only hooks を使用するファイルで、先頭に `"use client"` が無い場合は fail とする。
-  - cookie/session 読取が `getServerSideProps` / Route Handler / Server Component 以外に存在する場合は fail とする。
-  - DI 起点が `pages/_app.tsx` または `app/layout.tsx` 以外に分散している場合は fail とする。
-  - `page.tsx` / `pages/*.tsx` で DI 生成（`new` や `create*Deps`）を行っている場合は fail とする。
+  - cookie/session 読取が Route Handler / Server Component 以外に存在する場合は fail とする。
+  - DI 起点が `app/layout.tsx` 以外に分散している場合は fail とする。
+  - `app/*/page.tsx` で DI 生成（`new` や `create*Deps`）を行っている場合は fail とする。

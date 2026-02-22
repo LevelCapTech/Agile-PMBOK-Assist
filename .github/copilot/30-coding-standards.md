@@ -6,8 +6,8 @@
 - React: 関数コンポーネントと Hooks を基本とし、副作用は `useEffect` で明示、不要な再レンダーを防ぐために依存配列を厳密に管理する。
 - Next.js: App Router 前提で Server / Client Component の責務を分離し、`"use client"` の使用は最小限に留める。
 - import ルール:
-  - `packages/contracts` への参照は相対パスを禁止し、`@upstream/contracts` を使用する。
-  - 例: `import type { DashboardDataSource } from "@upstream/contracts/pages/dashboard";`
+  - `packages/contracts` への参照は相対パスを禁止し、`@contracts/*` を使用する。
+  - 例: `import type { DashboardDataSource } from "@contracts/pages/dashboard";`
 - UI コンポーネント export ルール:
   - `export default` を禁止し、Named Export（`export const Xxx = ...`）で統一する。
   - `index.ts` 経由の import を禁止し、コンポーネントファイルを直接参照する。
