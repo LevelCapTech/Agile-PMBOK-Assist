@@ -188,6 +188,27 @@
 - 予算値が0または欠損: `budgetSummary` は `0` 扱いで表示しNaNを出さない。
 - DataSourceが契約エラーを返す場合: pageで `errorState` propsへ正規化してUIへ渡す。
 
+#### 5.1.3 Atomic Design UI部品一覧（dashboard）
+
+| レイヤ | UI部品名（設計上の候補） | 主責務 | 対応機能 |
+| --- | --- | --- | --- |
+| templates | `DashboardLayoutTemplate` | 共通ヘッダ・左ペイン・メイン領域のレイアウトを提供 | 共通ヘッダ、左ペインのメニュー |
+| organisms | `DashboardHeader` | 画面タイトル、通知、ユーザー操作の表示 | 共通ヘッダ |
+| organisms | `SidebarNavigation` | メニュー群の描画と現在地表示 | 左ペインのメニュー |
+| organisms | `ProjectListPanel` | プロジェクト一覧セクション全体を描画 | プロジェクト一覧 |
+| organisms | `MemberListPanel` | メンバー一覧セクション全体を描画 | メンバー一覧 |
+| organisms | `BudgetExecutionPanel` | 予算執行状況セクション全体を描画 | 予算執行状況 |
+| organisms | `SettingsActionPanel` | 設定ボタン群を表示 | 設定ボタン |
+| molecules | `ProjectListItem` | 単一プロジェクト情報（名称/状態/メンバー数）を表示 | プロジェクト一覧 |
+| molecules | `MemberListItem` | 単一メンバー情報（氏名/役割/稼働）を表示 | メンバー一覧 |
+| molecules | `BudgetSummaryCard` | 合計予算・執行額・執行率を表示 | 予算執行状況 |
+| molecules | `SettingActionButton` | 設定項目のラベル付き操作ボタンを表示 | 設定ボタン |
+| atoms | `SectionTitle` | セクション見出しテキストの描画 | 全セクション共通 |
+| atoms | `StatusChip` | 状態ラベル（進行中/保守など）の表示 | プロジェクト一覧、メンバー一覧 |
+| atoms | `Avatar` | メンバー画像の表示 | メンバー一覧 |
+| atoms | `MetricValue` | 数値（予算、執行率など）を表示 | 予算執行状況 |
+| atoms | `IconButton` | アイコン付き最小操作UIを表示 | 共通ヘッダ、設定ボタン |
+
 ### 5.2 トレードオフ
 
 | 選択肢 | 採用可否 | 理由 |
