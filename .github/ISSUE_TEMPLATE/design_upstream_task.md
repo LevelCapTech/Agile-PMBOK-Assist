@@ -150,8 +150,8 @@ packages/
         DashboardPage/
           DashboardPage.tsx
       atoms/                # state を持つ場合も UI状態（hover, open等）のみとする/ドメイン状態・データ取得・副作用は禁止
-        ProjectNams/
-          ProjectNams.tsx
+        ProjectName/
+          ProjectName.tsx
       templates/            # レイアウト構造（Header/Footer/サイドバー配置など）/画面共通のContextはtemplatesで提供
         StandardLayout/
           StandardLayout.tsx
