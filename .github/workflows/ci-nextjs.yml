@@ -45,6 +45,12 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Build generated CSS
+        run: npm run build:generated-css
+
+      - name: Lint generated CSS
+        run: npm run lint:generated-css
+
       - name: Test
         run: npm run test
 

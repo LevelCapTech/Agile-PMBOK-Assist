@@ -11,6 +11,14 @@
 - `src/providers/AppProvider.tsx` で `AppRouterCacheProvider` に `enableCssLayer: true` を指定し、MUI のスタイルを `@layer mui` として注入する。
 - `app/globals.css` の先頭で `@layer mui, utilities;` を宣言し、Tailwind の utilities で上書きできる順序を固定する。
 
+## stylelint運用（方式C: 生成CSS lint）
+
+- stylelint は Tailwind が生成した最終CSSのみを対象にする（入力CSSの直lintやCSS-in-JS全面監査は行わない）。
+- 生成手順: `npm run build:generated-css` で `.ci-artifacts/generated.css` を作成する。
+- lint手順: `npm run lint:generated-css` を実行し、違反時は生成CSSから入力CSS（`app/globals.css` や該当コンポーネントの className）へ逆引き修正する。
+- A/B方式（入力CSSの直接lintやTailwind v4追随設定）は、ノイズ増加と設定保守コストが大きいため採用しない。
+- `.ci-artifacts/generated.css` はデバッグ時のみ参照し、通常は保存しない。
+
 ## 追加ファイルの責務
 
 - `src/providers/appTheme.ts`: MUI テーマの既定値を管理する（カラーやタイポの変更はここに集約）。
