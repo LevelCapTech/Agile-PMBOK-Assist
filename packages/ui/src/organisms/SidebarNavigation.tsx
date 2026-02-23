@@ -6,7 +6,7 @@ import ListItemButton from "@mui/material/ListItemButton";
 import ListItemText from "@mui/material/ListItemText";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-import { useTheme } from "@mui/material/styles";
+import { alpha, useTheme } from "@mui/material/styles";
 import type { SidebarNavigationProps } from "@contracts/pages/dashboard";
 import { LcIcon } from "@ui/atoms/LcIcon";
 
@@ -49,7 +49,7 @@ export const SidebarNavigation = ({
                 borderRadius: 1,
                 mb: 0.5,
                 "&.Mui-selected": {
-                  backgroundColor: theme.palette.primary.main + "0F",
+                  backgroundColor: alpha(theme.palette.primary.main, 0.06),
                   color: theme.palette.primary.main,
                 },
               }}
