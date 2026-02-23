@@ -31,6 +31,12 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
+        with:
+          fetch-depth: 2
+
+      - name: Fetch through merge-base
+        if: github.event_name == 'pull_request'
+        uses: fulcrumgenomics/fetch-through-merge-base@v1
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
@@ -56,3 +62,30 @@ jobs:
 
       - name: Build Storybook
         run: npm run build-storybook
+
+      - name: Test Storybook stories
+        run: |
+          set -e
+          python -m http.server 6006 --directory storybook-static --bind 127.0.0.1 &
+          STORYBOOK_PID=$!
+          trap "kill $STORYBOOK_PID" EXIT
+          MAX_RETRIES=10
+          for i in $(seq 1 $MAX_RETRIES); do
+            if curl -fs http://127.0.0.1:6006 > /dev/null; then
+              break
+            fi
+            sleep 1
+          done
+          if ! curl -fs http://127.0.0.1:6006 > /dev/null; then
+            echo "Storybook server did not become ready on port 6006 after ${MAX_RETRIES} attempts. Check for port conflicts or server startup issues."
+            exit 1
+          fi
+          echo "Storybook server ready. Running Storybook tests..."
+          npx test-storybook --url http://127.0.0.1:6006 || { echo "Storybook tests failed."; exit 1; }
+        shell: bash
+
+      - name: Publish to Chromatic
+        uses: chromaui/action@v1
+        with:
+          projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
+          exitOnceUploaded: true
