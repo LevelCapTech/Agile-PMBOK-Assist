@@ -7,8 +7,8 @@ import { LcMetricValue } from "../../atoms/LcMetricValue";
 const StyledCard = styled(Card)<{ $tone: string }>(({ theme, $tone }) => {
   const toneBackgroundMap: Record<string, string> = {
     primary: `${theme.palette.primary.main}0F`,
-    success: "#D1FAE5",
-    warning: "#FEF3C7",
+    success: theme.palette.success.light,
+    warning: theme.palette.warning.light,
   };
 
   const bgColor = toneBackgroundMap[$tone] || toneBackgroundMap.primary;
