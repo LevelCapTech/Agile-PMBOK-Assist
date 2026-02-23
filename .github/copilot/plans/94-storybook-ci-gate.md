@@ -79,7 +79,7 @@
 | ID | 要件 | 受入条件（テスト可能な形） |
 | --- | --- | --- |
 | FR-01 | Storybook Test Runner をCI必須ジョブとして追加する | CI定義に `npx storybook test` 実行ステップがあり、失敗時にジョブが赤になる |
-| FR-02 | 全Storyのrender成功を保証する（対象はAtomic DesignのPage/Layoutより下: Templates/Organisms/Molecules/Atoms） | 対象レイヤのrender errorを含むStoryで `storybook test` が fail する |
+| FR-02 | 全Storyのrender成功を保証する（対象はAtomic DesignのTemplates/Organisms/Molecules/Atoms（Page/Layoutを除く）） | 対象レイヤのrender errorを含むStoryで `storybook test` が fail する |
 | FR-03 | 全Storyのplay function実行を保証する | play function errorを含むStoryで CI が fail する |
 | FR-04 | a11yチェック通過をCIで保証する | a11y violation を含むStoryで CI が fail する |
 | FR-05 | Chromatic をVRTレイヤーとして統合する | workflowに `chromaui/action@v1` と `CHROMATIC_PROJECT_TOKEN` 参照が定義される |
@@ -592,14 +592,14 @@ classDiagram
 | 論点 | 現状 | 決定期限/担当 | ADR要否（要/不要/TBD） |
 | --- | --- | --- | --- |
 | Chromatic差分ポリシー | warning（注意表示、CIは通す） | 確定済み / @LevelCapTech | 不要 |
-| Story必須対象範囲 | Atomic DesignのPage/Layoutより下（Templates/Organisms/Molecules/Atoms）を必須対象とする | 確定済み / @LevelCapTech | 不要 |
+| Story必須対象範囲 | Atomic DesignのTemplates/Organisms/Molecules/Atoms（Page/Layoutを除く）を必須対象とする | 確定済み / @LevelCapTech | 不要 |
 | 必須チェック範囲 | PR必須チェックとして Storybook/Chromatic を含める | 確定済み / @LevelCapTech | 不要 |
 
 ### 10.1 TBD回収トラッキング（必須）
 
 | TBD論点 | 現在の記載箇所（章/項目） | 解決ゲート（必須） | BLOCKER（Yes/No） | RESOLVE_IN（必須） | DEFAULT/ASSUMPTION（任意） | ADR記録先（必要時） |
 | --- | --- | --- | --- | --- | --- | --- |
-| なし（未確定事項はレビュー回答で確定済み） | 10章全体 | GATE: N/A | BLOCKER: No | RESOLVE_IN: N/A | DEFAULT/ASSUMPTION: warning運用 + PR必須チェック + Page/Layoutより下をStory必須対象 | 不要 |
+| 該当なし（未確定事項はレビュー回答で確定済み） | 10章全体 | GATE: N/A | BLOCKER: No | RESOLVE_IN: N/A | DEFAULT/ASSUMPTION: warning運用 + PR必須チェック + Templates/Organisms/Molecules/Atoms をStory必須対象 | 不要 |
 
 ---
 
