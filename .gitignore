@@ -25,6 +25,7 @@
 # production
 /build
 /mock/v1/web/dist
+.ci-artifacts/
 
 # misc
 .DS_Store
