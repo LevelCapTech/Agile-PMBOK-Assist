@@ -17,5 +17,5 @@ jobs:
       install-playwright-browsers: true
       build-command: "npm run build"
       start-command: "npm run start -- --port 4000"
-      screenshot-command: "npm run screenshot"
+      screenshot-command: "true"
       upload-artifacts: true
