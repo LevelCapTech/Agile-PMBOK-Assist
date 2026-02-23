@@ -199,6 +199,27 @@
 | 5 | アラート条件 | 5xx系 error 連続時のみ通知対象 | 運用観点 | TBD（理由: 閾値未確定 / 決定条件: 運用チーム合意 / 期限: リリース前） |
 | 6 | 運用確認手順 | notfound/network/unknown を手動発火しログキー確認 | テスト戦略 | なし |
 
+#### 5.1.4 Atomic Design UI部品一覧（dashboard）
+
+| レイヤ | UI部品名（設計上の候補） | 主責務 | 対応機能 |
+| --- | --- | --- | --- |
+| templates | `ProjectDetailsLayoutTemplate` | 2カラムレイアウトとセクション配置を固定する | 画面全体構成 |
+| organisms | `ProjectDetailsHeader` | プロジェクト名/コード/開始日/全体進捗を表示する | 全体進捗状況 |
+| organisms | `ProjectPhaseProgressList` | フェーズ一覧と進捗バーを表示する | フェーズ毎の進捗 |
+| organisms | `ProjectMemberPanel` | メンバー一覧と役割を表示する | プロジェクトメンバー |
+| organisms | `ProjectMeetingList` | 会議体一覧を表示し空状態を分岐する | 会議体一覧 |
+| organisms | `ProjectPlanAccordion` | 計画セクションの折りたたみ表示を管理する | プロジェクト計画 |
+| organisms | `ProjectDetailsErrorPanel` | notfound/network など契約エラーを表示する | 例外系表示 |
+| molecules | `PhaseProgressItem` | 1フェーズ分の名称/状態/進捗率を描画する | フェーズ毎の進捗 |
+| molecules | `MemberListItem` | メンバーの名前/役割/アバターを描画する | プロジェクトメンバー |
+| molecules | `MeetingListItem` | 会議名/曜日/時間帯を描画する | 会議体一覧 |
+| molecules | `PlanSectionPanel` | 計画項目の見出しと詳細リストを描画する | プロジェクト計画 |
+| atoms | `ProjectCodeChip` | プロジェクトコードの強調表示 | ヘッダー表示 |
+| atoms | `ProgressPercentText` | 進捗率テキスト表示 | 全体進捗/フェーズ進捗 |
+| atoms | `StatusBadge` | 状態ラベル（完了/進行中/未着手）表示 | フェーズ状態表示 |
+| atoms | `AvatarIcon` | メンバーのアバター画像表示 | メンバー表示 |
+| atoms | `EmptyStateMessage` | 空データ時の案内文表示 | 会議体/一覧空状態 |
+
 ### 5.2 トレードオフ
 
 | 判断テーマ | 案A | 案B | 採用案 | 採用理由 | 不採用理由 |
