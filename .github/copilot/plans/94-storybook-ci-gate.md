@@ -574,7 +574,7 @@ classDiagram
 | 例外 | a11y violation | storybook test | a11y違反を含むStory | CI fail |
 | 例外 | chromatic upload failure | chromatic action | token欠落/無効でupload失敗 | CI fail |
 | 境界 | visual diff warning運用 | chromatic result | visual diffが発生 | warning表示でCIはpassする |
-| 境界 | Story必須対象範囲（Templates/Organisms/Molecules/Atoms（Page/Layoutを除く）） | storybook test | Templates/Organisms/Molecules/AtomsにStory不足がある | 対象レイヤ不足として検知される |
+| 境界 | Story必須対象範囲（Templates/Organisms/Molecules/Atoms（Page/Layoutを除く）） | storybook test | Templates/Organisms/Molecules/Atoms にStory不足がある | 対象レイヤ不足として検知される |
 | 回帰 | 既存lint/test/e2e維持 | ci-nextjs workflow | Storybook gate追加後に既存ジョブ実行 | 既存ジョブが継続実行 |
 | 回帰 | build-storybook維持 | ci-nextjs workflow | Storybook buildのみ失敗ケース | CI fail（従来通り） |
 
