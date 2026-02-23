@@ -3,6 +3,7 @@
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import Typography from "@mui/material/Typography";
+import Box from "@mui/material/Box";
 import { useTheme } from "@mui/material/styles";
 import type { BudgetSummaryCardProps } from "@contracts/pages/dashboard";
 import { LcMetricValue } from "@ui/atoms/LcMetricValue";
@@ -36,7 +37,9 @@ export const BudgetSummaryCard = ({
         >
           {label}
         </Typography>
-        <LcMetricValue value={value} tone={tone} />
+        <Box sx={{ "& *": { color: "inherit !important" } }}>
+          <LcMetricValue value={value} tone={tone} />
+        </Box>
       </CardContent>
     </Card>
   );
