@@ -15,7 +15,11 @@ jobs:
       node-version: "20"
       working-directory: "."
       install-playwright-browsers: true
+      # Next.js は 4000 固定（healthcheck も同じポートに揃える）
+      port: 4000
+      healthcheck-path: "/"
       build-command: "npm run build"
-      start-command: "npm run start -- --port 4000"
+      # package.json の start がすでに --port 4000 を含む前提なので、二重指定を避ける
+      start-command: "npm run start"
       screenshot-command: "true"
       upload-artifacts: true

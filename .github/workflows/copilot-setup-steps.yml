@@ -34,7 +34,8 @@ on:
       start-command:
         required: false
         type: string
-        default: "npm run start -- --port ${{ inputs.port }}"
+        # 既定は PORT 環境変数に寄せる（package.json 側で --port を持っていても二重指定にならない）
+        default: "npm run start"
 
       build-command:
         required: false
