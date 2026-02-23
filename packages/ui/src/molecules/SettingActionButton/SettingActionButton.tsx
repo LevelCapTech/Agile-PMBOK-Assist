@@ -1,6 +1,6 @@
 "use client";
 
-import { Card, CardActionArea, styled } from "@mui/material";
+import { Card, CardActionArea, styled, alpha } from "@mui/material";
 import type { SettingActionButtonProps } from "../../types/dashboard";
 import { LcIcon } from "../../atoms/LcIcon";
 
@@ -26,7 +26,7 @@ const StyledCardActionArea = styled(CardActionArea)(({ theme }) => ({
 const IconContainer = styled("div")(({ theme }) => ({
   width: 48,
   height: 48,
-  backgroundColor: `${theme.palette.primary.main}0F`,
+  backgroundColor: alpha(theme.palette.primary.main, 0.06),
   borderRadius: theme.shape.borderRadius,
   display: "flex",
   alignItems: "center",

@@ -31,11 +31,8 @@ const DrawerContent = styled("div")(({ theme }) => ({
 
 const StyledListItemButton = styled(ListItemButton, {
   shouldForwardProp: (prop) => prop !== "$active",
-})<{ $active?: boolean }>(({ theme, $active }) => ({
-  borderRadius: theme.shape.borderRadius,
-  marginBottom: theme.spacing(1),
-  padding: theme.spacing(1.5, 2),
-  ...(($active && {
+})<{ $active?: boolean }>(({ theme, $active }) => {
+  const activeStyles = {
     backgroundColor: theme.palette.primary.main,
     color: theme.palette.primary.contrastText,
     "&:hover": {
@@ -44,8 +41,15 @@ const StyledListItemButton = styled(ListItemButton, {
     "& .MuiListItemIcon-root": {
       color: theme.palette.primary.contrastText,
     },
-  }) as object),
-}));
+  };
+
+  return {
+    borderRadius: theme.shape.borderRadius,
+    marginBottom: theme.spacing(1),
+    padding: theme.spacing(1.5, 2),
+    ...($active ? activeStyles : {}),
+  };
+});
 
 const StyledListItemIcon = styled(ListItemIcon)(({ theme }) => ({
   minWidth: 40,

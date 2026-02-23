@@ -1,12 +1,12 @@
 "use client";
 
-import { Card, styled } from "@mui/material";
+import { Card, styled, alpha } from "@mui/material";
 import type { BudgetSummaryCardProps } from "../../types/dashboard";
 import { LcMetricValue } from "../../atoms/LcMetricValue";
 
 const StyledCard = styled(Card)<{ $tone: string }>(({ theme, $tone }) => {
   const toneBackgroundMap: Record<string, string> = {
-    primary: `${theme.palette.primary.main}0F`,
+    primary: alpha(theme.palette.primary.main, 0.06),
     success: theme.palette.success.light,
     warning: theme.palette.warning.light,
   };

@@ -1,6 +1,6 @@
 "use client";
 
-import { Card, CardContent, styled } from "@mui/material";
+import { Card, CardContent, styled, alpha } from "@mui/material";
 import type { ProjectListItemProps } from "../../types/dashboard";
 import { LcStatusChip } from "../../atoms/LcStatusChip";
 import { LcAvatar } from "../../atoms/LcAvatar";
@@ -28,7 +28,7 @@ const ProjectName = styled("h2")(({ theme }) => ({
 const CodeBadge = styled("div")(({ theme }) => ({
   display: "inline-block",
   padding: theme.spacing(0.5, 1.5),
-  backgroundColor: `${theme.palette.primary.main}0F`,
+  backgroundColor: alpha(theme.palette.primary.main, 0.06),
   borderRadius: "12px",
   fontSize: "12px",
   fontWeight: 600,
