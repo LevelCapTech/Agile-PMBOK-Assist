@@ -22,7 +22,7 @@
 
 - CI では `app/globals.css` を入力に Tailwind CLI で `.ci-artifacts/generated.css` を生成し、stylelint は生成CSSのみを対象にする。
 - 入力CSS直lint（方式A/B）や CSS-in-JS の全面監査は行わない。Tailwind v4 のディレクティブと Emotion の動的記法が誤検知を招きやすく、追随設定が肥大化するため。
-- ローカルで確認する場合は以下の順で実行する。
+- ローカルで確認する場合は以下の順で実行する（Node 20.19.0 以上が必要。推奨: CI と同じ Node 24 系を使用）。
   - `npx tailwindcss -i app/globals.css -o .ci-artifacts/generated.css --minify`
   - `npx stylelint .ci-artifacts/generated.css`
 - 適用ルールは `.stylelintrc.json` の最小構成（`block-no-empty` / `color-no-invalid-hex` / `property-no-unknown`）に限定する。
