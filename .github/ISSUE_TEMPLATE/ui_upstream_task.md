@@ -98,14 +98,20 @@ assignees: ""
 ## 7. コンポーネント一覧
 
 * 各コンポーネントは「責務」「Props型」「状態保持の有無」「依存コンポーネント」「再利用可否」「表示専用」を必ず定義する。
-* 状態保持は原則なし（必要な場合は理由を明記する）。
+* 状態保持は原則なし（保持する場合は理由を明記する）。
+* 状態を持つもの、イベントハンドラを持つもの、MUIの `styled` または `sx` を利用するものは `'use client'` を必須とする。
 
-| Atomic階層 | コンポーネント名 | 責務（1文） | Props型定義 | 状態保持 | 依存コンポーネント | 再利用可否 | 表示専用 |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| Atoms | `<component-prefix><Name>` | `<何を表示するかを1文で記載>` | `<Name>Props` | `なし` | `なし` | `可/否` | `はい` |
-| Molecules | `<Feature><Name>Item` | `<何を組み合わせて表示するか>` | `<Name>ItemProps` | `なし/最小限` | `<component-prefix><Name>, ...` | `可/否` | `はい` |
-| Organisms | `<Feature><Section>Panel` | `<セクション単位の表示責務>` | `<Section>PanelProps` | `なし/最小限` | `<Feature><Name>Item, ...` | `可/否` | `はい` |
-| Templates | `<ScreenName>LayoutTemplate` | `<画面構造を提供する責務>` | `<ScreenName>LayoutTemplateProps` | `なし` | `<Header>, <Sidebar>, ...` | `可/否` | `はい` |
+| Atomic階層 | コンポーネント名 | 責務（1文） | Props型定義 | 状態保持 | 制御方式（Controlled/Uncontrolled） | `'use client'` の要否 | 依存コンポーネント | 再利用可否 | 表示専用 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Atoms | `<component-prefix><Name>` | `<何を表示するかを1文で記載>` | `<Name>Props` | `なし` | `Uncontrolled` | `必須/不要` | `なし` | `可/否` | `はい` |
+| Molecules | `<Feature><Name>Item` | `<何を組み合わせて表示するか>` | `<Name>ItemProps` | `なし/あり（理由必須）` | `Controlled/Uncontrolled` | `必須/不要` | `<component-prefix><Name>, ...` | `可/否` | `はい` |
+| Organisms | `<Feature><Section>Panel` | `<セクション単位の表示責務>` | `<Section>PanelProps` | `なし/あり（理由必須）` | `Controlled/Uncontrolled` | `必須/不要` | `<Feature><Name>Item, ...` | `可/否` | `はい` |
+| Templates | `<ScreenName>LayoutTemplate` | `<画面構造を提供する責務>` | `<ScreenName>LayoutTemplateProps` | `なし` | `Uncontrolled` | `必須/不要` | `<Header>, <Sidebar>, ...` | `可/否` | `はい` |
+
+### 7.0.1 DashboardHeaderの制御方式（必須）
+
+* `DashboardHeader` の検索入力は `props.searchQuery` と `props.onSearchChange` を用いた完全なControlledコンポーネントとする。
+* `DashboardHeader` 内で検索入力値のために `useState` を使用することを禁止する。
 
 ### 7.1 命名衝突回避ルール（必須）
 
@@ -114,15 +120,27 @@ assignees: ""
 * MUIの同名コンポーネント（`Avatar`, `IconButton`, `Button` 等）を直接exportしない。
 * Barrel export時にMUI名へ再エイリアスしない（例: `export { <component-prefix>Avatar as Avatar }` を禁止）。
 
+### 7.1.1 アイコン描画ルール（必須）
+
+* `iconKey` は共通UIコンポーネント（例: `<Icon iconKey={iconKey} />`）に委譲して描画する。
+* アイコンを各コンポーネントで個別に `@mui/icons-material` から静的importしない。
+* `iconKey` と実アイコンの対応表は共通UIの1箇所に集約する。
+
 ### 7.2 ViewModel/Props型定義（必須）
 
-* このセクションだけで実装可能なように、画面用の型を完全展開する。
+* このセクションだけで実装可能なように、コンポーネント用の型を完全展開する。
 * 「設計書参照のみ」「既存型を参照」等の省略記載を禁止する。
-* 型定義には最低限 `ViewModel`、各セクションItem型、各コンポーネントProps型を含める。
+* 型定義には最低限 `ViewModel（参考情報）`、各セクションItem型、各コンポーネントProps型を含める。
 * 特定画面固有の型名や構造をテンプレートに固定しない。画面ごとに必要な型をこのセクションへ展開する。
+* 本Issueの成果物は UI/UXコンポーネント群であり、`<ScreenName>PageProps` の実装は対象外とする。
+* ページ系の型（例: `<ScreenName>PageProps`, `<ScreenName>ViewModel`）はモックデータ作成やStory組み立ての参考情報としてのみ定義してよい。
+* `React.ReactNode` などの型を使用する場合、import前提を明記する（例: `import type { ReactNode } from "react";`）。
 
 ```ts
-// 例: 画面ViewModel（必須）
+// import前提（必須）
+import type { ReactNode } from "react";
+
+// 例: 画面ViewModel（参考情報）
 export interface <ScreenName>ViewModel {
   header: <ScreenName>HeaderView;
   sidebar: <ScreenName>SidebarView;
@@ -137,11 +155,17 @@ export interface <ScreenName>ProjectItem {
   // TODO: 必要プロパティを完全展開
 }
 
-// 例: Props型（必須）
-export interface <ScreenName>PageProps {
-  viewModel: <ScreenName>ViewModel;
-  // TODO: 必要なイベント/コールバックを明示する
-  onClickPrimaryAction?: (actionId: string) => void;
+// 例: Organism Props型（必須）
+export interface <ScreenName>HeaderProps {
+  title: string;
+  isLoading?: boolean;
+  error?: { code: string; message: string };
+}
+
+export interface <ScreenName>ListPanelProps {
+  items: <ScreenName>PrimaryItem[];
+  isLoading?: boolean;
+  error?: { code: string; message: string };
 }
 
 // 例: 画面固有Item型（必要件数だけ定義）
@@ -158,13 +182,20 @@ export interface <ScreenName>SecondaryItem {
   value: string;
   // TODO: 画面固有フィールドを完全展開
 }
+
+// 例: Template Props型（必要な場合のみ）
+export interface <ScreenName>LayoutTemplateProps {
+  header: ReactNode;
+  sidebar?: ReactNode;
+  main: ReactNode;
+}
 ```
 
 | 型カテゴリ | 型名 | 定義場所（このIssue本文内） | 完全展開 |
 | --- | --- | --- | --- |
-| ViewModel | `<ScreenName>ViewModel` | `7.2` | `必須` |
+| ViewModel（参考情報） | `<ScreenName>ViewModel` | `7.2` | `任意` |
 | Item DTO | `<ScreenName>PrimaryItem / <ScreenName>SecondaryItem` | `7.2` | `必須` |
-| Component Props | `<ScreenName>PageProps / <ComponentName>Props` | `7.2` | `必須` |
+| Component Props | `<ComponentName>Props（Atoms/Molecules/Organisms/Templates）` | `7.2` | `必須` |
 
 ## 8. CSS責務定義
 
@@ -175,7 +206,8 @@ export interface <ScreenName>SecondaryItem {
 * 同一要素で同一CSSプロパティの多重指定を禁止する。
 * MUI と Tailwind で同一スタイル責務を持たせない。
 * UpstreamではPC画面専用。メディアクエリ/レスポンシブ設計/スマートフォン対応を禁止する。
-* 将来拡張を考慮した抽象化を禁止する。
+* 将来拡張のためだけの過剰抽象化（未使用の汎用レイヤ、不要なジェネリクス、過度なDI）は禁止する。
+* ただしAtomic再利用に必要な最小抽象化（size variants、tone variants、共通Props化）は許可する。
 
 ### 8.2 CSS責務一覧（必須）
 
@@ -186,12 +218,28 @@ export interface <ScreenName>SecondaryItem {
 ### 8.3 Atoms単位スタイル責務（推奨）
 
 * Atomsごとに「MUI利用/Tailwind利用/禁止プロパティ」を1行で固定する。
-* 競合しやすい `padding`, `margin`, `font-size`, `color`, `border` は担当を固定する。
+* 競合しやすい `padding`, `margin`, `font-size`, `color`, `border`, `background`, `width`, `height` は必ず担当を固定する。
 
-| Atom名 | MUI(sx/styled)利用 | Tailwind class利用 | 禁止プロパティ（禁止側に記載） |
-| --- | --- | --- | --- |
-| `<component-prefix><ComponentName>` | `あり/なし` | `あり/なし` | `例: <property> を<MUI/Tailwind>で指定禁止` |
-| `<ComponentName>Atom` | `あり/なし` | `あり/なし` | `例: <property> を<MUI/Tailwind>で指定禁止` |
+| Atom名 | MUI(sx/styled)利用 | Tailwind class利用 | 担当固定プロパティ（必須） | 禁止プロパティ（禁止側に記載） |
+| --- | --- | --- | --- | --- |
+| `<component-prefix><ComponentName>` | `あり/なし` | `あり/なし` | `padding:<MUI/TW>, margin:<MUI/TW>, font-size:<MUI/TW>, color:<MUI/TW>, border:<MUI/TW>, background:<MUI/TW>, width:<MUI/TW>, height:<MUI/TW>` | `例: <property> を<MUI/TW>で指定禁止` |
+| `<ComponentName>Atom` | `あり/なし` | `あり/なし` | `padding:<MUI/TW>, margin:<MUI/TW>, font-size:<MUI/TW>, color:<MUI/TW>, border:<MUI/TW>, background:<MUI/TW>, width:<MUI/TW>, height:<MUI/TW>` | `例: <property> を<MUI/TW>で指定禁止` |
+
+### 8.4 テーマ変数変換ルール（必須）
+
+* モック由来のTailwind色クラスをハードコード値へ置き換えない。
+* 色・背景・枠線は MUI Theme 変数へ変換して指定する（例: `theme.palette.*`）。
+
+| モック表現（Tailwind例） | MUI Theme変換先（例） | 禁止事項 |
+| --- | --- | --- |
+| `text-gray-500` | `theme.palette.text.secondary` | `color: \"#6b7280\"` の直接指定禁止 |
+| `text-gray-900` | `theme.palette.text.primary` | `color` の16進ハードコード禁止 |
+| `bg-white` | `theme.palette.background.paper` | 背景色の固定値指定禁止 |
+| `bg-gray-50` | `theme.palette.background.default` | 背景色の固定値指定禁止 |
+| `border-gray-200` | `theme.palette.divider` | 枠線色の固定値指定禁止 |
+| `text-blue-600` | `theme.palette.primary.main` | 主要色の固定値指定禁止 |
+| `text-green-600` | `theme.palette.success.main` | 状態色の固定値指定禁止 |
+| `text-amber-600` | `theme.palette.warning.main` | 状態色の固定値指定禁止 |
 
 ## 9. Storybook生成要件
 
@@ -209,12 +257,27 @@ export interface <ScreenName>SecondaryItem {
 * 生成物のSSOTとして、コンポーネントごとに最低限必要なStoryキーを列挙する。
 * `default` のみで完了扱いにしない。状態/variantがある場合は対応Storyを必須化する。
 
-| Atomic階層 | コンポーネント名 | 必須Storyキー |
+| Atomic階層 | コンポーネント名 | 必須Storyキー | Play関数での検証内容 |
+| --- | --- | --- | --- |
+| Atoms | `<component-prefix><Name>` | `default`, `disabled` | `disabled` で `toBeDisabled()` を検証 |
+| Molecules | `<Feature><Name>Item` | `default`, `empty` | `empty` で空状態文言/件数0表示を検証 |
+| Organisms | `<Feature><Section>Panel` | `default`, `loading`, `error` | `loading` でローディング表示、`error` でエラー文言表示を検証 |
+| Templates | `<ScreenName>LayoutTemplate` | `default` | 主要領域（header/main等）の表示を検証 |
+| Molecules | `SettingActionButton` | `default`, `disabled` | `disabled` でクリック不能かつ `onClick` スパイ未呼出しを検証 |
+
+### 9.2 StoryキーとProps契約の整合ルール（必須）
+
+* `loading` story を要求するコンポーネントは、対応するPropsに `isLoading?: boolean` を必ず定義する。
+* `error` story を要求するコンポーネントは、対応するPropsに `error?: { code: string; message: string }` を必ず定義する。
+* `empty` story を要求するコンポーネントは、対応するPropsに空配列を受け取る一覧型（例: `items: Item[]`）を必ず定義する。
+* `disabled` story を要求するコンポーネントは、対応するPropsに `disabled?: boolean` を必ず定義する。
+
+| Storyキー | Props必須契約 | 例 |
 | --- | --- | --- |
-| Atoms | `<component-prefix><Name>` | `default`, `disabled` |
-| Molecules | `<Feature><Name>Item` | `default`, `empty` |
-| Organisms | `<Feature><Section>Panel` | `default`, `loading`, `error` |
-| Templates | `<ScreenName>LayoutTemplate` | `default` |
+| `loading` | `isLoading?: boolean` | `ProjectListPanelProps` |
+| `error` | `error?: { code: string; message: string }` | `BudgetExecutionPanelProps` |
+| `empty` | `items: Item[]`（空配列許容） | `MemberListPanelProps` |
+| `disabled` | `disabled?: boolean` | `LcIconButtonProps` |
 
 ## 10. 変更禁止範囲
 
@@ -246,11 +309,17 @@ export interface <ScreenName>SecondaryItem {
 
 * 6章で定義したAtomic分解に対応するUIコンポーネントが実装されている
 * 7章で定義したProps型と実装コードが一致している（型エラーなし）
+* 7章で定義した `'use client'` 要否に違反がない
+* `DashboardHeader` がControlled実装（`searchQuery`/`onSearchChange`）であり、内部 `useState` を持たない
 * 命名衝突回避ルールに違反するコンポーネント名が存在しない
 * MUI同名コンポーネントの直接exportが存在しない
+* アイコン描画が共通 `<Icon iconKey={...} />` 経路へ統一されている
 * UI実装にAPI呼び出し・非同期処理・グローバル状態参照が混入していない
 * CSS責務定義（8章）どおりに実装され、同一プロパティの多重指定がない
+* 色指定が8.4のテーマ変数変換ルールに従い、ハードコード色を使用していない
 * 9.1で定義した必須Storyキーが全コンポーネントで作成されている
+* 9.1で定義したPlay関数アサーションが各Storyに実装されている
+* 9.2で定義したStoryキーとProps契約の整合ルールを満たしている
 * Storybook上で全Storyが表示確認でき、console error が発生しない
 * Storybook Test Runner が成功する
 * format / lint / typecheck / unit test / security / Storybook build が成功する
