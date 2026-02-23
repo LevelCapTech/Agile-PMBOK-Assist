@@ -32,7 +32,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
         with:
-          fetch-depth: 0
+          fetch-depth: 2
+
+      - name: Fetch through merge-base
+        if: github.event_name == 'pull_request'
+        uses: fulcrumgenomics/fetch-through-merge-base@v1
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
