@@ -1,9 +1,9 @@
-name: Copilot setup steps
+name: "Copilot 環境準備（setup steps）"
 
 on:
   workflow_dispatch:
-  push:
-  pull_request:
+  # push: 西山がレビューで却下、文字化けしたらコメントアウト解除
+  # pull_request: 西山がレビューで却下、文字化けしたらコメントアウト解除
 
 permissions:
   contents: read
