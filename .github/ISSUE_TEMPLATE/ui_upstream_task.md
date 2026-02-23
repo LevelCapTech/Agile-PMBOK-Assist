@@ -9,10 +9,12 @@ assignees: ""
 <!--
 置換手順:
 1. ★ここに画面名★: 対象画面名に置換する（例: 進捗ダッシュボード）。
-2. <design-doc-path>: 参照する機能設計書Markdownのパスに置換する。
-3. <design-issue-number>: 設計Issue番号に置換する。
-4. <design-pr-number>: 設計PR番号に置換する。
-5. <mock-path>: モックファイルパスまたは参照リンクに置換する。
+2. <design-doc-path>: 参照する機能設計書Markdownのパスに置換する（例: .github/copilot/plans/123-page-foo.md）。
+3. <owner>: リポジトリのオーナー名に置換する（例: LevelCapTech）。
+4. <repo>: リポジトリ名に置換する（例: Agile-PMBOK-Assist）。
+5. <issue-number>: 設計Issue番号に置換する（例: 123）。
+6. <pr-number>: 設計PR番号に置換する（例: 456）。
+7. <mock-path>: モックファイルパスまたは参照リンクに置換する。
 -->
 
 # [UI] Upstream: ★ここに画面名★ UI整備
@@ -61,12 +63,12 @@ assignees: ""
 
 ## 3. 設計Issueリンク
 
-* [https://github.com/](https://github.com/)<owner>/<repo>/issues/<design-issue-number>
+* https://github.com/<owner>/<repo>/issues/<issue-number>
 * 設計Issue本文とコメントの内容を参照すること。
 
 ## 4. 設計PRリンク
 
-* [https://github.com/](https://github.com/)<owner>/<repo>/pull/<design-pr-number>
+* https://github.com/<owner>/<repo>/pull/<pr-number>
 * 設計PR本文とコメントの内容を参照すること。
 
 ## 5. モック情報
@@ -81,7 +83,7 @@ assignees: ""
 * モックをそのままコンポーネント化しない。
 * 設計書に軽く触れられている粒度を最低単位とする。
 * モックより細かい単位で分解する。
-* Atomic 階層（Atoms / Molecules / Organisms / Templates）を明示する（Pages は対象外）。
+* Atomic Design 階層（Atoms / Molecules / Organisms / Templates）を明示する（Pages は対象外）。
 
 ### 6.2 分解結果（必須）
 
@@ -108,11 +110,11 @@ assignees: ""
 
 ### 8.1 CSS前提
 
-* StyledEngineProvider injectFirst を前提とする。
+* StyledEngineProvider の `injectFirst` を前提とする。
 * MUI は構造/コンポーネント責務、Tailwind はユーティリティ用途のみ。
 * 同一要素で同一CSSプロパティの多重指定を禁止する。
 * MUI と Tailwind で同一スタイル責務を持たせない。
-* PC画面専用。メディアクエリ/レスポンシブ設計/スマホ対応を禁止する。
+* UpstreamではPC画面専用。メディアクエリ/レスポンシブ設計/スマートフォン対応を禁止する。
 * 将来拡張を考慮した抽象化を禁止する。
 
 ### 8.2 CSS責務一覧（必須）
@@ -121,9 +123,9 @@ assignees: ""
 | --- | --- | --- | --- |
 |  |  |  |  |
 
-## 9. StoryBook生成要件
+## 9. Storybook生成要件
 
-* 全Atomic単位でStoryを作成する。
+* 全てのAtomic Design階層（Atoms / Molecules / Organisms / Templates）でStoryを作成する。
 * Propsバリエーションがある場合は全パターン作成する。
 * Controls有効化、Docs自動生成を有効化する。
 * Storybook Test Runnerで以下を満たすこと。
@@ -165,7 +167,7 @@ assignees: ""
 * ロジック禁止が明文化されている
 * Storybook Test RunnerがCIに含まれている
 * 次Agentがページのみ整備可能状態である
-* レビューで固定可能
+* レビューで固定可能（品質ゲートを満たし承認可能な状態）
 * コンポーネントは pages 配下に存在しない
 * データ未接続状態である
 * Container 未実装状態である
