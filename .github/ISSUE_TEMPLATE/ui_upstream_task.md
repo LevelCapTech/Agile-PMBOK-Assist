@@ -123,8 +123,9 @@ assignees: ""
 ### 7.1.1 アイコン描画ルール（必須）
 
 * `iconKey` は共通UIコンポーネント（例: `<Icon iconKey={iconKey} />`）に委譲して描画する。
+* `Icon` 内部で `iconKey` と実アイコンの対応表を持つ実装を禁止する。
+* アイコン実体の解決は、AppProvider 等の Context から注入された関数（例: `useIcon(iconKey)`）を使用する。
 * アイコンを各コンポーネントで個別に `@mui/icons-material` から静的importしない。
-* `iconKey` と実アイコンの対応表は共通UIの1箇所に集約する。
 
 ### 7.2 ViewModel/Props型定義（必須）
 
@@ -219,6 +220,7 @@ export interface <ScreenName>LayoutTemplateProps {
 
 * Atomsごとに「MUI利用/Tailwind利用/禁止プロパティ」を1行で固定する。
 * 競合しやすい `padding`, `margin`, `font-size`, `color`, `border`, `background`, `width`, `height` は必ず担当を固定する。
+* ※ これらは「スタイルを指定する場合の管轄」であり、デザイン上不要なプロパティ（`padding: 0` 等）の明示的な初期化を強制するものではない。
 
 | Atom名 | MUI(sx/styled)利用 | Tailwind class利用 | 担当固定プロパティ（必須） | 禁止プロパティ（禁止側に記載） |
 | --- | --- | --- | --- | --- |
@@ -241,11 +243,41 @@ export interface <ScreenName>LayoutTemplateProps {
 | `text-green-600` | `theme.palette.success.main` | 状態色の固定値指定禁止 |
 | `text-amber-600` | `theme.palette.warning.main` | 状態色の固定値指定禁止 |
 
+### 8.5 バリアント/デザイン・トークン対応表（必須）
+
+* `size` / `tone` は下表の対応を必須とする。
+* 下表にない値は、Issue本文に追加して合意されるまで実装しない。
+
+| 種別 | 値 | マッピング先（必須） |
+| --- | --- | --- |
+| `size` | `sm` | `16px` |
+| `size` | `md` | `24px` |
+| `size` | `lg` | `32px` |
+| `tone` | `primary` | `theme.palette.primary.main` |
+| `tone` | `success` | `theme.palette.success.main` |
+| `tone` | `warning` | `theme.palette.warning.main` |
+| `tone` | `error` | `theme.palette.error.main` |
+| `tone` | `neutral` | `theme.palette.text.secondary` |
+
+### 8.6 Typographyマッピング（必須）
+
+* 見出し・本文・数値は MUI `Typography` の `variant` と `component` を固定する。
+* 見出し用途を `div` / `span` で代替する実装を禁止する。
+
+| 対象コンポーネント | 用途 | MUI `Typography` variant | HTMLタグ（component） |
+| --- | --- | --- | --- |
+| `LcSectionTitle` | セクション見出し | `h6` | `h2` |
+| `LcSectionTitle` | 補助説明 | `body2` | `p` |
+| `LcMetricValue` | 主要数値 | `h5` | `p` |
+| `LcMetricValue` | 単位/補足 | `caption` | `span` |
+| `LcStatusChip` | 状態ラベル | `caption` | `span` |
+
 ## 9. Storybook生成要件
 
 * 全てのAtomic Design階層（Atoms / Molecules / Organisms / Templates）でStoryを作成する。
 * Propsバリエーションがある場合は全パターン作成する。
 * Controls有効化、Docs自動生成を有効化する。
+* Storyのデコレーターで、UI描画に必要なダミーContext（例: アイコン解決用 `IconResolverContext`）を注入する。
 * Storybook Test Runnerで以下を満たすこと。
   * 全Storyのレンダリング成功
   * console error なし
@@ -278,6 +310,12 @@ export interface <ScreenName>LayoutTemplateProps {
 | `error` | `error?: { code: string; message: string }` | `BudgetExecutionPanelProps` |
 | `empty` | `items: Item[]`（空配列許容） | `MemberListPanelProps` |
 | `disabled` | `disabled?: boolean` | `LcIconButtonProps` |
+
+### 9.3 Mock Provider注入要件（必須）
+
+* Storybook では `preview.ts` または各Storyの `decorators` で Mock Provider をラップする。
+* アイコン描画は、`useIcon(iconKey)` を返すダミー実装を注入して検証する。
+* Context依存の値をStory内で直接ハードコードせず、Provider経由で注入する。
 
 ## 10. 変更禁止範囲
 
@@ -313,13 +351,16 @@ export interface <ScreenName>LayoutTemplateProps {
 * `DashboardHeader` がControlled実装（`searchQuery`/`onSearchChange`）であり、内部 `useState` を持たない
 * 命名衝突回避ルールに違反するコンポーネント名が存在しない
 * MUI同名コンポーネントの直接exportが存在しない
-* アイコン描画が共通 `<Icon iconKey={...} />` 経路へ統一されている
+* アイコン描画が共通 `<Icon iconKey={...} />` 経路へ統一され、解決がContext注入関数（例: `useIcon`）経由になっている
 * UI実装にAPI呼び出し・非同期処理・グローバル状態参照が混入していない
 * CSS責務定義（8章）どおりに実装され、同一プロパティの多重指定がない
 * 色指定が8.4のテーマ変数変換ルールに従い、ハードコード色を使用していない
+* 8.5のバリアント/デザイン・トークン対応表に従って `size` / `tone` が実装されている
+* 8.6のTypographyマッピングに従って `variant` と `component` が設定されている
 * 9.1で定義した必須Storyキーが全コンポーネントで作成されている
 * 9.1で定義したPlay関数アサーションが各Storyに実装されている
 * 9.2で定義したStoryキーとProps契約の整合ルールを満たしている
+* 9.3のMock Provider注入要件を満たし、StorybookでContext依存が解決されている
 * Storybook上で全Storyが表示確認でき、console error が発生しない
 * Storybook Test Runner が成功する
 * format / lint / typecheck / unit test / security / Storybook build が成功する
