@@ -1,0 +1,6 @@
+version: 1
+rules:
+  - expected: textlint
+    pattern: /TextLint/
+  - expected: GitHub
+    pattern: /Github/
