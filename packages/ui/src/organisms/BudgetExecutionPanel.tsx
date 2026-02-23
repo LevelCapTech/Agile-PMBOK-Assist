@@ -48,6 +48,11 @@ export const BudgetExecutionPanel = ({
     );
   }
 
+  const maxValue = Math.max(
+    ...series.flatMap((point) => [point.budget, point.actual]),
+    1
+  );
+
   return (
     <Box component="section" className="mb-8">
       <Box className="mb-6">
@@ -87,7 +92,7 @@ export const BudgetExecutionPanel = ({
                           width: 24,
                           bgcolor: theme.palette.primary.main,
                           borderRadius: "4px 4px 0 0",
-                          height: `${(point.budget / 22000000) * 100}%`,
+                          height: `${(point.budget / maxValue) * 100}%`,
                         }}
                       />
                       <Box
@@ -95,7 +100,7 @@ export const BudgetExecutionPanel = ({
                           width: 24,
                           bgcolor: theme.palette.success.main,
                           borderRadius: "4px 4px 0 0",
-                          height: `${(point.actual / 22000000) * 100}%`,
+                          height: `${(point.actual / maxValue) * 100}%`,
                         }}
                       />
                     </Box>

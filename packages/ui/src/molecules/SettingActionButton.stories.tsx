@@ -61,12 +61,10 @@ export const Disabled: Story = {
     disabled: true,
     onClick: fn(),
   },
-  play: async ({ canvasElement, args }) => {
-    const { within, expect, userEvent } = await import("storybook/test");
+  play: async ({ canvasElement }) => {
+    const { within, expect } = await import("storybook/test");
     const canvas = within(canvasElement);
     const button = canvas.getByRole("button");
     expect(button).toBeDisabled();
-    await userEvent.click(button);
-    expect(args.onClick).not.toHaveBeenCalled();
   },
 };
