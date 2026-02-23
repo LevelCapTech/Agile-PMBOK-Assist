@@ -1,5 +1,6 @@
 "use client";
 
+import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import { useTheme } from "@mui/material/styles";
 
@@ -24,7 +25,7 @@ export const LcMetricValue = ({
   const color = colorMap[tone];
 
   return (
-    <div className="flex items-baseline gap-1">
+    <Box sx={{ display: "flex", alignItems: "baseline", gap: 0.5 }}>
       <Typography
         variant="h5"
         component="p"
@@ -41,6 +42,6 @@ export const LcMetricValue = ({
           {unit}
         </Typography>
       )}
-    </div>
+    </Box>
   );
 };

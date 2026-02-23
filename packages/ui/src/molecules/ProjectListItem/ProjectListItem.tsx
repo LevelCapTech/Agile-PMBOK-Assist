@@ -127,7 +127,7 @@ export const ProjectListItem = ({ item, onSelect }: ProjectListItemProps) => {
                 >
                   <Typography
                     variant="caption"
-                    sx={{ color: "#fff", fontSize: "10px", fontWeight: 600 }}
+                    sx={{ color: theme.palette.common.white, fontSize: "10px", fontWeight: 600 }}
                   >
                     +{extraCount}
                   </Typography>

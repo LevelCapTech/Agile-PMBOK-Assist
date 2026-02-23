@@ -9,7 +9,7 @@ export const LcSectionTitle = ({
   description,
 }: LcSectionTitleProps) => {
   return (
-    <div className="mb-2">
+    <>
       <Typography variant="h6" component="h2" sx={{ fontWeight: 600, mb: 0.5 }}>
         {title}
       </Typography>
@@ -22,6 +22,6 @@ export const LcSectionTitle = ({
           {description}
         </Typography>
       )}
-    </div>
+    </>
   );
 };
