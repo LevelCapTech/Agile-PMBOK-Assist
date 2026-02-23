@@ -386,7 +386,7 @@ node -v
 ## 19. セキュリティ補足
 - RULE: secrets/credentials をログに出さない。CI ではマスクする。
 - RULE: `.env.prod` に機密を直書きしない。必要なら別配布 or CI 注入に切り替える。
-- RULE: systemd で監査ログ（日時/ユーザ/SHA）を出力できるように `scripts/deploy-vps.sh` で記録する。
+- RULE: systemd で監査ログ（日時/ユーザー/SHA）を出力できるように `scripts/deploy-vps.sh` で記録する。
 
 ---
 
