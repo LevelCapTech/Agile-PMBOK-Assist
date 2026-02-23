@@ -14,7 +14,7 @@ const StyledAppBar = styled(AppBar)(({ theme }) => ({
 
 const SearchContainer = styled("div")(({ theme }) => ({
   position: "relative",
-  borderRadius: theme.shape.borderRadius * 2,
+  borderRadius: (theme.shape.borderRadius as number) * 2,
   backgroundColor: theme.palette.action.hover,
   marginLeft: theme.spacing(2),
   marginRight: theme.spacing(2),

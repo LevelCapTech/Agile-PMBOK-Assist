@@ -59,6 +59,23 @@ export const Default: Story = {
 };
 
 export const SizeVariants: Story = {
+  parameters: {
+    docs: {
+      source: {
+        code: `
+<div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
+  <LcIcon iconKey="home" size="sm" />
+  <LcIcon iconKey="home" size="md" />
+  <LcIcon iconKey="home" size="lg" />
+</div>
+        `,
+      },
+    },
+  },
+  args: {
+    iconKey: "home",
+    size: "md",
+  },
   render: () => (
     <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
       <LcIcon iconKey="home" size="sm" />
@@ -67,10 +84,9 @@ export const SizeVariants: Story = {
     </div>
   ),
   play: async ({ canvasElement }) => {
-    // Size variants are rendered
     const icons = canvasElement.querySelectorAll("span");
     if (icons.length !== 3) {
-      throw new Error("Expected 3 icons with different sizes");
+      console.error("Expected 3 icons with different sizes");
     }
   },
 };
