@@ -14,12 +14,13 @@ const toRgb = (value: string) => {
   }
 
   const hex = value.replace("#", "");
-  const normalized = hex.length === 3
-    ? hex
-        .split("")
-        .map((char) => char + char)
-        .join("")
-    : hex;
+  const normalized =
+    hex.length === 3
+      ? hex
+          .split("")
+          .map((char) => char + char)
+          .join("")
+      : hex;
   const bigint = parseInt(normalized, 16);
   const r = (bigint >> 16) & 255;
   const g = (bigint >> 8) & 255;
