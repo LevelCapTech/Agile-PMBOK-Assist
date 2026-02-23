@@ -73,7 +73,7 @@ jobs:
             echo "Storybook server did not become ready on port 6006."
             exit 1
           fi
-          ./node_modules/.bin/test-storybook --url http://127.0.0.1:6006
+          npx --no-install test-storybook --url http://127.0.0.1:6006
 
       - name: Publish to Chromatic
         uses: chromaui/action@v1
