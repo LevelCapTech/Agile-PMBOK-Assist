@@ -6,7 +6,7 @@
 
 | 項目 | 記入 |
 | --- | --- |
-| 対象Issue | [DESIGN] Playwrightスクリーンキャプチャ時の日本語文字化け対策とcopilot-setup-steps.yml設計方針の確定 |
+| 対象Issue | [#100](https://github.com/LevelCapTech/Agile-PMBOK-Assist/issues/100) `[DESIGN] Playwrightスクリーンキャプチャ時の日本語文字化け対策とcopilot-setup-steps.yml設計方針の確定` |
 | 対象リポジトリ内パス（実装起点） | `/home/runner/work/Agile-PMBOK-Assist/Agile-PMBOK-Assist` |
 
 ### 0.1 変更サマリ一覧（複数行）
@@ -303,10 +303,14 @@ sequenceDiagram
   Workflow->>Runner: PARAM runs-on=ubuntu-latest
   Runner->>Setup: PARAM job開始
   Setup->>Fonts: PARAM apt-get update + install + fc-cache
-  Fonts-->>Setup: RETURN fonts ready
-  Setup->>PW: PARAM setup完了環境
-  PW-->>Setup: RETURN screenshot success
-  Fonts-->>Setup: ERROR apt/fc-cache failed
+  alt フォント導入成功
+    Fonts-->>Setup: RETURN fonts ready
+    Setup->>PW: PARAM setup完了環境
+    PW-->>Setup: RETURN screenshot success
+  else フォント導入失敗
+    Fonts-->>Setup: RETURN apt/fc-cache failed（fail-fastでjob停止）
+    Note over Setup,PW: setup失敗時は後続のPlaywright実行へ進まない（No subsequent Playwright execution after setup failure）
+  end
 ```
 
 #### 5.7.3 正常系シーケンス（PR mention時）
@@ -320,13 +324,16 @@ sequenceDiagram
   participant PW as Playwright利用箇所
 
   Event->>Condition: PARAM comment body, actor, context
-  Condition->>Copilot: RETURN mention条件一致
-  Copilot->>Setup: PARAM runs-on/permissions/steps参照
-  Setup->>Setup: PARAM 日本語フォント導入
-  Setup-->>Copilot: RETURN setup complete
-  Copilot->>PW: PARAM screenshot task
-  PW-->>Copilot: RETURN 日本語正常表示
-  Condition-->>Event: ERROR mention条件不一致で起動しない
+  alt mention条件一致
+    Condition->>Copilot: RETURN mention条件一致
+    Copilot->>Setup: PARAM runs-on/permissions/steps参照
+    Setup->>Setup: PARAM 日本語フォント導入
+    Setup-->>Copilot: RETURN setup complete
+    Copilot->>PW: PARAM screenshot task
+    PW-->>Copilot: RETURN 日本語正常表示
+  else mention条件不一致
+    Condition-->>Event: RETURN 起動しない
+  end
 ```
 
 #### 5.7.4 異常系シーケンス（workflow_call方式のリスク）
@@ -339,7 +346,7 @@ sequenceDiagram
   participant Reviewer as 開発者
 
   PushPR->>WFCall: PARAM code changes
-  WFCall-->>PushPR: ERROR 自動起動されない
+  WFCall-->>PushPR: RETURN no automatic execution（workflow_call requires manual invocation）
   PushPR->>Checks: PARAM check status確認
   Checks-->>Reviewer: RETURN check未可視化または不足
   Reviewer-->>PushPR: RETURN 自動検証安全網が弱い
@@ -603,4 +610,4 @@ flowchart TD
 - IMPLEMENT担当者は実workflowの条件式に合わせて、図中の条件分岐ラベルを最終調整してから実装に着手する。
 
 ## 付録C: 完了後の次アクション
-- 本planを固定入力として **[IMPLEMENT] Issue** を起票し、`.github/copilot/plans/100-jp-fonts-playwright.md` を参照して実装する。
+- 次アクションとして **[IMPLEMENT] Issue** を起票し、実装時の一次入力として本ドキュメント（`.github/copilot/plans/100-jp-fonts-playwright.md`）を固定参照する。
