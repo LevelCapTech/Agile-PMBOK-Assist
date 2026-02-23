@@ -22,7 +22,7 @@ on:
       port:
         required: false
         type: number
-        default: 4201
+        default: 4000
 
       # ヘルスチェック先（Next.jsなら "/"、Storybookなら "/" など）
       healthcheck-path:
@@ -140,13 +140,14 @@ jobs:
           node -e "const p=require('./package.json'); process.exit(p.scripts && p.scripts.screenshot ? 0 : 1)"             && echo "present=true" >> "$GITHUB_OUTPUT"             || echo "present=false" >> "$GITHUB_OUTPUT"
 
       - name: Fail fast if screenshot script is missing
-        if: ${{ steps.screenshot-script.outputs.present != 'true' && !inputs.allow-missing-screenshot-script }}
+        # screenshot-command が "npm run screenshot" のときだけ必須チェックする
+        if: ${{ inputs.screenshot-command == 'npm run screenshot' && steps.screenshot-script.outputs.present != 'true' && !inputs.allow-missing-screenshot-script }}
         run: |
           echo "::error::package.json に scripts.screenshot がありません。"
-          echo "workflow は 'npm run screenshot' を実行する前提です。"
+          echo "workflow は inputs.screenshot-command='npm run screenshot' のときのみ scripts.screenshot を要求します。"
           echo "対応案:"
           echo "  1) package.json に screenshot script を追加する（推奨）"
-          echo "  2) 呼び出し側で inputs.screenshot-command を実在コマンドに変更する"
+          echo "  2) 呼び出し側で inputs.screenshot-command を 'true' など実在コマンドに変更する"
           echo "  3) 一時回避なら inputs.allow-missing-screenshot-script=true でスキップ"
           exit 1
 
