@@ -9,7 +9,7 @@
 ## スタイル順序の固定
 
 - `src/providers/AppProvider.tsx` で `AppRouterCacheProvider` に `enableCssLayer: true` を指定し、MUI のスタイルを `@layer mui` として注入する。
-- `app/globals.css` の先頭で `@layer theme, base, mui, components, utilities;` を宣言し、Tailwind の utilities で上書きできる順序を固定する。
+- `app/globals.css` の先頭で `@layer mui, utilities;` を宣言し、Tailwind の utilities で上書きできる順序を固定する。
 
 ## 追加ファイルの責務
 
