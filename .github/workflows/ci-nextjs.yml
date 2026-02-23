@@ -71,7 +71,7 @@ jobs:
             sleep 1
           done
           if ! curl -fs http://127.0.0.1:6006 > /dev/null; then
-            echo "Storybook server did not become ready on port 6006 after ${MAX_RETRIES} attempts. Verify storybook-static exists and contains build output."
+            echo "Storybook server did not become ready on port 6006 after ${MAX_RETRIES} attempts. Check for port conflicts and Storybook build output."
             exit 1
           fi
           npx test-storybook --url http://127.0.0.1:6006
