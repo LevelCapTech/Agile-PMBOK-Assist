@@ -1,0 +1,1 @@
+export { LcAvatar } from "./LcAvatar";

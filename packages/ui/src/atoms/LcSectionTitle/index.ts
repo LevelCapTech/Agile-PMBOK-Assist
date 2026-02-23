@@ -1,0 +1,1 @@
+export { LcSectionTitle } from "./LcSectionTitle";
