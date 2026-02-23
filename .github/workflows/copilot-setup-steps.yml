@@ -7,30 +7,54 @@ on:
         required: false
         type: string
         default: "20"
+
       working-directory:
         required: false
         type: string
         default: "."
+
       install-playwright-browsers:
         required: false
         type: boolean
         default: true
+
+      # Next.js(4000) / Storybook(4100) と競合しにくいデフォルト
       port:
         required: false
         type: number
         default: 4201
+
+      # ヘルスチェック先（Next.jsなら "/"、Storybookなら "/" など）
+      healthcheck-path:
+        required: false
+        type: string
+        default: "/"
+
+      # 起動コマンド。デフォルトは port 入力に追従
       start-command:
         required: false
         type: string
         default: "npm run start -- --port ${{ inputs.port }}"
+
       build-command:
         required: false
         type: string
         default: "npm run build"
+
+      # 例: npm run screenshot（Playwright等）
       screenshot-command:
         required: false
         type: string
         default: "npm run screenshot"
+
+      # package.json に screenshot script が無い場合の扱い
+      # true: スクショ工程をスキップしてワークフローは成功させる
+      # false: 早めに失敗させて気づけるようにする（おすすめ）
+      allow-missing-screenshot-script:
+        required: false
+        type: boolean
+        default: false
+
       upload-artifacts:
         required: false
         type: boolean
@@ -42,6 +66,7 @@ permissions:
 jobs:
   screenshot:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
 
     defaults:
       run:
@@ -91,22 +116,49 @@ jobs:
           fi
 
       - name: Start server (background)
+        env:
+          PORT: ${{ inputs.port }}
         run: |
           nohup ${{ inputs.start-command }} > /tmp/app.log 2>&1 &
           echo $! > /tmp/app.pid
 
       - name: Wait for server
         run: |
+          url="http://localhost:${{ inputs.port }}${{ inputs.healthcheck-path }}"
           for i in {1..60}; do
-            curl -fsS "http://localhost:${{ inputs.port }}" >/dev/null && exit 0
+            curl -fsS "$url" >/dev/null && exit 0
             sleep 1
           done
-          echo "Server did not start"
+          echo "Server did not start or healthcheck failed: $url"
           tail -n 200 /tmp/app.log || true
           exit 1
 
+      - name: Detect screenshot script in package.json
+        id: screenshot-script
+        run: |
+          node -e "const p=require('./package.json'); process.exit(p.scripts && p.scripts.screenshot ? 0 : 1)"             && echo "present=true" >> "$GITHUB_OUTPUT"             || echo "present=false" >> "$GITHUB_OUTPUT"
+
+      - name: Fail fast if screenshot script is missing
+        if: ${{ steps.screenshot-script.outputs.present != 'true' && !inputs.allow-missing-screenshot-script }}
+        run: |
+          echo "::error::package.json に scripts.screenshot がありません。"
+          echo "workflow は 'npm run screenshot' を実行する前提です。"
+          echo "対応案:"
+          echo "  1) package.json に screenshot script を追加する（推奨）"
+          echo "  2) 呼び出し側で inputs.screenshot-command を実在コマンドに変更する"
+          echo "  3) 一時回避なら inputs.allow-missing-screenshot-script=true でスキップ"
+          exit 1
+
       - name: Take screenshot
+        if: ${{ steps.screenshot-script.outputs.present == 'true' }}
+        env:
+          PORT: ${{ inputs.port }}
         run: ${{ inputs.screenshot-command }}
+
+      - name: Take screenshot (skipped)
+        if: ${{ steps.screenshot-script.outputs.present != 'true' && inputs.allow-missing-screenshot-script }}
+        run: |
+          echo "Skipping screenshot step because scripts.screenshot is missing and allow-missing-screenshot-script=true"
 
       - name: Stop server
         if: always()
