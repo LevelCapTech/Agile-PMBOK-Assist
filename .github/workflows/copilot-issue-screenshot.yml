@@ -1,0 +1,21 @@
+name: issue-assigned-screenshot
+
+on:
+  issues:
+    types: [assigned]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  run:
+    uses: ./.github/workflows/copilot-setup-steps.yml
+    with:
+      node-version: "20"
+      working-directory: "."
+      install-playwright-browsers: true
+      build-command: "npm run build"
+      start-command: "npm run start -- --port 4000"
+      screenshot-command: "npm run screenshot"
+      upload-artifacts: true
