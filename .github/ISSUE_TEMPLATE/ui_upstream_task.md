@@ -15,6 +15,7 @@ assignees: ""
 5. <issue-number>: 設計Issue番号に置換する（例: 123）。
 6. <pr-number>: 設計PR番号に置換する（例: 456）。
 7. <mock-path>: モックファイルパスまたは参照リンクに置換する。
+8. <component-prefix>: 命名衝突回避プレフィックスに置換する（例: Lc）。
 -->
 
 # [UI] Upstream: ★ここに画面名★ UI整備
@@ -89,10 +90,10 @@ assignees: ""
 
 | Atomic階層 | 対象要素 | コンポーネント候補 | 目的/責務 |
 | --- | --- | --- | --- |
-| Atoms |  |  |  |
-| Molecules |  |  |  |
-| Organisms |  |  |  |
-| Templates（必要な場合のみ） |  |  |  |
+| Atoms | `<ボタン/ラベル/アイコンなど最小要素>` | `<component-prefix><Name> / <Name>Atom` | `<単一責務を1文で記載>` |
+| Molecules | `<入力行/カード行など複合要素>` | `<Feature><Name>Item` | `<Atomsを組み合わせる責務>` |
+| Organisms | `<一覧/ヘッダ/ナビ等のセクション>` | `<Feature><Section>Panel` | `<セクション全体の表示責務>` |
+| Templates（必要な場合のみ） | `<画面レイアウト全体>` | `<ScreenName>LayoutTemplate` | `<領域配置・構造提供の責務>` |
 
 ## 7. コンポーネント一覧
 
@@ -101,10 +102,69 @@ assignees: ""
 
 | Atomic階層 | コンポーネント名 | 責務（1文） | Props型定義 | 状態保持 | 依存コンポーネント | 再利用可否 | 表示専用 |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| Atoms |  |  |  |  |  |  |  |
-| Molecules |  |  |  |  |  |  |  |
-| Organisms |  |  |  |  |  |  |  |
-| Templates |  |  |  |  |  |  |  |
+| Atoms | `<component-prefix><Name>` | `<何を表示するかを1文で記載>` | `<Name>Props` | `なし` | `なし` | `可/否` | `はい` |
+| Molecules | `<Feature><Name>Item` | `<何を組み合わせて表示するか>` | `<Name>ItemProps` | `なし/最小限` | `<component-prefix><Name>, ...` | `可/否` | `はい` |
+| Organisms | `<Feature><Section>Panel` | `<セクション単位の表示責務>` | `<Section>PanelProps` | `なし/最小限` | `<Feature><Name>Item, ...` | `可/否` | `はい` |
+| Templates | `<ScreenName>LayoutTemplate` | `<画面構造を提供する責務>` | `<ScreenName>LayoutTemplateProps` | `なし` | `<Header>, <Sidebar>, ...` | `可/否` | `はい` |
+
+### 7.1 命名衝突回避ルール（必須）
+
+* Atoms は `<component-prefix>` を先頭に付与する（例: `<component-prefix>Avatar`, `<component-prefix>IconButton`）。
+* 代替として接尾辞 `Atom` 方式を採用してもよい（例: `AvatarAtom`）。Issue内で方式を統一する。
+* MUIの同名コンポーネント（`Avatar`, `IconButton`, `Button` 等）を直接exportしない。
+* Barrel export時にMUI名へ再エイリアスしない（例: `export { <component-prefix>Avatar as Avatar }` を禁止）。
+
+### 7.2 ViewModel/Props型定義（必須）
+
+* このセクションだけで実装可能なように、画面用の型を完全展開する。
+* 「設計書参照のみ」「既存型を参照」等の省略記載を禁止する。
+* 型定義には最低限 `ViewModel`、各セクションItem型、各コンポーネントProps型を含める。
+* 特定画面固有の型名や構造をテンプレートに固定しない。画面ごとに必要な型をこのセクションへ展開する。
+
+```ts
+// 例: 画面ViewModel（必須）
+export interface <ScreenName>ViewModel {
+  header: <ScreenName>HeaderView;
+  sidebar: <ScreenName>SidebarView;
+  // TODO: 画面で使用する一覧/統計/設定などを省略せず記載
+}
+
+// 例: Item型（必須）
+export interface <ScreenName>ProjectItem {
+  id: string;
+  name: string;
+  status: string;
+  // TODO: 必要プロパティを完全展開
+}
+
+// 例: Props型（必須）
+export interface <ScreenName>PageProps {
+  viewModel: <ScreenName>ViewModel;
+  // TODO: 必要なイベント/コールバックを明示する
+  onClickPrimaryAction?: (actionId: string) => void;
+}
+
+// 例: 画面固有Item型（必要件数だけ定義）
+export interface <ScreenName>PrimaryItem {
+  id: string;
+  name: string;
+  status: string;
+  // TODO: 画面固有フィールドを完全展開
+}
+
+export interface <ScreenName>SecondaryItem {
+  id: string;
+  label: string;
+  value: string;
+  // TODO: 画面固有フィールドを完全展開
+}
+```
+
+| 型カテゴリ | 型名 | 定義場所（このIssue本文内） | 完全展開 |
+| --- | --- | --- | --- |
+| ViewModel | `<ScreenName>ViewModel` | `7.2` | `必須` |
+| Item DTO | `<ScreenName>PrimaryItem / <ScreenName>SecondaryItem` | `7.2` | `必須` |
+| Component Props | `<ScreenName>PageProps / <ComponentName>Props` | `7.2` | `必須` |
 
 ## 8. CSS責務定義
 
@@ -121,7 +181,17 @@ assignees: ""
 
 | 対象 | MUI責務 | Tailwind責務 | 競合回避方針 |
 | --- | --- | --- | --- |
-|  |  |  |  |
+| `<ComponentName>` | `<構造/寸法/色/境界線など>` | `<余白/整列/表示制御など>` | `<同一CSSプロパティを片側固定>` |
+
+### 8.3 Atoms単位スタイル責務（推奨）
+
+* Atomsごとに「MUI利用/Tailwind利用/禁止プロパティ」を1行で固定する。
+* 競合しやすい `padding`, `margin`, `font-size`, `color`, `border` は担当を固定する。
+
+| Atom名 | MUI(sx/styled)利用 | Tailwind class利用 | 禁止プロパティ（禁止側に記載） |
+| --- | --- | --- | --- |
+| `<component-prefix><ComponentName>` | `あり/なし` | `あり/なし` | `例: <property> を<MUI/Tailwind>で指定禁止` |
+| `<ComponentName>Atom` | `あり/なし` | `あり/なし` | `例: <property> を<MUI/Tailwind>で指定禁止` |
 
 ## 9. Storybook生成要件
 
@@ -133,6 +203,18 @@ assignees: ""
   * console error なし
   * interaction test成功（存在する場合）
   * a11y違反なし（導入済みの場合）
+
+### 9.1 必須Story一覧（推奨）
+
+* 生成物のSSOTとして、コンポーネントごとに最低限必要なStoryキーを列挙する。
+* `default` のみで完了扱いにしない。状態/variantがある場合は対応Storyを必須化する。
+
+| Atomic階層 | コンポーネント名 | 必須Storyキー |
+| --- | --- | --- |
+| Atoms | `<component-prefix><Name>` | `default`, `disabled` |
+| Molecules | `<Feature><Name>Item` | `default`, `empty` |
+| Organisms | `<Feature><Section>Panel` | `default`, `loading`, `error` |
+| Templates | `<ScreenName>LayoutTemplate` | `default` |
 
 ## 10. 変更禁止範囲
 
@@ -162,14 +244,15 @@ assignees: ""
 
 ## 12. Done定義
 
-* SSOT準拠が明文化されている
-* Atomic分解が強制仕様になっている
-* ロジック禁止が明文化されている
-* Storybook Test RunnerがCIに含まれている
-* 次Agentがページのみ整備可能状態である
-* レビューで固定可能（品質ゲートを満たし承認可能な状態）
-* コンポーネントは pages 配下に存在しない
-* データ未接続状態である
-* Container 未実装状態である
-* 外部依存を持たない
-* Storybook 上で視覚確認可能
+* 6章で定義したAtomic分解に対応するUIコンポーネントが実装されている
+* 7章で定義したProps型と実装コードが一致している（型エラーなし）
+* 命名衝突回避ルールに違反するコンポーネント名が存在しない
+* MUI同名コンポーネントの直接exportが存在しない
+* UI実装にAPI呼び出し・非同期処理・グローバル状態参照が混入していない
+* CSS責務定義（8章）どおりに実装され、同一プロパティの多重指定がない
+* 9.1で定義した必須Storyキーが全コンポーネントで作成されている
+* Storybook上で全Storyが表示確認でき、console error が発生しない
+* Storybook Test Runner が成功する
+* format / lint / typecheck / unit test / security / Storybook build が成功する
+* コンポーネントは `pages` 配下に存在しない
+* データ未接続（Container未実装・外部依存なし）を維持している
