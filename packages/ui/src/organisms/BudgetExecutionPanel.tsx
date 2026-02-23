@@ -11,6 +11,7 @@ import { BudgetSummaryCard } from "@ui/molecules/BudgetSummaryCard";
 export const BudgetExecutionPanel = ({
   title,
   summary,
+  // TODO: seriesはチャートライブラリ統合時に使用する
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   series,
   isLoading = false,

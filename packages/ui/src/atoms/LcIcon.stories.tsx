@@ -29,7 +29,7 @@ export const SizeVariants: Story = {
   ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    const icons = canvas.getAllByLabelText("settings");
+    const icons = canvas.getAllByTestId("icon-settings");
     await expect(icons).toHaveLength(3);
   },
 };
