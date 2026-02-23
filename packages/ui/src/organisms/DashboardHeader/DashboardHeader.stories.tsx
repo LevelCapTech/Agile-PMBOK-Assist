@@ -95,7 +95,9 @@ export const Default: Story = {
     />
   ),
   play: async ({ canvasElement }) => {
-    const searchInput = canvasElement.querySelector('input[aria-label="search"]') as HTMLInputElement;
+    const searchInput = canvasElement.querySelector(
+      'input[aria-label="search"]',
+    ) as HTMLInputElement;
     if (!searchInput) {
       console.error("Search input not found");
       return;
@@ -103,7 +105,7 @@ export const Default: Story = {
 
     searchInput.value = "";
     searchInput.dispatchEvent(new Event("input", { bubbles: true }));
-    
+
     searchInput.value = "テスト検索";
     searchInput.dispatchEvent(new Event("input", { bubbles: true }));
 
@@ -142,7 +144,9 @@ export const WithInitialSearch: Story = {
     />
   ),
   play: async ({ canvasElement }) => {
-    const searchInput = canvasElement.querySelector('input[aria-label="search"]') as HTMLInputElement;
+    const searchInput = canvasElement.querySelector(
+      'input[aria-label="search"]',
+    ) as HTMLInputElement;
     if (!searchInput) {
       console.error("Search input not found");
       return;

@@ -118,9 +118,10 @@ export const Default: Story = {
     const title = canvasElement.querySelector("h2");
     const hasTitle = title && title.textContent?.includes("設定とアクション");
     const buttons = canvasElement.querySelectorAll('[role="button"]');
-    
+
     if (!hasTitle) console.error("Title not found");
-    if (buttons.length !== 8) console.error(`Expected 8 buttons, found ${buttons.length}`);
+    if (buttons.length !== 8)
+      console.error(`Expected 8 buttons, found ${buttons.length}`);
 
     if (buttons[0]) {
       (buttons[0] as HTMLElement).click();
@@ -150,7 +151,8 @@ export const Error: Story = {
     },
   },
   play: async ({ canvasElement }) => {
-    const errorMessage = canvasElement.textContent?.includes("エラーが発生しました");
+    const errorMessage =
+      canvasElement.textContent?.includes("エラーが発生しました");
     if (!errorMessage) console.error("Error message not found");
   },
 };
@@ -193,9 +195,11 @@ export const WithDisabledActions: Story = {
   play: async ({ canvasElement }) => {
     const buttons = canvasElement.querySelectorAll('[role="button"]');
     const disabledButtons = Array.from(buttons).filter(
-      (btn: Element) => btn.hasAttribute("disabled") || btn.getAttribute("aria-disabled") === "true"
+      (btn: Element) =>
+        btn.hasAttribute("disabled") ||
+        btn.getAttribute("aria-disabled") === "true",
     );
-    
+
     if (disabledButtons.length === 0) {
       console.error("Expected at least one disabled button");
     }

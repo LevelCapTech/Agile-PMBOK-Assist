@@ -108,8 +108,9 @@ export const Default: Story = {
   play: async ({ canvasElement }) => {
     const title = canvasElement.querySelector("h2");
     const hasTitle = title && title.textContent?.includes("チームメンバー");
-    const hasMembers = canvasElement.textContent?.match(/プロジェクト|エンジニア|デザイナー/);
-    
+    const hasMembers =
+      canvasElement.textContent?.match(/プロジェクト|エンジニア|デザイナー/);
+
     if (!hasTitle || !hasMembers) {
       console.error("Required elements not found");
     }
@@ -138,7 +139,8 @@ export const Error: Story = {
     },
   },
   play: async ({ canvasElement }) => {
-    const errorMessage = canvasElement.textContent?.includes("エラーが発生しました");
+    const errorMessage =
+      canvasElement.textContent?.includes("エラーが発生しました");
     if (!errorMessage) console.error("Error message not found");
   },
 };

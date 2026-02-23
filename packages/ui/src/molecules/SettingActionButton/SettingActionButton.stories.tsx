@@ -91,7 +91,8 @@ export const Disabled: Story = {
       console.error("Button not found");
     } else {
       const hasDisabledClass = button.classList.contains("Mui-disabled");
-      if (!hasDisabledClass) console.error("Button should have Mui-disabled class");
+      if (!hasDisabledClass)
+        console.error("Button should have Mui-disabled class");
     }
   },
 };
@@ -106,7 +107,13 @@ export const AllActions: Story = {
     },
   },
   render: () => (
-    <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "16px" }}>
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(2, 1fr)",
+        gap: "16px",
+      }}
+    >
       <SettingActionButton
         action={{
           id: "project-settings",

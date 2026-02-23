@@ -55,7 +55,7 @@ const ProjectCountValue = styled("span")(({ theme }) => ({
 }));
 
 const getStatusTone = (
-  status: string
+  status: string,
 ): "primary" | "success" | "warning" | "error" | "neutral" => {
   switch (status) {
     case "稼働中":
@@ -79,7 +79,10 @@ export const MemberListItem = ({ item }: MemberListItemProps) => {
           </div>
           <MemberName className="mb-1">{item.displayName}</MemberName>
           <MemberRole className="mb-3">{item.role}</MemberRole>
-          <LcStatusChip status={item.status} tone={getStatusTone(item.status)} />
+          <LcStatusChip
+            status={item.status}
+            tone={getStatusTone(item.status)}
+          />
         </MemberInfo>
 
         <div className="border-t pt-4">

@@ -61,7 +61,10 @@ export const SettingActionButton = ({
 
   return (
     <StyledCard>
-      <StyledCardActionArea onClick={handleClick} disabled={disabled || action.disabled}>
+      <StyledCardActionArea
+        onClick={handleClick}
+        disabled={disabled || action.disabled}
+      >
         <IconContainer>
           <LcIcon iconKey={action.iconKey} size="lg" />
         </IconContainer>

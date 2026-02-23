@@ -96,7 +96,7 @@ export const Default: Story = {
 
     if (!headerText || !sidebarText || !mainText) {
       throw new Error(
-        "Expected header, sidebar, and main areas to be rendered"
+        "Expected header, sidebar, and main areas to be rendered",
       );
     }
   },

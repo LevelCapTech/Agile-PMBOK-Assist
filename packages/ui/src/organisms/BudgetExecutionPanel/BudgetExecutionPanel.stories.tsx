@@ -80,8 +80,14 @@ export const Default: Story = {
     const actualLabel = canvasElement.textContent?.includes("実績");
     const rateLabel = canvasElement.textContent?.includes("執行率");
     const chartPlaceholder = canvasElement.textContent?.includes("グラフ領域");
-    
-    if (!hasTitle || !budgetLabel || !actualLabel || !rateLabel || !chartPlaceholder) {
+
+    if (
+      !hasTitle ||
+      !budgetLabel ||
+      !actualLabel ||
+      !rateLabel ||
+      !chartPlaceholder
+    ) {
       console.error("Required elements not found");
     }
   },
@@ -119,7 +125,8 @@ export const Error: Story = {
     },
   },
   play: async ({ canvasElement }) => {
-    const errorMessage = canvasElement.textContent?.includes("エラーが発生しました");
+    const errorMessage =
+      canvasElement.textContent?.includes("エラーが発生しました");
     if (!errorMessage) console.error("Error message not found");
   },
 };
@@ -138,7 +145,7 @@ export const ZeroBudget: Story = {
     const title = canvasElement.querySelector("h2");
     const hasTitle = title && title.textContent?.includes("予算執行状況");
     const chartPlaceholder = canvasElement.textContent?.includes("グラフ領域");
-    
+
     if (!hasTitle || !chartPlaceholder) {
       console.error("Required elements not found");
     }

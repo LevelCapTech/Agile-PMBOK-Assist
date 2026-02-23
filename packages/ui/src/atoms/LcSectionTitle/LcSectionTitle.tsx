@@ -3,10 +3,7 @@
 import { Typography } from "@mui/material";
 import type { LcSectionTitleProps } from "../../types/dashboard";
 
-export const LcSectionTitle = ({
-  title,
-  description,
-}: LcSectionTitleProps) => {
+export const LcSectionTitle = ({ title, description }: LcSectionTitleProps) => {
   return (
     <div className="mb-4">
       <Typography variant="h6" component="h2" className="mb-1">

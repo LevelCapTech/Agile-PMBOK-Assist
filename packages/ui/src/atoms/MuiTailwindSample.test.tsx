@@ -27,13 +27,13 @@ describe("MuiTailwindSample", () => {
     render(
       <TestProvider>
         <MuiTailwindSample />
-      </TestProvider>
+      </TestProvider>,
     );
 
     expect(
       screen.getByRole("button", {
         name: "MUI Button",
-      })
+      }),
     ).toBeInTheDocument();
   });
 });

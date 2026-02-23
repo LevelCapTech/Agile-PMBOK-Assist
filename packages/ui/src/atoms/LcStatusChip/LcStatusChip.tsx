@@ -12,7 +12,8 @@ const StyledChip = styled(Chip)<{ $tone?: string }>(({ theme, $tone }) => {
     neutral: theme.palette.text.secondary,
   };
 
-  const bgColor = toneColorMap[$tone || "primary"] || theme.palette.primary.main;
+  const bgColor =
+    toneColorMap[$tone || "primary"] || theme.palette.primary.main;
 
   return {
     backgroundColor: bgColor,

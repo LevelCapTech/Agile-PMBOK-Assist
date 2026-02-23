@@ -125,9 +125,10 @@ export const Default: Story = {
   },
   play: async ({ canvasElement }) => {
     const title = canvasElement.querySelector("h2");
-    const hasTitle = title && title.textContent?.includes("進行中のプロジェクト");
+    const hasTitle =
+      title && title.textContent?.includes("進行中のプロジェクト");
     const hasProjects = canvasElement.textContent?.includes("PRJ-2024-");
-    
+
     if (!hasTitle || !hasProjects) {
       console.error("Required elements not found");
     }
@@ -156,7 +157,8 @@ export const Error: Story = {
     },
   },
   play: async ({ canvasElement }) => {
-    const errorMessage = canvasElement.textContent?.includes("エラーが発生しました");
+    const errorMessage =
+      canvasElement.textContent?.includes("エラーが発生しました");
     if (!errorMessage) console.error("Error message not found");
   },
 };
@@ -167,7 +169,8 @@ export const Empty: Story = {
     projects: [],
   },
   play: async ({ canvasElement }) => {
-    const emptyMessage = canvasElement.textContent?.includes("プロジェクトが見つかりませんでした");
+    const emptyMessage =
+      canvasElement.textContent?.includes("プロジェクトが見つかりませんでした");
     if (!emptyMessage) console.error("Empty message not found");
   },
 };
