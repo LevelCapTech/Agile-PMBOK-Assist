@@ -22,7 +22,7 @@ export const DashboardLayoutTemplate = ({
     >
       <Box sx={{ gridArea: "header" }}>{header}</Box>
       <Box sx={{ gridArea: "sidebar", overflow: "auto" }}>{sidebar}</Box>
-      <Box sx={{ gridArea: "main", overflow: "auto" }} className="p-6">
+      <Box sx={{ gridArea: "main", overflow: "auto", p: 3 }}>
         {main}
       </Box>
     </Box>

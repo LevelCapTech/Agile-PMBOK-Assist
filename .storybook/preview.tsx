@@ -27,9 +27,9 @@ const preview: Preview = {
         <StyledEngineProvider enableCssLayer injectFirst>
           <ThemeProvider theme={appTheme}>
             <CssBaseline />
-            <IconResolverContext value={mockIconResolver}>
+            <IconResolverContext.Provider value={mockIconResolver}>
               <Story />
-            </IconResolverContext>
+            </IconResolverContext.Provider>
           </ThemeProvider>
         </StyledEngineProvider>
       </CacheProvider>

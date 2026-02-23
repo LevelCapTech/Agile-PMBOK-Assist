@@ -22,7 +22,7 @@ export const SidebarNavigation = ({ sidebar }: SidebarNavigationProps) => {
         height: "100%",
       }}
     >
-      <Box className="p-4">
+      <Box sx={{ p: 2 }}>
         <Typography
           variant="subtitle2"
           sx={{ color: "text.primary", fontWeight: "bold" }}
