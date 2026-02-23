@@ -1,0 +1,36 @@
+{
+  "plugins": {
+    "markdown": true
+  },
+  "rules": {
+    "preset-ja-technical-writing": {
+      "ja-no-abusage": false,
+      "ja-no-mixed-period": false,
+      "ja-no-redundant-expression": false,
+      "ja-no-successive-word": false,
+      "ja-no-weak-phrase": false,
+      "max-comma": false,
+      "max-kanji-continuous-len": false,
+      "max-ten": false,
+      "no-double-negative-ja": false,
+      "no-dropping-the-ra": false,
+      "no-doubled-joshi": false,
+      "no-exclamation-question-mark": false,
+      "no-hankaku-kana": false,
+      "no-mix-dearu-desumasu": false,
+      "no-nfd": false,
+      "no-start-duplicated-conjunction": false,
+      "no-start-duplicated-expression": false,
+      "no-unmatched-pair": false,
+      "no-zero-width-spaces": false,
+      "sentence-length": {
+        "max": 10000
+      }
+    },
+    "prh": {
+      "rulePaths": [
+        "./prh.yml"
+      ]
+    }
+  }
+}

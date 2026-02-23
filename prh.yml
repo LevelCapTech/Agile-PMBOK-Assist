@@ -1,0 +1,8 @@
+version: 1
+rules:
+  - expected: GitHub
+    patterns:
+      - /Github/g
+  - expected: Pull Request
+    patterns:
+      - /pullrequest/g
