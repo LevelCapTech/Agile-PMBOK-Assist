@@ -5,6 +5,8 @@ import createCache from "@emotion/cache";
 import { CacheProvider } from "@emotion/react";
 
 import { appTheme } from "../src/providers/appTheme";
+import { IconResolverProvider } from "../packages/ui/src/contexts/IconResolverContext";
+import { mockIconResolver } from "../packages/ui/src/stories/mockIconResolver";
 import "../app/globals.css";
 
 const muiCache = createCache({
@@ -22,7 +24,9 @@ const preview: Preview = {
         <StyledEngineProvider enableCssLayer injectFirst>
           <ThemeProvider theme={appTheme}>
             <CssBaseline />
-            <Story />
+            <IconResolverProvider resolver={mockIconResolver}>
+              <Story />
+            </IconResolverProvider>
           </ThemeProvider>
         </StyledEngineProvider>
       </CacheProvider>
