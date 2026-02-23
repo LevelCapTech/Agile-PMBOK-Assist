@@ -18,7 +18,7 @@
 | 追加 | VRT | Chromatic を差分検知レイヤーとして統合する |
 | 修正 | CI失敗条件 | render/play/a11y/upload failure をCI fail条件として固定する |
 | 修正 | Secrets運用 | `CHROMATIC_PROJECT_TOKEN` の管理方針を明文化する |
-| 修正 | 必須チェック方針 | PR時点でのrequired status checks方針と未確定項目を定義する |
+| 修正 | 必須チェック方針 | PR時点でのrequired status checks方針を確定値で定義する |
 
 ### 0.2 入力制約一覧（複数行）
 
@@ -29,8 +29,8 @@
 | 禁止事項 | DESIGNフェーズで実コード実装を行わない | 本Issue |
 | 禁止事項 | Story追加・a11yルール詳細定義・デザインレビュー運用設計を行わない | Out-of-Scope |
 | その他 | Test Runner の fail はCI全体 failとして扱う | Storybook gate |
-| その他 | VRT差分ポリシー（fail/warning）は本設計時点では Undetermined とする | Chromatic運用 |
-| その他 | mainブランチとPRブランチの required checks 差分は Undetermined とする | branch protection |
+| その他 | VRT差分ポリシーは warning（注意表示）として扱い、CIは通す | Chromatic運用 |
+| その他 | PRブランチでは Storybook/Chromatic を必須チェックとして運用する | branch protection |
 
 ### 0.3 関連機能・関連仕様一覧（複数行）
 
@@ -68,7 +68,7 @@
 | Next.js構成前提（app/src/packages） | 本件はWorkflowと依存定義が対象であり、app/src/packagesの実装責務は変更しない | Issueスコープ |
 | 依存境界前提（page.tsx / AppProvider / contracts） | DI境界（`app/layout.tsx`起点）は影響を受けない。CI層のみ変更対象とする | `.github/copilot/20-architecture.md` |
 | 技術制約（互換性/期限/運用/セキュリティ） | 既存CIジョブを維持しつつ Storybook gate を追加し、Secretsは `CHROMATIC_PROJECT_TOKEN` のみ最小参照とする | Issue制約 |
-| 未確定前提（TBD） | `TBD（理由/決定条件/期限）: Chromatic visual diff を fail/warning のどちらでブロックするかはチーム合意後に決定（決定条件: PR運用負荷と誤検知率、期限: IMPLEMENT着手前）` | Issue未確定事項 |
+| 未確定前提（TBD） | なし（本PRレビュー指摘への回答で未確定事項を解消） | PR review comments |
 
 ---
 
@@ -79,15 +79,15 @@
 | ID | 要件 | 受入条件（テスト可能な形） |
 | --- | --- | --- |
 | FR-01 | Storybook Test Runner をCI必須ジョブとして追加する | CI定義に `npx storybook test` 実行ステップがあり、失敗時にジョブが赤になる |
-| FR-02 | 全Storyのrender成功を保証する | render errorを含むStoryで `storybook test` が fail する |
+| FR-02 | 全Storyのrender成功を保証する（対象はAtomic DesignのPage/Layoutより下: Templates/Organisms/Molecules/Atoms） | 対象レイヤのrender errorを含むStoryで `storybook test` が fail する |
 | FR-03 | 全Storyのplay function実行を保証する | play function errorを含むStoryで CI が fail する |
 | FR-04 | a11yチェック通過をCIで保証する | a11y violation を含むStoryで CI が fail する |
 | FR-05 | Chromatic をVRTレイヤーとして統合する | workflowに `chromaui/action@v1` と `CHROMATIC_PROJECT_TOKEN` 参照が定義される |
 | FR-06 | CI失敗条件を機械判定可能に明文化する | render/play/a11y/upload failure それぞれに fail判定が定義される |
 | FR-07 | PR時点での必須チェック化方針を定義する | required checks 候補（storybook-test/chromatic）がplanに記載される |
 | FR-08 | Storybook build 成功必須を維持する | `npm run build-storybook` stepが残り、失敗時にCI failとなる |
-| FR-09 | VRT差分ポリシー未確定を明示する | visual diff policy が Undetermined として明示される |
-| FR-10 | main/PRでのrequired checks差分未確定を明示する | branch別必須チェック差分が Undetermined として明示される |
+| FR-09 | VRT差分ポリシーを warning 運用として定義する | visual diff 検知時は warning として通知され、CIは fail しない |
+| FR-10 | PRでのrequired checks方針を確定する | PRで Storybook/Chromatic チェックが必須として定義される |
 
 ### 3.2 非機能要件
 
@@ -118,7 +118,7 @@
 | Out-of-Scope | a11yルールセットの詳細定義 | 運用方針の別Issueとする |
 | Out-of-Scope | デザインレビュー運用/人手差分判断フロー | 非機械判定の運用設計は対象外 |
 | Out-of-Scope | アプリ本体（app/src/packages）機能変更 | CI設計Issueのため |
-| Out-of-Scope | ブランチ保護設定の最終確定 | fail/warning運用と併せてUndetermined |
+| Out-of-Scope | mainブランチ側の追加運用最適化 | 本IssueではPR必須チェック化を優先し、mainの追加最適化は別途検討 |
 
 ### 4.2 実装時の影響範囲・互換性リスク
 
@@ -158,7 +158,7 @@
 | 02 | Storybook build step | `storybook build contract` | `npm run build-storybook` | Storybook設定 + source code | static storybook bundle | build失敗を無視しない |
 | 03 | Storybook test step | `story-level validation contract` | `npx storybook test` | 全Story + play + a11y | pass/fail 判定 | fail時に `continue-on-error` しない |
 | 04 | Chromatic action step | `vrt upload contract` | `chromaui/action@v1` | Storybook build成果物 + project token | upload結果 + visual diff結果 | tokenをログ出力しない |
-| 05 | Branch protection | `required checks contract` | GitHub required status checks | CI status群 | merge許可/拒否判定 | main/PR差分はUndetermined扱いを保持 |
+| 05 | Branch protection | `required checks contract` | GitHub required status checks | CI status群 | merge許可/拒否判定 | PRでは Storybook/Chromatic を必須チェックとして扱う |
 
 #### 5.0.1 最小固定セット（TBD禁止）
 
@@ -178,7 +178,7 @@
 | Storybook build layer | Storybook bundle生成を保証する | build失敗時の続行 |
 | Storybook test layer | render/play/a11yの自動検証 | failureのwarning化 |
 | Chromatic layer | VRTアップロードと差分検知 | token直書き、失敗無視 |
-| Branch protection layer | required checksの運用適用 | 未確定事項を確定扱いすること |
+| Branch protection layer | required checksの運用適用（PR必須） | PR必須チェックを任意化しないこと |
 
 #### 5.1.2 エッジケース / 例外系 / リトライ方針（詳細）
 
@@ -188,7 +188,7 @@
 | 2 | play function error | interaction失敗としてCI fail | Issue失敗条件 |
 | 3 | a11y violation | a11y failとしてCI fail | Issue失敗条件 |
 | 4 | Chromatic upload failure | upload失敗でCI fail | Issue失敗条件 |
-| 5 | visual diff発生 | statusを記録しつつ最終fail/warning判定はUndetermined | Issue制約 |
+| 5 | visual diff発生 | warningを通知し、CIはfailさせず継続する | PRレビュー回答 |
 | 6 | token未設定 | Chromatic stepを失敗として可視化し、Secret設定を促す | Secrets管理要件 |
 
 #### 5.1.3 Atomic Design UI部品一覧（dashboard）
@@ -209,7 +209,7 @@
 | 2 | Chromatic失敗可視化 | upload失敗をstep失敗として残す | CI fail条件 |
 | 3 | token漏洩防止 | token値を出力しない。Secret参照のみ許可 | セキュリティ |
 | 4 | 判定ログ粒度 | fail条件ごとにどのstepで失敗したか追跡可能にする | 障害切り分け |
-| 5 | 差分ポリシー未確定管理 | visual diffポリシーは `Undetermined` とログ/設計に明示 | 制約遵守 |
+| 5 | 差分ポリシー管理 | visual diffは warning として記録し、CI通過を維持する | PRレビュー回答 |
 
 ### 5.2 トレードオフ
 
@@ -217,7 +217,7 @@
 | --- | --- | --- | --- | --- | --- |
 | Storybook検証方式 | `build-storybook` のみ | `build-storybook + storybook test` | 案B | render/play/a11yを機械判定できる | 案Aは表示崩れ検知力が不足 |
 | VRT統合方式 | Chromatic未導入 | Chromatic導入 | 案B | Story単位の視覚差分をCIで可視化できる | 案Aは視覚破壊の自動検知ができない |
-| visual diff運用 | fail固定 | warning固定 | Undetermined | チーム運用負荷と誤検知率の評価が未了 | 現時点での固定は運用リスク |
+| visual diff運用 | fail固定 | warning固定 | warning固定 | レビュー回答で「注意は出すがCIは通す」が確定したため | fail固定はPRブロックが強すぎる |
 
 ### 5.3 ルーティング方針の確定と移行戦略
 
@@ -226,7 +226,7 @@
 | CIエントリ | 既存 `ci-nextjs.yml` に統合し、新workflow乱立を避ける | 既存CI維持制約 |
 | 実行順序 | Build Storybook -> Storybook test -> Chromatic | 失敗時切り分け容易性 |
 | 移行戦略 | 既存必須チェックを維持したまま Storybook関連チェックを段階追加する | 互換性優先 |
-| branch別required checks | `TBD（理由/決定条件/期限）: PR必須/ main限定の差分はブランチ戦略合意後に確定（期限: IMPLEMENT前）` | Issue未確定事項 |
+| branch別required checks | PRでは Storybook/Chromatic を必須チェックに確定する | PRレビュー回答 |
 
 ### 5.4 依存カテゴリ方針（境界崩壊防止）
 
@@ -244,7 +244,7 @@
 | Storybook build artifacts | CI実行時 | GitHub Actions runner | Storybook test/chromatic前提 |
 | Story test result | CI実行時 | `storybook test` step | render/play/a11y品質ゲート |
 | Chromatic upload status | CI実行時 | `chromaui/action@v1` step | VRT結果可視化 |
-| visual diff status | CI実行時 | Chromatic結果 | fail/warningポリシー判定材料 |
+| visual diff status | CI実行時 | Chromatic結果 | warning通知とCI通過を判定するため |
 
 #### 5.5.1 Server/Client 境界固定（Next.js）
 
@@ -276,7 +276,7 @@
 | play function exception | interaction runtime | storybook test step | fail status | 失敗黙殺をしない |
 | a11y assertion violation | a11y checker | storybook test step | fail status | しきい値緩和で回避しない |
 | chromatic upload exception | chromatic action | workflow step | fail status | tokenをログ表示しない |
-| visual diff detected | chromatic comparison | policy decision layer | Undetermined status | fail/warningを仮固定しない |
+| visual diff detected | chromatic comparison | policy decision layer | warning status | warning以外へ変換しない |
 
 ### 5.7 シーケンス図（Mermaid / 複数必須）
 
@@ -294,7 +294,7 @@
 | --- | --- | --- | --- | --- |
 | SEQ-01 | 正常 | pull_request | storybook test pass | FR-01, FR-02, FR-03, FR-04 |
 | SEQ-02 | 異常（業務） | storybook runtime | CI fail | FR-06, NFR-06 |
-| SEQ-03 | 異常（システム） | chromatic upload | CI fail / Undetermined policy | FR-05, FR-09, FR-10 |
+| SEQ-03 | 異常（システム） | chromatic upload | upload failure時CI fail / visual diff時warning | FR-05, FR-09, FR-10 |
 
 #### 5.7.2 正常系シーケンス（必須）
 
@@ -347,8 +347,8 @@ sequenceDiagram
     CH-->>CI: ERROR upload failed
     CI->>GH: RETURN check=failed
   else upload success and visual diff detected
-    CH-->>CI: RETURN diff detected (policy=Undetermined)
-    CI->>GH: RETURN status pending policy decision
+    CH-->>CI: RETURN diff detected (policy=warning)
+    CI->>GH: RETURN warningを表示しCI pass
   end
 ```
 
@@ -394,19 +394,18 @@ flowchart TD
   C --> D{"upload success?"}
   D -->|No| E["RETURN ERROR: upload failure -> CI fail"]
   D -->|Yes| F["PROCESS: receive visual diff status"]
-  F --> G["RETURN: diff status (policy Undetermined)"]
+  F --> G["RETURN: diff status (policy warning, CI pass)"]
 ```
 
 #### メソッドフロー(FLOW-04)
 
 ```mermaid
 flowchart TD
-  A[START METHOD: evaluateRequiredChecksPolicy] --> B[INPUT: branch type + team policy]
-  B --> C{PR必須に含めるか合意済み?}
-  C -->|No| D[PROCESS: main/PR差分をUndeterminedとして維持]
-  C -->|Yes| E[PROCESS: required checksへ反映]
-  D --> F[RETURN: pending decision]
-  E --> G[RETURN: policy fixed]
+  A[START METHOD: evaluateRequiredChecksPolicy] --> B[INPUT: PR branch checks policy]
+  B --> C[PROCESS: Storybook/Chromatic をPR必須チェックへ設定]
+  C --> D{設定反映できたか}
+  D -->|No| E[RETURN ERROR: required checks未反映]
+  D -->|Yes| F[RETURN: PR必須チェック方針を適用]
 ```
 
 ---
@@ -425,7 +424,7 @@ flowchart TD
 | IFC-01 | `Build Storybook` step | source + storybook config | build artifacts | build failure | 失敗時CI fail |
 | IFC-02 | `storybook test` step | all stories + play + a11y | pass/fail | render/play/a11y failure | fail時CI fail |
 | IFC-03 | `chromaui/action@v1` step | project token + artifacts | upload result + visual diff status | upload failure | upload failureはCI fail |
-| IFC-04 | required checks policy | branch strategy | required checks set | policy undecided | Undeterminedを保持 |
+| IFC-04 | required checks policy | PR branch strategy | required checks set | policy apply failure | PR必須チェックを維持 |
 
 ### 6.2 型/DTO/スキーマ
 
@@ -491,8 +490,8 @@ classDiagram
 | --- | --- |
 | Storybook gate result | `pass` / `fail` |
 | Chromatic upload result | `success` / `failure` |
-| Visual diff policy | `Undetermined`（本設計時点） |
-| Required checks scope | `Undetermined`（PR/main差分未確定） |
+| Visual diff policy | `warning`（注意表示、CIは通す） |
+| Required checks scope | `PR required`（Storybook/Chromatic） |
 
 #### 6.3.5 契約互換性ルール
 
@@ -501,7 +500,7 @@ classDiagram
 | 既存CI互換 | lint/typecheck/test/e2e のジョブ定義を維持する |
 | build互換 | `Build Storybook` は従来通り必須成功 |
 | fail互換 | Storybook Test Runner失敗はCI全体失敗 |
-| 運用未確定の明示 | visual diff policy と branch別required checksは Undetermined のまま保持 |
+| 運用確定の維持 | visual diff policy は warning 固定、PR required checks を維持する |
 
 ---
 
@@ -535,7 +534,7 @@ classDiagram
 | 2 | Storybook Test Runner step (`npx storybook test`) を追加する | `.github/workflows/ci-nextjs.yml` | render/play/a11y failでCI fail |
 | 3 | Chromatic stepを追加し Secret参照を設定する | `.github/workflows/ci-nextjs.yml` | upload failureでCI fail |
 | 4 | `@storybook/test-runner` を依存追加して lock を更新する | `package.json`, `package-lock.json` | ローカル/CIで同一依存解決 |
-| 5 | required checks適用方針をPRテンプレ/運用設定へ反映する（未確定は記録） | 運用設定 | Undetermined項目が追跡可能 |
+| 5 | PR必須チェック方針（Storybook/Chromatic）を運用設定へ反映する | 運用設定 | PRで必須チェックが有効化される |
 
 ### 8.3 実装禁止事項（ガードレール）
 
@@ -545,8 +544,8 @@ classDiagram
 | 禁止事項-2 | Build Storybook を任意化しない | 制約 |
 | 禁止事項-3 | Storybook test失敗をwarning扱いにしない | fail-fast要件 |
 | 禁止事項-4 | `CHROMATIC_PROJECT_TOKEN` を平文記載しない | セキュリティ |
-| 禁止事項-5 | visual diff policy を独断で fail/warning 固定しない | Undetermined制約 |
-| 禁止事項-6 | PR/main required checks差分を独断で固定しない | Undetermined制約 |
+| 禁止事項-5 | visual diff policy を warning 以外へ変更しない | PRレビュー確定事項 |
+| 禁止事項-6 | PR required checks（Storybook/Chromatic）を任意化しない | PRレビュー確定事項 |
 | 禁止事項-7 | DESIGN段階でアプリコードを変更しない | フェーズ制約 |
 
 ### 8.4 import制約の自動化
@@ -574,8 +573,8 @@ classDiagram
 | 例外 | play function error | storybook test | playで例外発生 | CI fail |
 | 例外 | a11y violation | storybook test | a11y違反を含むStory | CI fail |
 | 例外 | chromatic upload failure | chromatic action | token欠落/無効でupload失敗 | CI fail |
-| 境界 | visual diff policy未確定 | chromatic result | visual diffが発生 | statusはUndeterminedとして記録 |
-| 境界 | PR/main required checks差分未確定 | branch protection | branchごとの差分を比較 | Undeterminedとして記録 |
+| 境界 | visual diff warning運用 | chromatic result | visual diffが発生 | warning表示でCIはpassする |
+| 境界 | Story必須対象範囲（Page/Layoutより下） | storybook test | Templates/Organisms/Molecules/AtomsにStory不足がある | 対象レイヤ不足として検知される |
 | 回帰 | 既存lint/test/e2e維持 | ci-nextjs workflow | Storybook gate追加後に既存ジョブ実行 | 既存ジョブが継続実行 |
 | 回帰 | build-storybook維持 | ci-nextjs workflow | Storybook buildのみ失敗ケース | CI fail（従来通り） |
 
@@ -583,7 +582,7 @@ classDiagram
 | --- | --- | --- |
 | 正常パターンを網羅している | Y | render/play/a11y/upload の成功を定義 |
 | 例外パターンを網羅している | Y | render/play/a11y/upload failure を定義 |
-| 境界パターンを網羅している | Y | Undetermined 2件を明示 |
+| 境界パターンを網羅している | Y | warning運用と必須対象レイヤ境界を明示 |
 | 回帰パターンを網羅している | Y | 既存CI維持とbuild必須を定義 |
 
 ---
@@ -592,17 +591,15 @@ classDiagram
 
 | 論点 | 現状 | 決定期限/担当 | ADR要否（要/不要/TBD） |
 | --- | --- | --- | --- |
-| Chromatic差分をfailにするかwarningにするか | Undetermined | IMPLEMENT開始前 / 開発チーム | 要 |
-| Story必須対象範囲（全Storyか絞り込みか） | Undetermined | IMPLEMENT開始前 / UIチーム + 開発チーム | 要 |
-| PR必須チェックに含めるかmain限定か | Undetermined | ブランチ保護設定前 / リポジトリ管理者 | 要 |
+| Chromatic差分ポリシー | warning（注意表示、CIは通す） | 確定済み / @LevelCapTech | 不要 |
+| Story必須対象範囲 | Atomic DesignのPage/Layoutより下（Templates/Organisms/Molecules/Atoms）を必須対象とする | 確定済み / @LevelCapTech | 不要 |
+| 必須チェック範囲 | PR必須チェックとして Storybook/Chromatic を含める | 確定済み / @LevelCapTech | 不要 |
 
 ### 10.1 TBD回収トラッキング（必須）
 
 | TBD論点 | 現在の記載箇所（章/項目） | 解決ゲート（必須） | BLOCKER（Yes/No） | RESOLVE_IN（必須） | DEFAULT/ASSUMPTION（任意） | ADR記録先（必要時） |
 | --- | --- | --- | --- | --- | --- | --- |
-| Chromatic visual diff policy（fail/warning） | 2, 3.1 FR-09, 5.2, 6.3.4 | GATE: IMPLEMENT PR作成前 | BLOCKER: Yes | RESOLVE_IN: IMPLEMENT計画確定時 | DEFAULT/ASSUMPTION: Undetermined | 70-adr/（新規ADR） |
-| Story必須対象範囲（全Story/一部） | 0.2, 10 | GATE: Storybook test実装着手前 | BLOCKER: Yes | RESOLVE_IN: IMPLEMENT実装開始時 | DEFAULT/ASSUMPTION: 全Story対象を暫定 | 70-adr/（必要時） |
-| branch別required checks差分 | 0.2, 3.1 FR-10, 5.3 | GATE: branch protection設定前 | BLOCKER: Yes | RESOLVE_IN: 運用設定反映時 | DEFAULT/ASSUMPTION: Undetermined | 70-adr/（必要時） |
+| なし（未確定事項はレビュー回答で確定済み） | 10章全体 | GATE: N/A | BLOCKER: No | RESOLVE_IN: N/A | DEFAULT/ASSUMPTION: warning運用 + PR必須チェック + Page/Layoutより下をStory必須対象 | 不要 |
 
 ---
 
@@ -643,7 +640,7 @@ classDiagram
 - play function error -> fail
 - a11y violation -> fail
 - Chromatic upload failure -> fail
-- Chromatic visual diff policy -> Undetermined
+- Chromatic visual diff policy -> warning（注意表示、CIは通す）
 
 ## 付録C: 完了後の次アクション
 - 本planを固定入力として **[IMPLEMENT] Issue** を起票し、実装依頼を行う。
