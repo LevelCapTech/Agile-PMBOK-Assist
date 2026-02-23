@@ -15,10 +15,14 @@ on:
         required: false
         type: boolean
         default: true
+      port:
+        required: false
+        type: number
+        default: 4201
       start-command:
         required: false
         type: string
-        default: "npm run start -- --port 4000"
+        default: "npm run start -- --port ${{ inputs.port }}"
       build-command:
         required: false
         type: string
@@ -75,6 +79,17 @@ jobs:
       - name: Build
         run: ${{ inputs.build-command }}
 
+      # ★おまけ：ポート競合チェック（並列や既存プロセス事故を早期検知）
+      - name: Check port availability
+        run: |
+          if command -v lsof >/dev/null 2>&1; then
+            if lsof -iTCP:${{ inputs.port }} -sTCP:LISTEN -n -P >/dev/null 2>&1; then
+              echo "Port ${{ inputs.port }} is already in use."
+              lsof -iTCP:${{ inputs.port }} -sTCP:LISTEN -n -P || true
+              exit 1
+            fi
+          fi
+
       - name: Start server (background)
         run: |
           nohup ${{ inputs.start-command }} > /tmp/app.log 2>&1 &
@@ -83,7 +98,7 @@ jobs:
       - name: Wait for server
         run: |
           for i in {1..60}; do
-            curl -fsS http://localhost:4000 >/dev/null && exit 0
+            curl -fsS "http://localhost:${{ inputs.port }}" >/dev/null && exit 0
             sleep 1
           done
           echo "Server did not start"
