@@ -389,12 +389,12 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-  A[START METHOD: runChromaticVrtGate] --> B[INPUT: CHROMATIC_PROJECT_TOKEN + build artifacts]
-  B --> C[PROCESS: chromaui/action@v1 upload]
-  C --> D{upload success?}
-  D -->|No| E[RETURN ERROR: upload failure -> CI fail]
-  D -->|Yes| F[PROCESS: receive visual diff status]
-  F --> G[RETURN: diff status (policy Undetermined)]
+  A["START METHOD: runChromaticVrtGate"] --> B["INPUT: CHROMATIC_PROJECT_TOKEN + build artifacts"]
+  B --> C["PROCESS: chromaui/action@v1 upload"]
+  C --> D{"upload success?"}
+  D -->|No| E["RETURN ERROR: upload failure -> CI fail"]
+  D -->|Yes| F["PROCESS: receive visual diff status"]
+  F --> G["RETURN: diff status (policy Undetermined)"]
 ```
 
 #### メソッドフロー(FLOW-04)
