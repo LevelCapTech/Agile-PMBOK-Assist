@@ -64,7 +64,7 @@ permissions:
   contents: read
 
 jobs:
-  screenshot:
+  copilot-setup-steps:
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
