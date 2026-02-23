@@ -3,15 +3,10 @@
 import { Avatar } from "@mui/material";
 
 import type { LcAvatarProps } from "../types/dashboard";
-
-const SIZE_MAP: Record<NonNullable<LcAvatarProps["size"]>, number> = {
-  sm: 16,
-  md: 24,
-  lg: 32,
-};
+import { SIZE_VARIANTS } from "../utils/sizes";
 
 export const LcAvatar = ({ src, alt, size = "md" }: LcAvatarProps) => {
-  const avatarSize = SIZE_MAP[size];
+  const avatarSize = SIZE_VARIANTS[size];
 
   return (
     <Avatar

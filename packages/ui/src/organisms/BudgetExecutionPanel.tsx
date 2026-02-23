@@ -15,6 +15,7 @@ const buildPoints = (
   key: "budget" | "actual",
   maxValue: number,
 ) => {
+  // 0値時も折れ線位置を計算できるよう、除算防止のために1を使う。
   const safeMax = maxValue === 0 ? 1 : maxValue;
   const step = series.length > 1 ? CHART_WIDTH / (series.length - 1) : 0;
 

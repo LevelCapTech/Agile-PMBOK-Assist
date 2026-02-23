@@ -12,7 +12,7 @@ export const BudgetSummaryCard = ({
   tone,
 }: BudgetSummaryCardProps) => {
   const theme = useTheme();
-  const unit = label.includes("率") ? "%" : "円";
+  const unit = tone === "warning" ? "%" : "円";
 
   return (
     <Card

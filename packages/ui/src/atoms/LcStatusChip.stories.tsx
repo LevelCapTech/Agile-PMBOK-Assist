@@ -58,11 +58,12 @@ export const ToneVariants: Story = {
 
     chips.forEach((chip) => {
       const tone = chip.dataset.tone as keyof typeof expected;
+      const expectedColor = expected[tone];
       const computed = parseColor(window.getComputedStyle(chip).color ?? "");
-      if (!computed || !expected[tone]) {
+      if (!computed || !expectedColor) {
         throw new Error(`tone ${tone} の色が取得できません`);
       }
-      const [r, g, b] = expected[tone] ?? [];
+      const [r, g, b] = expectedColor;
       if (computed[0] !== r || computed[1] !== g || computed[2] !== b) {
         throw new Error(`tone ${tone} の色が一致しません`);
       }
