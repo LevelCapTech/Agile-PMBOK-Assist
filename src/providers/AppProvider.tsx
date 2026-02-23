@@ -2,8 +2,10 @@
 
 import { CssBaseline } from "@mui/material";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v16-appRouter";
-import { ThemeProvider } from "@mui/material/styles";
+import { StyledEngineProvider, ThemeProvider } from "@mui/material/styles";
 import type { ReactNode } from "react";
+
+import { IconResolverProvider } from "@ui/contexts/IconResolverContext";
 
 import { appTheme } from "./appTheme";
 
@@ -17,10 +19,20 @@ export const AppProvider = ({
   enableAppRouterCache = true,
 }: AppProviderProps) => {
   const content = (
-    <ThemeProvider theme={appTheme}>
-      <CssBaseline />
-      {children}
-    </ThemeProvider>
+    <StyledEngineProvider injectFirst>
+      <ThemeProvider theme={appTheme}>
+        <CssBaseline />
+        <IconResolverProvider
+          resolver={(iconKey) => (
+            <span aria-hidden data-testid={`app-icon-${iconKey}`}>
+              {iconKey.slice(0, 1).toUpperCase()}
+            </span>
+          )}
+        >
+          {children}
+        </IconResolverProvider>
+      </ThemeProvider>
+    </StyledEngineProvider>
   );
 
   if (!enableAppRouterCache) {

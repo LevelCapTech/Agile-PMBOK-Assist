@@ -7,7 +7,7 @@ describe("HelloCard", () => {
   it("renders title and message", () => {
     render(<HelloCard title="テスト" message="Vitest の確認" />);
 
-    expect(screen.getByRole("heading", { name: "テスト" })).toBeInTheDocument();
-    expect(screen.getByText("Vitest の確認")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "テスト" })).toBeTruthy();
+    expect(screen.getByText("Vitest の確認")).toBeTruthy();
   });
 });

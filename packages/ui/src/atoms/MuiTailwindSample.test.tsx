@@ -34,6 +34,6 @@ describe("MuiTailwindSample", () => {
       screen.getByRole("button", {
         name: "MUI Button",
       })
-    ).toBeInTheDocument();
+    ).toBeTruthy();
   });
 });
