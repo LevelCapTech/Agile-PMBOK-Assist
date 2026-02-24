@@ -32,7 +32,7 @@ export const Loading: Story = {
 
 export const Error: Story = {
   args: {
-    error: { code: "error", message: "取得に失敗しました" },
+    error: { code: "data_source_unavailable", message: "取得に失敗しました" },
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
