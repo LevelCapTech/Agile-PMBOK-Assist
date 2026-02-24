@@ -53,14 +53,16 @@ export const ZeroBudget: Story = {
   play: async ({ canvasElement, args }) => {
     const canvas = within(canvasElement);
     const summaryLabels = ["総予算 (円)", "執行額 (円)", "執行率 (%)"];
-    summaryLabels.forEach((label) => {
+    for (const label of summaryLabels) {
       const labelNode = canvas.getByText(label);
       const cardRoot = labelNode.closest("[data-testid=\"budget-summary-card\"]");
       if (!cardRoot) {
-        throw new globalThis.Error("サマリーカードの取得に失敗しました。");
+        throw new globalThis.Error(
+          `サマリーカードの取得に失敗しました: ${label}`,
+        );
       }
       within(cardRoot).getByText("0");
-    });
+    }
     const budgetTexts = canvas.getAllByText("予算: 0");
     const actualTexts = canvas.getAllByText("実績: 0");
     const seriesLength = args.series?.length ?? 0;
