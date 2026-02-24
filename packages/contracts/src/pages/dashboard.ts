@@ -1,8 +1,21 @@
 import type { ReactNode } from "react";
 
-export interface UiError {
-  code: string;
+export type DashboardContractErrorCode =
+  | "invalid_data"
+  | "data_source_unavailable"
+  | "action_not_found";
+
+export interface DashboardContractError {
+  code: DashboardContractErrorCode;
   message: string;
+}
+
+export type UiError = DashboardContractError;
+
+export interface DashboardViewRequest {
+  route: string;
+  locale: string;
+  timezone: string;
 }
 
 export interface IconResolver {
@@ -78,6 +91,11 @@ export interface SettingAction {
   disabled?: boolean;
 }
 
+export interface SettingActionResult {
+  href: string;
+  label: string;
+}
+
 export interface DashboardViewModel {
   header: DashboardHeaderView;
   sidebar: DashboardSidebarView;
@@ -86,7 +104,12 @@ export interface DashboardViewModel {
   budgetSummary: BudgetSummary;
   budgetSeries: BudgetSeriesPoint[];
   settings: SettingAction[];
-  errorState?: UiError;
+  errorState?: DashboardContractError;
+}
+
+export interface DashboardDataSource {
+  getDashboardView(input: DashboardViewRequest): Promise<DashboardViewModel>;
+  resolveSettingAction(actionId: SettingActionId): Promise<SettingActionResult>;
 }
 
 export interface LcIconProps {
