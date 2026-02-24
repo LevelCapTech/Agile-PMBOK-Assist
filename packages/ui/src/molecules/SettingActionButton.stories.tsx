@@ -32,9 +32,9 @@ export const Disabled: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     const button = canvas.getByTestId("lc-icon-button");
-    button.click();
     if (!(button instanceof HTMLButtonElement) || !button.disabled) {
       throw new Error("disabled状態の設定アクションが無効化されていません。");
     }
+    button.click();
   },
 };
