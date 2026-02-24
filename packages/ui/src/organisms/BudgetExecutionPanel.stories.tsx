@@ -74,7 +74,10 @@ export const ZeroBudget: Story = {
     }
     const budgetTexts = canvas.getAllByText("予算: 0");
     const actualTexts = canvas.getAllByText("実績: 0");
-    const seriesLength = args.series?.length ?? 0;
+    const seriesLength = args.series?.length;
+    if (seriesLength === undefined) {
+      throw new globalThis.Error("予算推移のseriesが未設定です。");
+    }
     if (budgetTexts.length !== seriesLength || actualTexts.length !== seriesLength) {
       throw new globalThis.Error(
         `予算推移のゼロ表示が不足しています。期待:${seriesLength} 件、実際:予算 ${budgetTexts.length} 件 / 実績 ${actualTexts.length} 件（予算推移のDOM構造とテキストを確認してください）`,
