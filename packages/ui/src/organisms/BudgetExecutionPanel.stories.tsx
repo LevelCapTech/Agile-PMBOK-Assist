@@ -74,12 +74,9 @@ export const ZeroBudget: Story = {
     }
     const budgetTexts = canvas.getAllByText("予算: 0");
     const actualTexts = canvas.getAllByText("実績: 0");
-    const seriesLength = args.series?.length;
-    if (seriesLength === undefined) {
-      throw new globalThis.Error("予算推移のseriesが未設定です。");
-    }
+    const seriesLength = args.series?.length ?? 0;
     if (seriesLength === 0) {
-      throw new globalThis.Error("予算推移のseriesが空です。");
+      throw new globalThis.Error("予算推移のseriesが未設定または空です。");
     }
     if (budgetTexts.length !== seriesLength || actualTexts.length !== seriesLength) {
       throw new globalThis.Error(
