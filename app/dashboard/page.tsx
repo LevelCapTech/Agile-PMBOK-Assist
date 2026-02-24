@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 
 import type {
   DashboardContractError,
@@ -76,6 +77,7 @@ const buildDashboardPageProps = ({
 
 export default function DashboardPageBridge() {
   const { dashboardDataSource } = useAppContext();
+  const router = useRouter();
   const [viewModel, setViewModel] = useState<DashboardViewModel>(emptyViewModel);
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -89,14 +91,19 @@ export default function DashboardPageBridge() {
 
   const handleClickSetting = useCallback(
     (actionId: SettingActionId) => {
-      void dashboardDataSource.resolveSettingAction(actionId).catch(() => {
-        setErrorState({
-          code: "action_not_found",
-          message: "設定アクションの取得に失敗しました。",
+      void dashboardDataSource
+        .resolveSettingAction(actionId)
+        .then((result) => {
+          router.push(result.href);
+        })
+        .catch(() => {
+          setErrorState({
+            code: "action_not_found",
+            message: "設定アクションの取得に失敗しました。",
+          });
         });
-      });
     },
-    [dashboardDataSource],
+    [dashboardDataSource, router],
   );
 
   useEffect(() => {

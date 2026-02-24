@@ -3,7 +3,6 @@
 import { CssBaseline } from "@mui/material";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v16-appRouter";
 import { ThemeProvider } from "@mui/material/styles";
-import { useMemo } from "react";
 import type { ReactNode } from "react";
 
 import { createClientDeps } from "@app/lib/createClientDeps";
@@ -20,7 +19,7 @@ export const AppProvider = ({
   children,
   enableAppRouterCache = true,
 }: AppProviderProps) => {
-  const deps = useMemo(() => createClientDeps(), []);
+  const deps = createClientDeps();
   const content = (
     <AppContextProvider deps={deps}>
       <ThemeProvider theme={appTheme}>

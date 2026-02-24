@@ -212,8 +212,10 @@ const dashboardDataSource: DashboardDataSource = {
   },
 };
 
+const clientDeps: AppDeps = {
+  dashboardDataSource,
+};
+
 export const createClientDeps = (): AppDeps => {
-  return {
-    dashboardDataSource,
-  };
+  return clientDeps;
 };
