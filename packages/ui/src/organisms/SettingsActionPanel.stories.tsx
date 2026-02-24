@@ -28,6 +28,10 @@ export const Loading: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await canvas.findByText("読み込み中...");
+    const firstSettingLabel = settingsActions[0]?.label;
+    if (firstSettingLabel && canvas.queryByText(firstSettingLabel)) {
+      throw new globalThis.Error("読み込み中に設定項目が表示されています。");
+    }
   },
 };
 

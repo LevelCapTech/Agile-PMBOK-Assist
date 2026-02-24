@@ -72,12 +72,12 @@ export const ZeroBudget: Story = {
         );
       }
     }
-    const budgetTexts = canvas.getAllByText("予算: 0");
-    const actualTexts = canvas.getAllByText("実績: 0");
-    const seriesLength = args.series?.length ?? 0;
-    if (seriesLength === 0) {
+    if (!args.series || args.series.length === 0) {
       throw new globalThis.Error("予算推移のseriesが未設定または空です。");
     }
+    const budgetTexts = canvas.getAllByText("予算: 0");
+    const actualTexts = canvas.getAllByText("実績: 0");
+    const seriesLength = args.series.length;
     if (budgetTexts.length !== seriesLength || actualTexts.length !== seriesLength) {
       throw new globalThis.Error(
         `予算推移のゼロ表示件数が一致しません。期待:${seriesLength} 件、実際:予算 ${budgetTexts.length} 件 / 実績 ${actualTexts.length} 件（予算推移のDOM構造とテキストを確認してください）`,
