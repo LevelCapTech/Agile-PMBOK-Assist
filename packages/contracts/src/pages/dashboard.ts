@@ -153,6 +153,7 @@ export interface DashboardHeaderProps {
 
 export interface SidebarNavigationProps {
   sidebar: DashboardSidebarView;
+  onNavigate?: (targetId: string) => void;
 }
 
 export interface ProjectListPanelProps {
