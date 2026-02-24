@@ -26,7 +26,7 @@ export const Loading: Story = {
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    canvas.getByText("読み込み中...");
+    await canvas.findByText("読み込み中...");
   },
 };
 
@@ -36,7 +36,7 @@ export const Error: Story = {
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    canvas.getByText("メンバー情報を取得できません");
+    await canvas.findByText("メンバー情報を取得できません");
   },
 };
 
@@ -46,6 +46,6 @@ export const Empty: Story = {
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    canvas.getByText("メンバーがいません");
+    await canvas.findByText("メンバーがいません");
   },
 };
