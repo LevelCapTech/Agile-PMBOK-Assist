@@ -61,13 +61,21 @@ export const ZeroBudget: Story = {
           `サマリーカードの取得に失敗しました: ${label}`,
         );
       }
-      within(cardRoot).getByText("0");
+      try {
+        within(cardRoot).getByText("0");
+      } catch {
+        throw new globalThis.Error(
+          `サマリーカードの0表示が見つかりません: ${label}`,
+        );
+      }
     }
     const budgetTexts = canvas.getAllByText("予算: 0");
     const actualTexts = canvas.getAllByText("実績: 0");
     const seriesLength = args.series?.length ?? 0;
     if (budgetTexts.length !== seriesLength || actualTexts.length !== seriesLength) {
-      throw new globalThis.Error("予算推移のゼロ表示が不足しています。");
+      throw new globalThis.Error(
+        `予算推移のゼロ表示が不足しています。期待:${seriesLength} 件、実際:予算 ${budgetTexts.length} 件 / 実績 ${actualTexts.length} 件`,
+      );
     }
   },
 };
