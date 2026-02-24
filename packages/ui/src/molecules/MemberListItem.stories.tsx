@@ -1,0 +1,19 @@
+import type { Meta, StoryObj } from "@storybook/react";
+
+import { MemberListItem } from "./MemberListItem";
+import { dashboardMembers } from "../stories/dashboardStoryData";
+
+const meta: Meta<typeof MemberListItem> = {
+  title: "Molecules/MemberListItem",
+  component: MemberListItem,
+  tags: ["autodocs"],
+  args: {
+    item: dashboardMembers[0],
+  },
+};
+
+export default meta;
+
+type Story = StoryObj<typeof MemberListItem>;
+
+export const Default: Story = {};
