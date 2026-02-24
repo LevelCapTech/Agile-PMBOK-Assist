@@ -50,10 +50,22 @@ export const ZeroBudget: Story = {
       actual: 0,
     })),
   },
-  play: async ({ canvasElement }) => {
+  play: async ({ canvasElement, args }) => {
     const canvas = within(canvasElement);
-    if (canvas.getAllByText("0").length === 0) {
-      throw new globalThis.Error("ゼロ予算の表示が確認できません。");
+    const summaryLabels = ["総予算 (円)", "執行額 (円)", "執行率 (%)"];
+    summaryLabels.forEach((label) => {
+      const labelNode = canvas.getByText(label);
+      const cardRoot = labelNode.closest("div");
+      if (!cardRoot) {
+        throw new globalThis.Error("サマリーカードの取得に失敗しました。");
+      }
+      within(cardRoot).getByText("0");
+    });
+    const budgetTexts = canvas.getAllByText("予算: 0");
+    const actualTexts = canvas.getAllByText("実績: 0");
+    const seriesLength = args.series?.length ?? 0;
+    if (budgetTexts.length !== seriesLength || actualTexts.length !== seriesLength) {
+      throw new globalThis.Error("予算推移のゼロ表示が不足しています。");
     }
   },
 };

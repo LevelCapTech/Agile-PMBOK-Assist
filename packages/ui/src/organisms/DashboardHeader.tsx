@@ -48,6 +48,7 @@ export const DashboardHeader = ({
               </InputAdornment>
             ),
           }}
+          inputProps={{ "aria-label": "プロジェクトを検索" }}
           placeholder={header.searchPlaceholder}
           size="small"
           sx={{
