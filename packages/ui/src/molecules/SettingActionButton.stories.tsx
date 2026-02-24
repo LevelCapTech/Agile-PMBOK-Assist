@@ -4,7 +4,9 @@ import { within } from "@testing-library/dom";
 import { SettingActionButton } from "./SettingActionButton";
 import { settingsActions } from "../stories/dashboardStoryData";
 
-let wasDisabledClicked = false;
+const disabledClickGuard = () => {
+  throw new globalThis.Error("disabledの設定アクションがクリックされました。");
+};
 
 const meta: Meta<typeof SettingActionButton> = {
   title: "Molecules/SettingActionButton",
@@ -25,20 +27,14 @@ export const Default: Story = {};
 export const Disabled: Story = {
   args: {
     action: { ...settingsActions[0], disabled: true },
-    onClick: () => {
-      wasDisabledClicked = true;
-    },
+    onClick: disabledClickGuard,
   },
   play: async ({ canvasElement }) => {
-    wasDisabledClicked = false;
     const canvas = within(canvasElement);
     const button = canvas.getByTestId("lc-icon-button");
     button.click();
     if (!(button instanceof HTMLButtonElement) || !button.disabled) {
       throw new Error("disabled状態の設定アクションが無効化されていません。");
-    }
-    if (wasDisabledClicked) {
-      throw new Error("disabledの設定ボタンでonClickが呼ばれました。");
     }
   },
 };
