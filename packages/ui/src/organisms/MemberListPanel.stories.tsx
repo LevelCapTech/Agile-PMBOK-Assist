@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import { within } from "@testing-library/dom";
+import { within } from "@testing-library/react";
 
 import { MemberListPanel } from "./MemberListPanel";
 import { dashboardMembers } from "../stories/dashboardStoryData";
