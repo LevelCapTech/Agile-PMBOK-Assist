@@ -10,6 +10,8 @@ import type { BudgetSummaryCardProps } from "@contracts/pages/dashboard";
 
 import { LcMetricValue } from "../atoms/LcMetricValue";
 
+export const BUDGET_SUMMARY_CARD_TEST_ID = "budget-summary-card";
+
 const resolveToneColor = (
   palette: Theme["palette"],
   tone: BudgetSummaryCardProps["tone"],
@@ -36,7 +38,7 @@ export const BudgetSummaryCard = ({
 
   return (
     <Card
-      data-testid="budget-summary-card"
+      data-testid={BUDGET_SUMMARY_CARD_TEST_ID}
       variant="outlined"
       sx={{
         backgroundColor: alpha(toneColor, 0.12),

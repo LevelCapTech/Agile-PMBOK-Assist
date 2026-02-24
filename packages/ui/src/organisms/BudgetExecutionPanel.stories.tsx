@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react";
 import { within } from "@testing-library/dom";
 
 import { BudgetExecutionPanel } from "./BudgetExecutionPanel";
+import { BUDGET_SUMMARY_CARD_TEST_ID } from "../molecules/BudgetSummaryCard";
 import { budgetSeries, budgetSummary } from "../stories/dashboardStoryData";
 
 const meta: Meta<typeof BudgetExecutionPanel> = {
@@ -55,7 +56,9 @@ export const ZeroBudget: Story = {
     const summaryLabels = ["総予算 (円)", "執行額 (円)", "執行率 (%)"];
     for (const label of summaryLabels) {
       const labelNode = canvas.getByText(label);
-      const cardRoot = labelNode.closest("[data-testid=\"budget-summary-card\"]");
+      const cardRoot = labelNode.closest(
+        `[data-testid="${BUDGET_SUMMARY_CARD_TEST_ID}"]`,
+      );
       if (!cardRoot) {
         throw new globalThis.Error(
           `サマリーカードの取得に失敗しました: ${label}`,
@@ -65,7 +68,7 @@ export const ZeroBudget: Story = {
         within(cardRoot).getByText("0");
       } catch {
         throw new globalThis.Error(
-          `サマリーカードの0表示が見つかりません: ${label}`,
+          `サマリーカードの0表示が見つかりません: ${label}（BudgetSummaryCardの数値表示を確認してください）`,
         );
       }
     }
@@ -74,7 +77,7 @@ export const ZeroBudget: Story = {
     const seriesLength = args.series?.length ?? 0;
     if (budgetTexts.length !== seriesLength || actualTexts.length !== seriesLength) {
       throw new globalThis.Error(
-        `予算推移のゼロ表示が不足しています。期待:${seriesLength} 件、実際:予算 ${budgetTexts.length} 件 / 実績 ${actualTexts.length} 件`,
+        `予算推移のゼロ表示が不足しています。期待:${seriesLength} 件、実際:予算 ${budgetTexts.length} 件 / 実績 ${actualTexts.length} 件（予算推移のDOM構造とテキストを確認してください）`,
       );
     }
   },
