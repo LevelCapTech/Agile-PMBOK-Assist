@@ -27,7 +27,7 @@ export const Loading: Story = {
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    const message = canvas.getByText("読み込み中...");
+    const message = canvas.queryByText("読み込み中...");
     if (!message) {
       throw new globalThis.Error("読み込み中の表示が見つかりません。");
     }
@@ -40,7 +40,7 @@ export const Error: Story = {
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    const message = canvas.getByText("設定情報を取得できません");
+    const message = canvas.queryByText("設定情報を取得できません");
     if (!message) {
       throw new globalThis.Error("エラー表示が見つかりません。");
     }
@@ -53,7 +53,7 @@ export const Empty: Story = {
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    const message = canvas.getByText("設定項目がありません");
+    const message = canvas.queryByText("設定項目がありません");
     if (!message) {
       throw new globalThis.Error("空状態の表示が見つかりません。");
     }

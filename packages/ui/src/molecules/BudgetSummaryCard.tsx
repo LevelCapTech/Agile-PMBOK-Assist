@@ -36,6 +36,7 @@ export const BudgetSummaryCard = ({
 
   return (
     <Card
+      data-testid="budget-summary-card"
       variant="outlined"
       sx={{
         backgroundColor: alpha(toneColor, 0.12),

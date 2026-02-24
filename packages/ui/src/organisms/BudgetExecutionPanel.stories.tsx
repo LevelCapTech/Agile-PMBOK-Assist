@@ -55,7 +55,7 @@ export const ZeroBudget: Story = {
     const summaryLabels = ["総予算 (円)", "執行額 (円)", "執行率 (%)"];
     summaryLabels.forEach((label) => {
       const labelNode = canvas.getByText(label);
-      const cardRoot = labelNode.closest("div");
+      const cardRoot = labelNode.closest("[data-testid=\"budget-summary-card\"]");
       if (!cardRoot) {
         throw new globalThis.Error("サマリーカードの取得に失敗しました。");
       }
