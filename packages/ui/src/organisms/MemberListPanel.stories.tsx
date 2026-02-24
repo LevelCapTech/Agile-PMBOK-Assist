@@ -28,7 +28,10 @@ export const Loading: Story = {
     const canvas = within(canvasElement);
     await canvas.findByText("読み込み中...");
     const firstMemberName = dashboardMembers[0]?.displayName;
-    if (firstMemberName && canvas.queryByText(firstMemberName)) {
+    if (
+      firstMemberName &&
+      canvas.queryByText(firstMemberName) !== null
+    ) {
       throw new globalThis.Error("読み込み中にメンバーが表示されています。");
     }
   },
