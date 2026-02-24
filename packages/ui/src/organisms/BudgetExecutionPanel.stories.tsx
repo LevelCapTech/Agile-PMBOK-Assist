@@ -56,7 +56,7 @@ export const ZeroBudget: Story = {
     const summaryLabels = ["総予算 (円)", "執行額 (円)", "執行率 (%)"];
     for (const label of summaryLabels) {
       const labelNode = canvas.getByText(label);
-      const cardRoot = labelNode.closest(
+      const cardRoot = labelNode.closest<HTMLElement>(
         `[data-testid="${BUDGET_SUMMARY_CARD_TEST_ID}"]`,
       );
       if (!cardRoot) {
