@@ -26,7 +26,10 @@ export const Loading: Story = {
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    canvas.getByText("読み込み中...");
+    const message = canvas.getByText("読み込み中...");
+    if (!message) {
+      throw new globalThis.Error("読み込み中の表示が見つかりません。");
+    }
   },
 };
 
@@ -36,7 +39,10 @@ export const Error: Story = {
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    canvas.getByText("メンバー情報を取得できません");
+    const message = canvas.getByText("メンバー情報を取得できません");
+    if (!message) {
+      throw new globalThis.Error("エラー表示が見つかりません。");
+    }
   },
 };
 
@@ -46,6 +52,9 @@ export const Empty: Story = {
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    canvas.getByText("メンバーがいません");
+    const message = canvas.getByText("メンバーがいません");
+    if (!message) {
+      throw new globalThis.Error("空状態の表示が見つかりません。");
+    }
   },
 };
