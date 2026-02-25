@@ -1,29 +1,25 @@
-name: CI（UI/UX Storybookゲート）
+name: E2E（Playwright ゲート）
 
 on:
   pull_request:
     types: [opened, synchronize, reopened, labeled]
+    paths-ignore:
+      - "mock/**"
+      - "**/*.md"
   workflow_dispatch:
-    inputs:
-      runChromatic:
-        description: "Run Chromatic publish"
-        required: false
-        default: true
-        type: boolean
 
 permissions:
   contents: read
 
 concurrency:
-  group: uiux-storybook-${{ github.event.pull_request.number || github.run_id }}
+  group: e2e-playwright-${{ github.event.pull_request.number || github.run_id }}
   cancel-in-progress: true
 
 jobs:
-  storybook-gate:
-    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, '📕 UI/UX'))
+  playwright-e2e:
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, '🔬 E2E'))
     runs-on: ubuntu-latest
     env:
-      RUN_CHROMATIC: ${{ github.event_name == 'workflow_dispatch' && inputs.runChromatic || github.event_name == 'pull_request' && 'true' || 'false' }}
       PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/.cache/ms-playwright
     steps:
       - name: Checkout repository
@@ -50,9 +46,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ env.PLAYWRIGHT_BROWSERS_PATH }}
-          key: playwright-${{ runner.os }}-uiux-storybook-browsers
+          key: playwright-${{ runner.os }}-e2e-chromium
           restore-keys: |
-            playwright-${{ runner.os }}-uiux-storybook-browsers
+            playwright-${{ runner.os }}-e2e-chromium
 
       - name: Report Playwright browsers cache
         run: |
@@ -62,42 +58,12 @@ jobs:
             echo "Playwright cache miss"
           fi
 
-      - name: Install Playwright Browsers
+      - name: Install Playwright Browsers (Chromium)
         if: steps.playwright-cache.outputs.cache-hit != 'true'
-        run: npx playwright install --with-deps
+        run: npx playwright install chromium
 
-      - name: Build Storybook
-        run: npm run build-storybook
-
-      - name: Test Storybook stories
-        run: |
-          set -e
-          python -m http.server 6006 --directory storybook-static --bind 127.0.0.1 &
-          STORYBOOK_PID=$!
-          trap "kill $STORYBOOK_PID" EXIT
-          MAX_RETRIES=10
-          for i in $(seq 1 $MAX_RETRIES); do
-            if curl -fs http://127.0.0.1:6006 > /dev/null; then
-              break
-            fi
-            sleep 1
-          done
-          if ! curl -fs http://127.0.0.1:6006 > /dev/null; then
-            echo "Storybook server did not become ready on port 6006 after ${MAX_RETRIES} attempts. Check for port conflicts or server startup issues."
-            exit 1
-          fi
-          echo "Storybook server ready. Running Storybook tests..."
-          npx test-storybook --url http://127.0.0.1:6006 || { echo "Storybook tests failed."; exit 1; }
-        shell: bash
-
-      - name: Publish to Chromatic
-        if: env.RUN_CHROMATIC == 'true' && env.CHROMATIC_PROJECT_TOKEN != ''
-        env:
-          CHROMATIC_PROJECT_TOKEN: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
-        uses: chromaui/action@v1
-        with:
-          projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
-          exitOnceUploaded: true
+      - name: Test (E2E)
+        run: npm run test:e2e
 
       - name: Report Playwright cache status (post)
         if: always()
