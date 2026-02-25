@@ -34,10 +34,11 @@ const iconSizeMap: Record<NonNullable<LcIconProps["size"]>, number> = {
 
 const iconMap: Record<string, ComponentType<SVGProps<SVGSVGElement>>> = {
   bell: Bell,
-  "chevron-down": ChevronDown,
-  "chevron-right": ChevronRight,
+  briefcase: Briefcase,
   calendar: Calendar,
   chart: BarChart3,
+  "chevron-down": ChevronDown,
+  "chevron-right": ChevronRight,
   display: Eye,
   download: Download,
   folder: Folder,
@@ -48,7 +49,6 @@ const iconMap: Record<string, ComponentType<SVGProps<SVGSVGElement>>> = {
   shield: Shield,
   sliders: Sliders,
   users: Users,
-  briefcase: Briefcase,
 };
 
 export const LcIcon = ({ iconKey, size = "md" }: LcIconProps) => {
