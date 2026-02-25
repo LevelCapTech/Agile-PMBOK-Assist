@@ -3,10 +3,16 @@
 import { createContext, useContext } from "react";
 import type { ReactNode } from "react";
 
+import type { SidebarNavigationState, SidebarVariant } from "@contracts/layout/sidebar";
 import type { DashboardDataSource } from "@contracts/pages/dashboard";
 
-export type AppDeps = {
+export type AppBaseDeps = {
   dashboardDataSource: DashboardDataSource;
+};
+
+export type AppDeps = AppBaseDeps & {
+  sidebarState: SidebarNavigationState;
+  toggleSidebarVariant: (variant: SidebarVariant) => void;
 };
 
 const AppContext = createContext<AppDeps | null>(null);

@@ -21,10 +21,34 @@ export const dashboardHeaderView: DashboardHeaderView = {
 export const dashboardSidebarView: DashboardSidebarView = {
   title: "メニュー",
   items: [
-    { id: "projects", label: "プロジェクト", iconKey: "folder", active: true },
-    { id: "members", label: "メンバー", iconKey: "users", active: false },
-    { id: "reports", label: "統計", iconKey: "chart", active: false },
-    { id: "settings", label: "設定", iconKey: "settings", active: false },
+    {
+      id: "projects",
+      label: "プロジェクト",
+      iconKey: "folder",
+      href: "/dashboard?section=projects",
+      active: true,
+    },
+    {
+      id: "members",
+      label: "メンバー",
+      iconKey: "users",
+      href: "/dashboard?section=members",
+      active: false,
+    },
+    {
+      id: "reports",
+      label: "統計",
+      iconKey: "chart",
+      href: "/dashboard?section=reports",
+      active: false,
+    },
+    {
+      id: "settings",
+      label: "設定",
+      iconKey: "settings",
+      href: "/dashboard?section=settings",
+      active: false,
+    },
   ],
 };
 

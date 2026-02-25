@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
 
+import type { SidebarVariant } from "@contracts/layout/sidebar";
+
 /**
  * ダッシュボード画面の契約エラーコード。
  * - `invalid_data`: 入力や取得データが不正。
@@ -54,16 +56,29 @@ export interface DashboardHeaderView {
   userAvatarUrl?: string;
 }
 
+/**
+ * サイドバーのナビ項目ID。
+ * - `projects`: プロジェクト
+ * - `members`: メンバー
+ * - `reports`: 統計
+ * - `settings`: 設定
+ */
+export type SidebarNavItemId = "projects" | "members" | "reports" | "settings";
+
 /** サイドバーのナビ項目。 */
 export interface SidebarNavItem {
   /** 項目ID。 */
-  id: string;
+  id: SidebarNavItemId;
   /** 表示ラベル。 */
   label: string;
   /** アイコンキー。 */
   iconKey: string;
+  /** 遷移先パス（任意）。 */
+  href?: string;
   /** 現在選択中かどうか。 */
   active: boolean;
+  /** 無効化されているか。 */
+  disabled?: boolean;
 }
 
 /** サイドバー全体の表示情報。 */
@@ -314,6 +329,10 @@ export interface DashboardHeaderProps {
 export interface SidebarNavigationProps {
   /** 表示するサイドバー情報。 */
   sidebar: DashboardSidebarView;
+  /** サイドバーの表示状態（任意）。 */
+  variant?: SidebarVariant;
+  /** サイドバー状態の切替コールバック（任意）。 */
+  onToggleSidebarVariant?: (variant: SidebarVariant) => void;
   /** 項目選択時のコールバック（任意）。 */
   onNavigate?: (targetId: string) => void;
 }

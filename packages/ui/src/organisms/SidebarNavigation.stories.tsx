@@ -20,3 +20,28 @@ export default meta;
 type Story = StoryObj<typeof SidebarNavigation>;
 
 export const Default: Story = {};
+
+export const Expanded: Story = {
+  args: {
+    variant: "expanded",
+  },
+};
+
+export const Rail: Story = {
+  args: {
+    variant: "rail",
+  },
+};
+
+export const Selected: Story = {
+  args: {
+    sidebar: {
+      ...dashboardSidebarView,
+      items: dashboardSidebarView.items.map((item) => ({
+        ...item,
+        active: item.id === "reports",
+      })),
+    },
+    variant: "expanded",
+  },
+};
