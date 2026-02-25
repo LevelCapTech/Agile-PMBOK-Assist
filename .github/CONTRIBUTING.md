@@ -31,8 +31,8 @@
 - UI/UX変更を含むPRでは、作成者が `📕 UI/UX` ラベルを付与し、Storybookゲートを有効化してください。
 - レビュー中に追加のUI検証が必要な場合は、レビュアーがラベルを付与しても構いません。
 - ラベル対象の例: UIコンポーネントの見た目変更、MUIテーマ更新、CSS/スタイル修正、Storybook stories更新、UIスナップショット更新。
-- `📕 UI/UX` ラベルが付与されたPRのみ `CI（UI/UX Storybook）` が起動し、Storybook build/test と Chromatic publish（Token有効時）を実行します。
-- Markdownのみの変更では `CI（Next.js / Node 24）` は起動しません。
+- `📕 UI/UX` ラベルが付与されたPRのみ `CI（UI/UX Storybookゲート）` が起動し、Storybook build/test と Chromatic publish（Token有効時）を実行します。
+- Markdownのみの変更では `CI（Next.js 基本ゲート / Node 24）` は起動しません。
 
 ## コードのスタイルと規約
 
