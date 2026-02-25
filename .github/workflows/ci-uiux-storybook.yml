@@ -46,12 +46,21 @@ jobs:
         run: npm ci
 
       - name: Restore Playwright browsers cache
+        id: playwright-cache
         uses: actions/cache@v4
         with:
           path: ${{ runner.temp }}/ms-playwright
           key: playwright-${{ runner.os }}-storybook-${{ hashFiles('package-lock.json') }}
           restore-keys: |
             playwright-${{ runner.os }}-storybook-
+
+      - name: Report Playwright browsers cache
+        run: |
+          if [ "${{ steps.playwright-cache.outputs.cache-hit }}" = "true" ]; then
+            echo "Playwright cache hit"
+          else
+            echo "Playwright cache miss"
+          fi
 
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
