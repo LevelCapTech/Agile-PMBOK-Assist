@@ -23,7 +23,7 @@ jobs:
     if: github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, '📕 UI/UX'))
     runs-on: ubuntu-latest
     env:
-      RUN_CHROMATIC: ${{ github.event.inputs.runChromatic || 'true' }}
+      RUN_CHROMATIC: ${{ github.event_name == 'workflow_dispatch' && inputs.runChromatic || github.event_name == 'pull_request' && 'true' || 'false' }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
