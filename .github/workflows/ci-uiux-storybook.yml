@@ -24,7 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       RUN_CHROMATIC: ${{ github.event_name == 'workflow_dispatch' && inputs.runChromatic || github.event_name == 'pull_request' && 'true' || 'false' }}
-      PLAYWRIGHT_BROWSERS_PATH: $RUNNER_TEMP/ms-playwright
+      PLAYWRIGHT_BROWSERS_PATH: ${{ runner.temp }}/ms-playwright
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -50,9 +50,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ runner.temp }}/ms-playwright
-          key: playwright-${{ runner.os }}-storybook-${{ hashFiles('package-lock.json') }}
+          key: playwright-${{ runner.os }}-uiux-storybook-${{ hashFiles('package-lock.json') }}
           restore-keys: |
-            playwright-${{ runner.os }}-storybook-
+            playwright-${{ runner.os }}-uiux-storybook-
 
       - name: Report Playwright browsers cache
         run: |
@@ -97,3 +97,23 @@ jobs:
         with:
           projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
           exitOnceUploaded: true
+
+      - name: Report Playwright cache status (post)
+        if: always()
+        run: |
+          echo "Playwright cache path: $PLAYWRIGHT_BROWSERS_PATH"
+          if [ "${{ steps.playwright-cache.outputs.cache-hit }}" = "true" ]; then
+            echo "Playwright cache hit on restore"
+          else
+            echo "Playwright cache miss on restore"
+          fi
+          if [ -d "$PLAYWRIGHT_BROWSERS_PATH" ]; then
+            echo "Playwright cache size: $(du -sh "$PLAYWRIGHT_BROWSERS_PATH" | cut -f1)"
+            if [ "$(find "$PLAYWRIGHT_BROWSERS_PATH" -type f | head -n 1)" ]; then
+              echo "Playwright cache files detected"
+            else
+              echo "Playwright cache directory is empty"
+            fi
+          else
+            echo "Playwright cache directory missing"
+          fi
