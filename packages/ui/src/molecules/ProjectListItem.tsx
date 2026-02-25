@@ -11,6 +11,7 @@ import type { ProjectListItemProps } from "@contracts/pages/dashboard";
 
 import { LcAvatar } from "../atoms/LcAvatar";
 import { LcIcon } from "../atoms/LcIcon";
+import { LcProjectCode } from "../atoms/LcProjectCode";
 import { LcStatusChip } from "../atoms/LcStatusChip";
 
 const statusToneMap: Record<string, "primary" | "success" | "warning" | "neutral"> = {
@@ -65,13 +66,7 @@ export const ProjectListItem = ({ item, onSelect }: ProjectListItemProps) => {
                 gap: 1,
               }}
             >
-              <Typography
-                component="span"
-                variant="caption"
-                sx={{ color: theme.palette.text.secondary }}
-              >
-                {item.code}
-              </Typography>
+              <LcProjectCode code={item.code} />
               <LcStatusChip status={item.status} tone={statusTone} />
             </Box>
           </Box>

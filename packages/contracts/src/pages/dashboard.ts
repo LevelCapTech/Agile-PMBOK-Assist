@@ -224,6 +224,12 @@ export interface LcIconButtonProps {
   onClick?: () => void;
 }
 
+/** プロジェクトコード表示のプロパティ。 */
+export interface LcProjectCodeProps {
+  /** 表示するプロジェクトコード。 */
+  code: string;
+}
+
 /** アバター表示のプロパティ。 */
 export interface LcAvatarProps {
   /** 画像URL（任意）。 */
