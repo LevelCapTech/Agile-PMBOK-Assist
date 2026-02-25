@@ -397,7 +397,7 @@
 | 01 | AppProvider | SidebarNavigation | SidebarPreferencesStore（contract） | AppProviderSidebarPreferencesStore（providers） | AppProvider -> createClientDeps -> AppContext.Provider -> app/dashboard/page.tsx -> DashboardPage -> SidebarNavigation | storage 具象が ui/page に漏れない | SEQ-01 |
 | 02 | AppProvider | DashboardPage | SidebarNavigationState（contract） | useSidebarRailState（providers） | AppProvider -> AppContext.Provider -> app/dashboard/page.tsx -> DashboardPage | AppContext 以外のグローバル状態禁止 | SEQ-01 |
 | 03 | AppProvider | DashboardPage | DashboardDataSource（contract） | createClientDeps（providers） | AppProvider -> createClientDeps -> AppContext.Provider -> app/dashboard/page.tsx -> DashboardPage | DataSource 具象の隔離 | SEQ-01 |
-| 04 | SidebarNavigation | AppProvider | SidebarPreferencesStore（contract） | AppProviderSidebarPreferencesStore（providers） | SidebarNavigation -> AppProvider | ui で storage 例外を直接処理しない | SEQ-02 |
+| 04 | AppProvider | SidebarNavigation | SidebarPreferencesStore（contract） | AppProviderSidebarPreferencesStore（providers） | AppProvider -> createClientDeps -> AppContext.Provider -> app/dashboard/page.tsx -> DashboardPage -> SidebarNavigation | ui で storage 例外を直接処理しない | SEQ-02 |
 
 運用補足: 記載例の行は削除せず参照用に残す。
 運用補足: 経路文字列は `AppProvider -> DIファクトリ -> AppContext -> Page -> UI` を基準として記載する。
