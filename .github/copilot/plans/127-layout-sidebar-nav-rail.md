@@ -16,7 +16,7 @@
 | 区分（追加/修正/削除） | 対象（機能/画面/API） | 変更概要 |
 | --- | --- | --- |
 | 追加 | サイドバー状態契約 | SidebarVariant/SidebarNavItemId/SidebarPreferencesStore を契約として追加する |
-| 追加 | SidebarPreferencesStore 実装 | localStorage 永続化とフォールバックを providers/plugins に実装する |
+| 追加 | SidebarPreferencesStore 実装 | localStorage 永続化とフォールバックをクライアントUI（AppProvider）で完結させる |
 | 追加 | サイドバートグルUI | レール/展開トグルボタンと Tooltip を UI 部品として追加する |
 | 修正 | SidebarNavigation | rail/expanded の UI 表示、アイコン大型化、a11y を実装する |
 | 修正 | DashboardPage / app/dashboard/page.tsx | AppContext の rail 状態を UI に渡して切替可能にする |
@@ -36,6 +36,7 @@
 | 禁止事項 | `packages/contracts` に実装ロジックや localStorage 操作を入れない | packages/contracts |
 | 禁止事項 | UI で default export や index.ts 経由 import を新規導入しない | packages/ui |
 | 期限 | 期限指定なし（本Issueに納期指定なし） | 全体 |
+| その他 | サーバーAPI/DB/Route Handler 追加なし、フロントUI（app/page + packages/ui）で完結させる | app/dashboard/page.tsx |
 | その他 | MUI + Emotion 以外の UI ライブラリ追加は禁止 | packages/ui |
 
 運用補足: 行数が不足する場合は同じ形式で行を追加する。
@@ -96,7 +97,7 @@
 | FR-02 | rail 状態でも nav 項目のアイコンから遷移導線に到達できる | rail 時に nav アイテムがクリック可能で tooltip が表示される |
 | FR-03 | nav の選択状態が expanded/rail 両方で判別できる | 選択中 item が背景/インジケータ/aria-current で示される |
 | FR-04 | トグルボタンが左ナビ上部に常設される | rail/expanded いずれでもトグルが表示される |
-| FR-05 | トグル状態が AppContext で保持され、画面遷移後も維持される | `localStorage` から復元され、再描画で保持される |
+| FR-05 | トグル状態が AppContext で保持され、画面遷移後も維持される | ブラウザストレージ（localStorage）から復元され、再描画で保持される |
 | FR-06 | アイコンが現状より大きく、クリック領域 40px 以上を確保する | expanded: 24px、rail: 32px 以上、ボタン最小高さ 40px |
 | FR-07 | nav 項目の SSOT（id/label/iconKey/href/order）を契約に固定する | contracts で型定義し、createClientDeps で同順序のダミーを生成 |
 | FR-08 | rail 時はラベルを非表示とし、tooltip によって補助する | rail 表示で label が DOM 非表示、Tooltip が label を示す |
@@ -140,6 +141,7 @@
 | Out-of-Scope | 認証・権限・外部 API 連携 | 非ゴール |
 | Out-of-Scope | デザインシステム刷新（テーマ変更） | 非ゴール |
 | Out-of-Scope | サーバーサイドでの状態永続化 | 制約（Client only） |
+| Out-of-Scope | サーバーAPI/DB/Route Handler の追加 | フロントUIのみで完結 |
 | Out-of-Scope | CI 設定の追加・変更 | Design 範囲外 |
 
 運用補足: 対象機能/責務は「実装で変更される責務単位」を書く（例: 初期表示データ取得責務、エラー標準化責務、import境界強制責務）。
@@ -189,7 +191,7 @@
 | 記載例 | `AppContext.Provider` | `AppDeps（contract）` | `AppContextProviderImpl（plugins）` | `deps` | Context配布 | Context値を加工しない |
 | 記載例 | `pages/<slug>.tsx` | `DashboardDataSource（contract）` | `PageBridgeImpl（pages）` | `useAppContext()` | UIへのprops | `contracts/ui/AppContext` 以外の具象import禁止 |
 | 記載例 | `ui/pages/<Slug>Page.tsx` | `DashboardPageProps（contract）` | `DashboardPageImpl（ui）` | 画面props | 表示 | DataSource呼び出し/DI生成をしない |
-| 01 | AppProvider | SidebarPreferencesStore（contract） | createSidebarPreferencesStore（plugins） | localStorage key | store instance | plugins 以外で storage を触らない |
+| 01 | AppProvider | SidebarPreferencesStore（contract） | AppProviderSidebarPreferencesStore（providers） | localStorage key | store instance | ブラウザストレージは AppProvider 内に閉じる |
 | 02 | AppProvider | SidebarNavigationState（contract） | useSidebarRailState（providers） | SidebarPreferencesStore | sidebarState | page/ui で localStorage を使わない |
 | 03 | AppContext.Provider | SidebarNavigationState（contract） | AppContextProvider（providers） | sidebarState | Context 配布 | AppContext 以外でグローバル状態を持たない |
 | 04 | app/dashboard/page.tsx | DashboardDataSource（contract） | DashboardPageBridge（page） | useAppContext() | DashboardPageProps | page で DI 生成しない |
@@ -229,10 +231,10 @@
 形式B（テーブル）
 | No. | 決定事項（実装責務単位） | 根拠 | 未確定（あれば） |
 | --- | --- | --- | --- |
-| 1 | rail 状態の永続化は AppProvider で管理し、UI は state を受け取るのみ | FR-05, DIP | 未確定なし |
+| 1 | rail 状態の永続化は AppProvider で管理し、フロントUI（page）内で完結させる | FR-05 | 未確定なし |
 | 2 | SidebarNavigation は `variant` を受け取り、expanded/rail の UI を切替える | FR-01/FR-08 | 未確定なし |
 | 3 | nav 項目の SSOT は contracts に固定し、createClientDeps がダミー値を提供する | FR-07 | 未確定なし |
-| 4 | localStorage 操作は providers/plugins に限定し、AppProvider が呼び出す | DIP/20-architecture | 未確定なし |
+| 4 | localStorage 操作はクライアント側のみで行い、ブラウザストレージを利用する | FR-05 | 未確定なし |
 | 5 | rail 時は tooltip でラベル補助、aria-label を必須とする | FR-08/FR-09 | 未確定なし |
 | 6 | トグル操作は AppContext から提供し、page が UI に渡す | FR-04 | 未確定なし |
 | 7 | Sidebar の幅は expanded=256px、rail=72px、item 高さ=44px で固定する | FR-06/FR-11 | 未確定なし |
@@ -311,7 +313,7 @@
 | --- | --- | --- | --- |
 | DataSource | 画面表示に必要な取得処理 | contracts + providers/plugins | ui/page での具象実装 |
 | Service | UI 以外の業務ロジック | providers（必要時のみ） | ui/contracts |
-| Adapter | localStorage など I/O 依存 | providers/plugins | ui/page/contracts |
+| Adapter | localStorage など I/O 依存 | providers（AppProvider） | ui/page/contracts |
 | Config | UI 定数・キー | ui または providers | contracts で実装ロジック |
 
 運用補足: logger/feature flag/analytics/i18n/date/storage/auth は上記カテゴリに必ず分類してから配置を決める。
@@ -337,7 +339,7 @@
 | 初期表示データ取得 | Client | app/dashboard/page.tsx | 可 | Client不可 | Server Component で DashboardDataSource を呼ばない |
 | ユーザー操作イベント処理 | Client | SidebarNavigation / AppProvider | 可 | Client不可 | page/ui で cookie を読むこと禁止 |
 | 認証/認可判定 | Shared（実装なし） | 本設計では対象外 | 不可 | Server 限定（未使用） | Client で auth 判定を追加しない |
-| ローカル保存（storage等） | Client | providers/plugins | 可 | Client不可 | ui/page で localStorage 直接使用禁止 |
+| ローカル保存（storage等） | Client | AppProvider | 可 | Client不可 | ui/page で localStorage 直接使用禁止 |
 | ログ出力 | Client | providers/AppProvider | 可 | Client不可 | UI から logger 直接 import 禁止 |
 
 運用補足: `ブラウザAPI`（window/document/localStorage等）は `Client` または `Shared（Client側のみ実行保証）` でのみ `可` を選択する。
@@ -392,10 +394,10 @@
 | No | 開始主体 | 終了主体 | 契約名（contract） | 具象名（impl/plugins） | 経路文字列（`A -> B -> C`） | 境界チェック観点 | 対応シーケンス図ID |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 記載例 | `AppProvider` | `ui/pages/<Slug>Page.tsx` | `DashboardDataSource（contract）` | `DashboardDataSourceImpl（plugins）` | `AppProvider -> createPublicDeps -> AppContext.Provider -> pages/<slug>.tsx -> ui/pages/<Slug>Page.tsx` | 具象が `page/ui/contracts` に漏れていないこと | SEQ-01 |
-| 01 | AppProvider | SidebarNavigation | SidebarPreferencesStore（contract） | createSidebarPreferencesStore（plugins） | AppProvider -> createClientDeps -> AppContext.Provider -> app/dashboard/page.tsx -> DashboardPage -> SidebarNavigation | storage 具象が ui/page に漏れない | SEQ-01 |
+| 01 | AppProvider | SidebarNavigation | SidebarPreferencesStore（contract） | AppProviderSidebarPreferencesStore（providers） | AppProvider -> createClientDeps -> AppContext.Provider -> app/dashboard/page.tsx -> DashboardPage -> SidebarNavigation | storage 具象が ui/page に漏れない | SEQ-01 |
 | 02 | AppProvider | DashboardPage | SidebarNavigationState（contract） | useSidebarRailState（providers） | AppProvider -> AppContext.Provider -> app/dashboard/page.tsx -> DashboardPage | AppContext 以外のグローバル状態禁止 | SEQ-01 |
 | 03 | AppProvider | DashboardPage | DashboardDataSource（contract） | createClientDeps（providers） | AppProvider -> createClientDeps -> AppContext.Provider -> app/dashboard/page.tsx -> DashboardPage | DataSource 具象の隔離 | SEQ-01 |
-| 04 | SidebarNavigation | AppProvider | SidebarPreferencesStore（contract） | createSidebarPreferencesStore（plugins） | SidebarNavigation -> AppProvider -> createSidebarPreferencesStore | ui で storage 例外を直接処理しない | SEQ-02 |
+| 04 | SidebarNavigation | AppProvider | SidebarPreferencesStore（contract） | AppProviderSidebarPreferencesStore（providers） | SidebarNavigation -> AppProvider | ui で storage 例外を直接処理しない | SEQ-02 |
 
 運用補足: 記載例の行は削除せず参照用に残す。
 運用補足: 経路文字列は `AppProvider -> DIファクトリ -> AppContext -> Page -> UI` を基準として記載する。
@@ -518,7 +520,7 @@ sequenceDiagram
 
 | 図ID | メソッド名 | 層（page/usecase/adapter等） | 対応要件ID（FR/NFR） |
 | --- | --- | --- | --- |
-| FLOW-01 | loadSidebarVariant | providers/plugins | FR-05 |
+| FLOW-01 | loadSidebarVariant | providers/AppProvider | FR-05 |
 | FLOW-02 | toggleSidebarVariant | providers/AppProvider | FR-04/FR-05 |
 | FLOW-03 | buildDashboardPageProps | app/dashboard/page.tsx | FR-01 |
 
@@ -764,17 +766,16 @@ classDiagram
 | --- | --- | --- | --- | --- | --- |
 | 1 | packages/contracts/src/layout/sidebar.ts | contracts | 追加 | SidebarVariant/SidebarPreferencesStore/SidebarPreferenceError を定義 | 型定義が追加され typecheck が通る |
 | 2 | packages/contracts/src/pages/dashboard.ts | contracts | 変更 | SidebarNavItem に href/disabled/ID 型を追加し props を拡張 | 既存型が後方互換で拡張される |
-| 3 | src/providers/plugins/createSidebarPreferencesStore.ts | src | 追加 | localStorage 永続化を実装する store を追加 | storage の load/save が動作する |
-| 4 | src/providers/AppContext.tsx | src | 変更 | sidebarState と toggle 関数を AppContext に追加 | useAppContext で状態を取得できる |
-| 5 | src/providers/AppProvider.tsx | src | 変更 | store と state を生成し AppContext に渡す | rail 状態が保持される |
-| 6 | src/lib/createClientDeps.ts | src | 変更 | nav 項目に href を追加し SSOT を固定 | ダミー nav が仕様通りになる |
-| 7 | app/dashboard/page.tsx | app | 変更 | AppContext の sidebarState を DashboardPage に渡す | UI が toggle 可能になる |
-| 8 | packages/ui/src/pages/dashboard/DashboardPage.tsx | ui | 変更 | SidebarNavigation に variant/toggle を渡す | rail/expanded 表示が切替できる |
-| 9 | packages/ui/src/organisms/SidebarNavigation.tsx | ui | 変更 | rail レイアウト・tooltip・a11y・アイコン大型化 | FR を満たす UI になる |
-| 10 | packages/ui/src/molecules/SidebarToggleButton.tsx | ui | 追加 | トグルボタン UI を追加 | rail/expanded で表示切替できる |
-| 11 | packages/ui/src/organisms/SidebarNavigation.test.tsx | ui | 追加 | rail/expanded 表示と tooltip を検証 | Unit テストが成功する |
-| 12 | packages/ui/src/organisms/SidebarNavigation.stories.tsx | ui | 追加 | expanded/rail/selected の Story を追加 | Storybook で状態が確認できる |
-| 13 | tests/e2e/sidebar-nav-rail.spec.ts | other | 追加 | トグル→遷移→保持の E2E を追加 | Playwright が成功する |
+| 3 | src/providers/AppContext.tsx | src | 変更 | sidebarState と toggle 関数を AppContext に追加 | useAppContext で状態を取得できる |
+| 4 | src/providers/AppProvider.tsx | src | 変更 | localStorage で状態を保持し AppContext に渡す | rail 状態が保持される |
+| 5 | src/lib/createClientDeps.ts | src | 変更 | nav 項目に href を追加し SSOT を固定 | ダミー nav が仕様通りになる |
+| 6 | app/dashboard/page.tsx | app | 変更 | AppContext の sidebarState を DashboardPage に渡す | UI が toggle 可能になる |
+| 7 | packages/ui/src/pages/dashboard/DashboardPage.tsx | ui | 変更 | SidebarNavigation に variant/toggle を渡す | rail/expanded 表示が切替できる |
+| 8 | packages/ui/src/organisms/SidebarNavigation.tsx | ui | 変更 | rail レイアウト・tooltip・a11y・アイコン大型化 | FR を満たす UI になる |
+| 9 | packages/ui/src/molecules/SidebarToggleButton.tsx | ui | 追加 | トグルボタン UI を追加 | rail/expanded で表示切替できる |
+| 10 | packages/ui/src/organisms/SidebarNavigation.test.tsx | ui | 追加 | rail/expanded 表示と tooltip を検証 | Unit テストが成功する |
+| 11 | packages/ui/src/organisms/SidebarNavigation.stories.tsx | ui | 追加 | expanded/rail/selected の Story を追加 | Storybook で状態が確認できる |
+| 12 | tests/e2e/sidebar-nav-rail.spec.ts | other | 追加 | トグル→遷移→保持の E2E を追加 | Playwright が成功する |
 
 運用補足: 区分は `app` / `src` / `contracts` / `ui` / `plugins` / `other` のいずれか1つ。変更タイプは `追加` / `変更` / `削除` のみ。
 運用補足: `createPublicDeps.ts` などモックデータ実装を含む行では、実装内容にデータバリエーション要件を明記する（例: 各一覧は最低3件以上、`status` は `open` と `closed` を最低1件ずつ含める）。
@@ -784,7 +785,7 @@ classDiagram
 | 手順 | 作業内容 | 対象ファイル/モジュール | 完了条件 |
 | --- | --- | --- | --- |
 | 1 | contracts に sidebar 関連型を追加し型エラーを解消する | packages/contracts/src/layout/sidebar.ts / dashboard.ts | typecheck が通る |
-| 2 | providers/plugins に storage 実装を追加し AppProvider で状態管理を行う | src/providers/plugins/createSidebarPreferencesStore.ts / AppProvider.tsx | rail 状態が保持される |
+| 2 | AppProvider で localStorage を使った状態管理を行う | AppProvider.tsx | rail 状態が保持される |
 | 3 | AppContext と app/dashboard/page.tsx で state を渡す | AppContext.tsx / app/dashboard/page.tsx | UI に variant が渡る |
 | 4 | SidebarNavigation と Toggle UI を実装し rail 表示を完成させる | SidebarNavigation.tsx / SidebarToggleButton.tsx | FR-01〜FR-10 を満たす |
 | 5 | Storybook/Unit/E2E を追加し品質ゲートを確認する | stories/test/e2e | tests が成功する |
