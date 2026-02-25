@@ -471,14 +471,14 @@ sequenceDiagram
 sequenceDiagram
   actor User
   participant SidebarNavigation
-  participant AppProvider
+  participant AppContext
   participant SidebarPreferencesStore
 
   User->>SidebarNavigation: execute PARAM: toggle click
-  SidebarNavigation->>AppProvider: invoke PARAM: toggleSidebarVariant
-  AppProvider->>SidebarPreferencesStore: saveSidebarVariant PARAM: variant＝rail
-  SidebarPreferencesStore-->>AppProvider: ERROR: SidebarPreferenceError（invalid_variant）
-  AppProvider-->>SidebarNavigation: RETURN: fallback variant＝expanded
+  SidebarNavigation->>AppContext: invoke PARAM: toggleSidebarVariant
+  AppContext->>SidebarPreferencesStore: saveSidebarVariant PARAM: variant＝rail
+  SidebarPreferencesStore-->>AppContext: ERROR: SidebarPreferenceError（invalid_variant）
+  AppContext-->>SidebarNavigation: RETURN: fallback variant＝expanded
   SidebarNavigation-->>User: RETURN: expanded sidebar
 ```
 
