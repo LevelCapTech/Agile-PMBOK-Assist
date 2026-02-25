@@ -492,14 +492,17 @@ sequenceDiagram
 sequenceDiagram
   actor User
   participant SidebarNavigation
-  participant AppProvider
+  participant DashboardPage
+  participant AppContext
   participant SidebarPreferencesStore
   User->>SidebarNavigation: execute PARAM: toggle click
-  SidebarNavigation->>AppProvider: invoke PARAM: toggleSidebarVariant
-  AppProvider->>SidebarPreferencesStore: saveSidebarVariant PARAM: variant＝rail
-  SidebarPreferencesStore-->>AppProvider: ERROR: SidebarPreferenceError（storage_unavailable）
-  AppProvider->>AppProvider: write PARAM: console.warn＋SidebarPreferenceErrorCode
-  AppProvider-->>SidebarNavigation: RETURN: fallback variant＝expanded
+  SidebarNavigation-->>DashboardPage: emit PARAM: props.onToggleSidebarVariant(variant＝rail)
+  DashboardPage->>AppContext: invoke PARAM: toggleSidebarVariant(variant＝rail)
+  AppContext->>SidebarPreferencesStore: saveSidebarVariant PARAM: variant＝rail
+  SidebarPreferencesStore-->>AppContext: ERROR: SidebarPreferenceError（storage_unavailable）
+  AppContext->>AppContext: write PARAM: console.warn＋SidebarPreferenceErrorCode
+  AppContext-->>DashboardPage: RETURN: fallback variant＝expanded
+  DashboardPage-->>SidebarNavigation: RETURN: props.variant＝expanded
   SidebarNavigation-->>User: RETURN: expanded sidebar
 ```
 
