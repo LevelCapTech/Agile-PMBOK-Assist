@@ -1,4 +1,4 @@
-name: CI（UI/UX Storybook）
+name: CI（UI/UX Storybookゲート）
 
 on:
   pull_request:

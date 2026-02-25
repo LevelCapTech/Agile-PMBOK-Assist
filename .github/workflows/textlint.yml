@@ -1,4 +1,4 @@
-name: textlint (pull_request)
+name: ドキュメントlint（textlint/PR）
 
 on:
   pull_request:

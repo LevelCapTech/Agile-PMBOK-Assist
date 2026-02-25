@@ -1,4 +1,4 @@
-name: commitlint (pull_request)
+name: コミットメッセージlint（PR）
 
 on:
   pull_request:

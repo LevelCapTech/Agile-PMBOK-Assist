@@ -1,4 +1,4 @@
-name: モックCI
+name: モックCI（React）
 
 on:
   pull_request:

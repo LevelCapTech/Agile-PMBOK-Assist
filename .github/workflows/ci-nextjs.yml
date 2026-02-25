@@ -1,4 +1,4 @@
-name: CI（Next.js / Node 24）
+name: CI（Next.js 基本ゲート / Node 24）
 
 on:
   pull_request:
