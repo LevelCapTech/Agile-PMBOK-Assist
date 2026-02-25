@@ -444,12 +444,15 @@
 sequenceDiagram
   actor User
   participant AppProvider
+  participant createClientDeps
   participant SidebarPreferencesStore
   participant AppContext
   participant DashboardPageBridge
   participant DashboardPage
   participant SidebarNavigation
 
+  AppProvider->>createClientDeps: execute PARAM: depsFactory設定
+  createClientDeps-->>AppProvider: RETURN: deps（dashboardDataSource など）
   AppProvider->>SidebarPreferencesStore: loadSidebarVariant PARAM: storageKey＝lc.sidebar.variant
   SidebarPreferencesStore-->>AppProvider: RETURN: SidebarPreferenceResult（variant＝expanded）
   AppProvider->>AppContext: provide PARAM: deps＋sidebarState
@@ -638,7 +641,7 @@ classDiagram
   class SidebarPreferenceResult {
     +variant: SidebarVariant
     +source: SidebarPreferenceSource
-    +error: SidebarPreferenceError
+    +error?: SidebarPreferenceError
   }
   class SidebarPreferenceError {
     +code: SidebarPreferenceErrorCode
@@ -650,7 +653,7 @@ classDiagram
     +iconKey: string
     +href: string
     +active: boolean
-    +disabled: boolean
+    +disabled?: boolean
   }
   SidebarPreferenceResult --> SidebarPreferenceError
 ```
@@ -709,7 +712,7 @@ classDiagram
 | sidebar | SidebarNavigationState | variant | SidebarVariant | SidebarNavigationProps | Y | N | rail/expanded の状態 | "expanded" |
 | sidebar | SidebarPreferenceResult | variant | SidebarVariant | AppProvider | Y | N | storage から得た状態 | "rail" |
 | sidebar | SidebarPreferenceResult | source | SidebarPreferenceSource | AppProvider | Y | N | 取得元 | "storage" |
-| sidebar | SidebarPreferenceResult | error | SidebarPreferenceError | AppProvider | N | Y | エラー情報 | { code: "invalid_variant", message: "..." } |
+| sidebar | SidebarPreferenceResult | error | SidebarPreferenceError \| null \| undefined | AppProvider | N | Y | エラー情報 | { code: "invalid_variant", message: "..." } |
 | sidebar | SidebarPreferenceError | code | SidebarPreferenceErrorCode | AppProvider | Y | N | storage エラーコード | "storage_unavailable" |
 | sidebar | SidebarPreferenceError | message | string | AppProvider | Y | N | ログ用メッセージ | "localStorage error" |
 | navigation | SidebarNavItem | id | SidebarNavItemId | SidebarNavigation | Y | N | nav 項目 ID | "projects" |
@@ -717,7 +720,7 @@ classDiagram
 | navigation | SidebarNavItem | iconKey | string | SidebarNavigation | Y | N | LcIcon のキー | "folder" |
 | navigation | SidebarNavItem | href | string | SidebarNavigation | Y | N | 遷移先パス | "/dashboard" |
 | navigation | SidebarNavItem | active | boolean | SidebarNavigation | Y | N | 選択中フラグ | true |
-| navigation | SidebarNavItem | disabled | boolean | SidebarNavigation | N | Y | 無効化フラグ | false |
+| navigation | SidebarNavItem | disabled | boolean \| null \| undefined | SidebarNavigation | N | Y | 無効化フラグ | false |
 
 運用補足: `利用コンポーネント/型定義名（ui）` には `DashboardPage` / `ProjectList` などの利用先コンポーネント名、または `ProjectListProps` など ui 側型定義名を必ず記載する。
 運用補足: `DashboardPageData` の部分集合をそのまま渡す場合も、再定義する場合も、どちらの方針かが判別できる名前で統一する。
