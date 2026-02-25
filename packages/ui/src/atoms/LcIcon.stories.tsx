@@ -1,3 +1,4 @@
+import Box from "@mui/material/Box";
 import type { Meta, StoryObj } from "@storybook/react";
 import { within } from "@testing-library/dom";
 
@@ -21,11 +22,11 @@ export const Default: Story = {};
 
 export const SizeVariants: Story = {
   render: () => (
-    <div className="flex items-center gap-4">
+    <Box sx={{ alignItems: "center", display: "flex", gap: 2 }}>
       <LcIcon iconKey="search" size="sm" />
       <LcIcon iconKey="search" size="md" />
       <LcIcon iconKey="search" size="lg" />
-    </div>
+    </Box>
   ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);

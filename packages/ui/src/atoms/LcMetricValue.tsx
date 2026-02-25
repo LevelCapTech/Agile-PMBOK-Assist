@@ -36,7 +36,7 @@ export const LcMetricValue = ({
   const toneColor = resolveToneColor(theme.palette, tone);
 
   return (
-    <Box className="flex items-baseline gap-1">
+    <Box sx={{ display: "flex", alignItems: "baseline", gap: 1 }}>
       <Typography
         component="p"
         variant="h5"

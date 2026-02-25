@@ -28,8 +28,23 @@ export const SettingActionButton = ({
         opacity: isDisabled ? 0.6 : 1,
       }}
     >
-      <Box className="flex h-full flex-col gap-2 p-4">
-        <Box className="flex items-center justify-between gap-3">
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          gap: 1,
+          height: "100%",
+          padding: 2,
+        }}
+      >
+        <Box
+          sx={{
+            alignItems: "center",
+            display: "flex",
+            gap: 1.5,
+            justifyContent: "space-between",
+          }}
+        >
           <LcIconButton
             disabled={isDisabled}
             iconKey={action.iconKey}

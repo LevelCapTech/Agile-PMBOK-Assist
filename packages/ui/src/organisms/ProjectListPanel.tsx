@@ -52,7 +52,13 @@ export const ProjectListPanel = ({
     }
 
     return (
-      <Box className="grid grid-cols-3 gap-4">
+      <Box
+        sx={{
+          display: "grid",
+          gap: 2,
+          gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+        }}
+      >
         {projects.map((project) => (
           <ProjectListItem
             key={project.id}
@@ -65,7 +71,7 @@ export const ProjectListPanel = ({
   };
 
   return (
-    <Box className="flex flex-col gap-4">
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
       <LcSectionTitle title={title} />
       {renderContent()}
     </Box>

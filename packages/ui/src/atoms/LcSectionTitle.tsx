@@ -13,7 +13,7 @@ export const LcSectionTitle = ({
   const theme = useTheme();
 
   return (
-    <Box className="flex flex-col gap-1">
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
       <Typography
         component="h2"
         variant="h6"

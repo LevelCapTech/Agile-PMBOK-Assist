@@ -16,14 +16,23 @@ export const SidebarNavigation = ({ sidebar }: SidebarNavigationProps) => {
 
   return (
     <Box
-      className="flex h-full w-64 flex-col gap-6 px-4 py-6"
       sx={{
         backgroundColor: theme.palette.background.paper,
         borderRight: `1px solid ${theme.palette.divider}`,
+        display: "flex",
+        flexDirection: "column",
+        gap: 3,
+        height: "100%",
+        paddingX: 2,
+        paddingY: 3,
+        width: 256,
       }}
     >
       <LcSectionTitle title={sidebar.title} />
-      <List className="flex flex-col gap-1" disablePadding>
+      <List
+        disablePadding
+        sx={{ display: "flex", flexDirection: "column", gap: 1 }}
+      >
         {sidebar.items.map((item) => (
           <ListItemButton
             key={item.id}

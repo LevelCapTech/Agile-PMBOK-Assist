@@ -30,9 +30,19 @@ export const MemberListItem = ({ item }: MemberListItemProps) => {
         height: "100%",
       }}
     >
-      <Box className="flex h-full flex-col items-center gap-3 p-4 text-center">
+      <Box
+        sx={{
+          alignItems: "center",
+          display: "flex",
+          flexDirection: "column",
+          gap: 1.5,
+          height: "100%",
+          padding: 2,
+          textAlign: "center",
+        }}
+      >
         <LcAvatar alt={item.displayName} size="lg" src={item.avatarUrl} />
-        <Box className="flex flex-col gap-1">
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
           <Typography component="h3" variant="subtitle1" fontWeight={600}>
             {item.displayName}
           </Typography>
@@ -45,7 +55,7 @@ export const MemberListItem = ({ item }: MemberListItemProps) => {
           </Typography>
         </Box>
         <LcStatusChip status={item.status} tone={statusTone} />
-        <Box className="flex items-center gap-2">
+        <Box sx={{ alignItems: "center", display: "flex", gap: 1 }}>
           <LcIcon iconKey="briefcase" size="sm" />
           <Typography
             component="span"

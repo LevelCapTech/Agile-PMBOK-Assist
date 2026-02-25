@@ -45,12 +45,26 @@ export const ProjectListItem = ({ item, onSelect }: ProjectListItemProps) => {
           },
         }}
       >
-        <Box className="flex h-full flex-col gap-3">
-          <Box className="flex flex-col gap-2">
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 1.5,
+            height: "100%",
+          }}
+        >
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
             <Typography component="h3" variant="subtitle1" fontWeight={600}>
               {item.name}
             </Typography>
-            <Box className="flex flex-wrap items-center gap-2">
+            <Box
+              sx={{
+                alignItems: "center",
+                display: "flex",
+                flexWrap: "wrap",
+                gap: 1,
+              }}
+            >
               <Typography
                 component="span"
                 variant="caption"
@@ -62,12 +76,23 @@ export const ProjectListItem = ({ item, onSelect }: ProjectListItemProps) => {
             </Box>
           </Box>
           <Divider />
-          <Box className="flex flex-col gap-2">
-            <Box className="flex items-center gap-2">
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+            <Box sx={{ alignItems: "center", display: "flex", gap: 1 }}>
               <LcIcon iconKey="users" size="sm" />
-              <Box className="flex items-center gap-2">
+              <Box sx={{ alignItems: "center", display: "flex", gap: 1 }}>
                 {memberCount > 0 ? (
-                  <Box className="flex -space-x-2">
+                  <Box
+                    sx={{
+                      alignItems: "center",
+                      display: "flex",
+                      "& > *": {
+                        marginLeft: "-8px",
+                      },
+                      "& > *:first-of-type": {
+                        marginLeft: 0,
+                      },
+                    }}
+                  >
                     {item.members.slice(0, 4).map((member) => (
                       <Box
                         key={member.name}
@@ -96,7 +121,7 @@ export const ProjectListItem = ({ item, onSelect }: ProjectListItemProps) => {
                 </Typography>
               </Box>
             </Box>
-            <Box className="flex items-center gap-2">
+            <Box sx={{ alignItems: "center", display: "flex", gap: 1 }}>
               <LcIcon iconKey="calendar" size="sm" />
               <Typography
                 component="span"
