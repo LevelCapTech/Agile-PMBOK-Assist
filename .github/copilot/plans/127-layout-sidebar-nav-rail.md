@@ -842,7 +842,7 @@ Unitテストを完全網羅すること
 | 回帰 | createClientDeps nav | createClientDeps | nav 項目 | 既存 nav 項目が維持される |
 | 回帰 | AppContext 互換 | AppContext | 既存 dashboardDataSource | 型が崩れず使用できる |
 | 回帰 | lint/typecheck | CI | lint/test | 既存品質ゲートが通る |
-| 回帰 | E2E rail 유지 | Playwright | トグル→遷移→戻る | rail 状態が維持される |
+| 回帰 | E2E rail 維持 | Playwright | トグル→遷移→戻る | rail 状態が維持される |
 
 | 網羅チェック | 判定（Y/N） | 根拠 |
 | --- | --- | --- |
