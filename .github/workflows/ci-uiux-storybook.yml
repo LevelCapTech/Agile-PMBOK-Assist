@@ -24,6 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       RUN_CHROMATIC: ${{ github.event_name == 'workflow_dispatch' && inputs.runChromatic || github.event_name == 'pull_request' && 'true' || 'false' }}
+      CHROMATIC_PROJECT_TOKEN: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -72,7 +73,7 @@ jobs:
         shell: bash
 
       - name: Publish to Chromatic
-        if: env.RUN_CHROMATIC == 'true'
+        if: env.RUN_CHROMATIC == 'true' && env.CHROMATIC_PROJECT_TOKEN != ''
         uses: chromaui/action@v1
         with:
           projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
