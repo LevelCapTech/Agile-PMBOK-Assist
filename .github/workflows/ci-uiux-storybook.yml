@@ -8,7 +8,7 @@ on:
       runChromatic:
         description: "Run Chromatic publish"
         required: false
-        default: "true"
+        default: true
         type: boolean
 
 permissions:
