@@ -20,7 +20,7 @@ jobs:
     if: github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, '🔬 E2E'))
     runs-on: ubuntu-latest
     env:
-      PLAYWRIGHT_BROWSERS_PATH: ~/.cache/ms-playwright
+      PLAYWRIGHT_BROWSERS_PATH: ${{ runner.temp }}/ms-playwright
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -44,7 +44,7 @@ jobs:
       - name: Restore Playwright browsers cache
         uses: actions/cache@v4
         with:
-          path: ~/.cache/ms-playwright
+          path: ${{ runner.temp }}/ms-playwright
           key: playwright-${{ runner.os }}-chromium-${{ hashFiles('package-lock.json') }}
           restore-keys: |
             playwright-${{ runner.os }}-chromium-
