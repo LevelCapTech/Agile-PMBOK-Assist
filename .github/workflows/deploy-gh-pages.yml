@@ -1,4 +1,4 @@
-name: GitHub Pagesへのデプロイ
+name: GitHub Pagesデプロイ（モックアプリ）
 
 on:
   workflow_dispatch:

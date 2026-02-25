@@ -1,4 +1,4 @@
-name: "Copilot 環境準備（setup steps）"
+name: "Copilot 環境準備"
 
 on:
   workflow_dispatch:
