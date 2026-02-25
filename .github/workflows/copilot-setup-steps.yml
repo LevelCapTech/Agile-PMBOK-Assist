@@ -13,10 +13,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Cache fontconfig (for Copilot agent)
+        id: cache-fontconfig
         uses: actions/cache@v4
         with:
           path: ~/.cache/fontconfig
           key: fontconfig-${{ runner.os }}-v1
+
+      - name: Echo cache status
+        run: |
+          if [ "${{ steps.cache-fontconfig.outputs.cache-hit }}" = "true" ]; then
+            echo "[INFO] fontconfig cache: HIT"
+          else
+            echo "[INFO] fontconfig cache: MISS"
+          fi
 
       - name: Install Japanese fonts for Copilot agent
         run: |
