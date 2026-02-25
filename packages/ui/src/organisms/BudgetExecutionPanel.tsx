@@ -41,21 +41,32 @@ export const BudgetExecutionPanel = ({
     }
 
     return (
-      <Box className="flex flex-col gap-4">
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
         <Box
-          className="flex flex-col gap-2"
           sx={{
             border: `1px dashed ${theme.palette.divider}`,
             borderRadius: 2,
+            display: "flex",
+            flexDirection: "column",
+            gap: 1,
             padding: 2,
           }}
         >
           <Typography component="p" variant="body2" fontWeight={600}>
             予算推移
           </Typography>
-          <Box className="grid grid-cols-6 gap-2">
+          <Box
+            sx={{
+              display: "grid",
+              gap: 1,
+              gridTemplateColumns: "repeat(6, minmax(0, 1fr))",
+            }}
+          >
             {series.map((point) => (
-              <Box key={point.month} className="flex flex-col gap-1">
+              <Box
+                key={point.month}
+                sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}
+              >
                 <Typography
                   component="span"
                   variant="caption"
@@ -74,7 +85,13 @@ export const BudgetExecutionPanel = ({
             ))}
           </Box>
         </Box>
-        <Box className="grid grid-cols-3 gap-4">
+        <Box
+          sx={{
+            display: "grid",
+            gap: 2,
+            gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+          }}
+        >
           <BudgetSummaryCard
             label="総予算 (円)"
             tone="primary"
@@ -95,8 +112,8 @@ export const BudgetExecutionPanel = ({
     );
   };
 
-  return (
-    <Box className="flex flex-col gap-4">
+    return (
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
       <LcSectionTitle title={title} />
       {renderContent()}
     </Box>

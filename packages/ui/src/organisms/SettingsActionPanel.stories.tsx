@@ -40,7 +40,10 @@ export const Loading: Story = {
 
 export const Error: Story = {
   args: {
-    error: { code: "error", message: "設定情報を取得できません" },
+    error: {
+      code: "data_source_unavailable",
+      message: "設定情報を取得できません",
+    },
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);

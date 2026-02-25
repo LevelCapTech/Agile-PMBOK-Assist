@@ -1,27 +1,71 @@
 "use client";
 
+import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
+import Chip from "@mui/material/Chip";
+import Stack from "@mui/material/Stack";
+import Typography from "@mui/material/Typography";
+import { useTheme } from "@mui/material/styles";
 
 export const MuiTailwindSample = () => {
+  const theme = useTheme();
+
   return (
-    <section className="flex w-full max-w-md flex-col gap-4 rounded-2xl border border-zinc-200 bg-white p-6 text-left text-zinc-900 shadow-sm dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-50">
-      <div className="space-y-1">
-        <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+    <Box
+      component="section"
+      sx={{
+        backgroundColor: theme.palette.background.paper,
+        border: `1px solid ${theme.palette.divider}`,
+        borderRadius: 4,
+        boxShadow: theme.shadows[1],
+        color: theme.palette.text.primary,
+        display: "flex",
+        flexDirection: "column",
+        gap: 2,
+        maxWidth: 448,
+        padding: 3,
+        textAlign: "left",
+        width: "100%",
+      }}
+    >
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
+        <Typography
+          component="p"
+          variant="caption"
+          sx={{
+            color: theme.palette.text.secondary,
+            fontWeight: 600,
+            letterSpacing: "0.08em",
+            textTransform: "uppercase",
+          }}
+        >
           MUI + Tailwind
-        </p>
-        <h2 className="text-xl font-semibold">スタイル基盤の確認</h2>
-        <p className="text-sm text-zinc-600 dark:text-zinc-400">
+        </Typography>
+        <Typography component="h2" variant="h6" fontWeight={600}>
+          スタイル基盤の確認
+        </Typography>
+        <Typography
+          component="p"
+          variant="body2"
+          sx={{ color: theme.palette.text.secondary }}
+        >
           Tailwindでレイアウトし、MUIでボタンの見た目を管理します。
-        </p>
-      </div>
-      <div className="flex flex-wrap items-center gap-3">
-        <Button className="normal-case" variant="contained">
+        </Typography>
+      </Box>
+      <Stack direction="row" flexWrap="wrap" gap={1.5} alignItems="center">
+        <Button sx={{ textTransform: "none" }} variant="contained">
           MUI Button
         </Button>
-        <span className="rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-700 dark:bg-zinc-900 dark:text-zinc-200">
-          Tailwind Layout
-        </span>
-      </div>
-    </section>
+        <Chip
+          label="Tailwind Layout"
+          size="small"
+          sx={{
+            backgroundColor: theme.palette.action.hover,
+            color: theme.palette.text.secondary,
+            fontWeight: 500,
+          }}
+        />
+      </Stack>
+    </Box>
   );
 };

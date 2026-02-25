@@ -1,3 +1,4 @@
+import Box from "@mui/material/Box";
 import type { Meta, StoryObj } from "@storybook/react";
 import { within } from "@testing-library/dom";
 
@@ -21,13 +22,13 @@ export const Default: Story = {};
 
 export const ToneVariants: Story = {
   render: () => (
-    <div className="flex items-center gap-3">
+    <Box sx={{ alignItems: "center", display: "flex", gap: 1.5 }}>
       <LcStatusChip status="オープン" tone="primary" />
       <LcStatusChip status="進行中" tone="success" />
       <LcStatusChip status="注意" tone="warning" />
       <LcStatusChip status="停止" tone="error" />
       <LcStatusChip status="保留" tone="neutral" />
-    </div>
+    </Box>
   ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);

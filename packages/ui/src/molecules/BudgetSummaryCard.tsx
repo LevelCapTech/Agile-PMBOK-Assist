@@ -47,7 +47,15 @@ export const BudgetSummaryCard = ({
         height: "100%",
       }}
     >
-      <Box className="flex h-full flex-col gap-2 p-4">
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          gap: 1,
+          height: "100%",
+          padding: 2,
+        }}
+      >
         <Typography
           component="p"
           variant="body2"

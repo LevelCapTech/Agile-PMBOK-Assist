@@ -21,13 +21,19 @@ export const DashboardHeader = ({
 
   return (
     <Box
-      className="flex w-full items-center justify-between gap-6 px-6 py-4"
       sx={{
+        alignItems: "center",
         backgroundColor: theme.palette.background.paper,
         borderBottom: `1px solid ${theme.palette.divider}`,
+        display: "flex",
+        gap: 3,
+        justifyContent: "space-between",
+        paddingX: 3,
+        paddingY: 2,
+        width: "100%",
       }}
     >
-      <Box className="flex flex-col gap-1">
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
         <Typography component="h1" variant="h6" fontWeight={600}>
           {header.title}
         </Typography>
@@ -39,7 +45,14 @@ export const DashboardHeader = ({
           {header.subtitle}
         </Typography>
       </Box>
-      <Box className="flex flex-1 items-center justify-center">
+      <Box
+        sx={{
+          alignItems: "center",
+          display: "flex",
+          flex: 1,
+          justifyContent: "center",
+        }}
+      >
         <TextField
           InputProps={{
             startAdornment: (
@@ -61,11 +74,11 @@ export const DashboardHeader = ({
           onChange={(event) => onSearchChange(event.target.value)}
         />
       </Box>
-      <Box className="flex items-center gap-3">
+      <Box sx={{ alignItems: "center", display: "flex", gap: 1.5 }}>
         <IconButton aria-label="通知">
           <LcIcon iconKey="bell" size="md" />
         </IconButton>
-        <Box className="flex items-center gap-2">
+        <Box sx={{ alignItems: "center", display: "flex", gap: 1 }}>
           <LcAvatar alt={header.userName} size="md" src={header.userAvatarUrl} />
           <Typography component="span" variant="body2" fontWeight={600}>
             {header.userName}

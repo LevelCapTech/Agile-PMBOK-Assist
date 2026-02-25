@@ -51,7 +51,13 @@ export const MemberListPanel = ({
     }
 
     return (
-      <Box className="grid grid-cols-4 gap-4">
+      <Box
+        sx={{
+          display: "grid",
+          gap: 2,
+          gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+        }}
+      >
         {members.map((member) => (
           <MemberListItem key={member.id} item={member} />
         ))}
@@ -60,7 +66,7 @@ export const MemberListPanel = ({
   };
 
   return (
-    <Box className="flex flex-col gap-4">
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
       <LcSectionTitle title={title} />
       {renderContent()}
     </Box>
