@@ -1,9 +1,9 @@
 import { expect, test } from "@playwright/test";
 
-test("home page shows the Next.js heading", async ({ page }) => {
+test("home page shows the dashboard link", async ({ page }) => {
   await page.goto("/");
 
   await expect(
-    page.getByRole("heading", { name: "Next.js is working!" }),
+    page.getByRole("link", { name: "ダッシュボードへ" }),
   ).toBeVisible();
 });
