@@ -46,9 +46,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ env.PLAYWRIGHT_BROWSERS_PATH }}
-          key: playwright-${{ runner.os }}-e2e-chromium-${{ hashFiles('package-lock.json') }}
+          key: playwright-${{ runner.os }}-e2e-chromium
           restore-keys: |
-            playwright-${{ runner.os }}-e2e-chromium-
+            playwright-${{ runner.os }}-e2e-chromium
 
       - name: Report Playwright browsers cache
         run: |
@@ -59,6 +59,7 @@ jobs:
           fi
 
       - name: Install Playwright Browsers (Chromium)
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: npx playwright install chromium
 
       - name: Test (E2E)

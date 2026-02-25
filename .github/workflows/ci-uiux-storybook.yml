@@ -50,9 +50,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ env.PLAYWRIGHT_BROWSERS_PATH }}
-          key: playwright-${{ runner.os }}-uiux-storybook-${{ hashFiles('package-lock.json') }}
+          key: playwright-${{ runner.os }}-uiux-storybook-browsers
           restore-keys: |
-            playwright-${{ runner.os }}-uiux-storybook-
+            playwright-${{ runner.os }}-uiux-storybook-browsers
 
       - name: Report Playwright browsers cache
         run: |
@@ -63,6 +63,7 @@ jobs:
           fi
 
       - name: Install Playwright Browsers
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: npx playwright install --with-deps
 
       - name: Build Storybook
