@@ -24,7 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       RUN_CHROMATIC: ${{ github.event_name == 'workflow_dispatch' && inputs.runChromatic || github.event_name == 'pull_request' && 'true' || 'false' }}
-      PLAYWRIGHT_BROWSERS_PATH: ${{ runner.temp }}/ms-playwright
+      PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/.cache/ms-playwright
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -49,7 +49,7 @@ jobs:
         id: playwright-cache
         uses: actions/cache@v4
         with:
-          path: ${{ runner.temp }}/ms-playwright
+          path: ${{ env.PLAYWRIGHT_BROWSERS_PATH }}
           key: playwright-${{ runner.os }}-uiux-storybook-${{ hashFiles('package-lock.json') }}
           restore-keys: |
             playwright-${{ runner.os }}-uiux-storybook-
