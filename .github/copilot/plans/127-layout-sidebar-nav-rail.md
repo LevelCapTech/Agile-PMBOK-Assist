@@ -195,7 +195,7 @@
 | 02 | AppProvider | SidebarNavigationState（contract） | useSidebarRailState（providers） | SidebarPreferencesStore | sidebarState | page/ui で localStorage を使わない |
 | 03 | AppContext.Provider | SidebarNavigationState（contract） | AppContextProvider（providers） | sidebarState | Context 配布 | AppContext 以外でグローバル状態を持たない |
 | 04 | app/dashboard/page.tsx | DashboardDataSource（contract） | DashboardPageBridge（page） | useAppContext() | DashboardPageProps | page で DI 生成しない |
-| 05 | packages/ui/pages/dashboard/DashboardPage.tsx | SidebarNavigationProps（contract） | SidebarNavigation（ui） | sidebar items + variant | nav 表示 | UI で storage を直接操作しない |
+| 05 | packages/ui/src/pages/dashboard/DashboardPage.tsx | SidebarNavigationProps（contract） | SidebarNavigation（ui） | sidebar items + variant | nav 表示 | UI で storage を直接操作しない |
 
 運用補足: 本表は必須。シーケンス図より先に確定し、`5.7` の図と差分がないことを確認する。
 運用補足: 上5行の記載例は参照用として残し、必要に応じて追記行を記載する。
