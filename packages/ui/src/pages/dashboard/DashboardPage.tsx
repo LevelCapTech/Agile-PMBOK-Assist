@@ -3,6 +3,7 @@
 import Box from "@mui/material/Box";
 import type { ReactNode } from "react";
 
+import type { SidebarVariant } from "@contracts/layout/sidebar";
 import type {
   BudgetSeriesPoint,
   BudgetSummary,
@@ -36,9 +37,11 @@ export type DashboardPageProps = {
   searchQuery: string;
   isLoading?: boolean;
   errorState?: DashboardContractError;
+  sidebarVariant?: SidebarVariant;
   onSearchChange: (query: string) => void;
   onSelectProject?: (projectId: string) => void;
   onNavigate?: (targetId: string) => void;
+  onToggleSidebarVariant?: (variant: SidebarVariant) => void;
   onClickSetting?: (actionId: SettingActionId) => void;
 };
 
@@ -74,9 +77,11 @@ export const DashboardPage = ({
   searchQuery,
   isLoading,
   errorState,
+  sidebarVariant,
   onSearchChange,
   onSelectProject,
   onNavigate,
+  onToggleSidebarVariant,
   onClickSetting,
 }: DashboardPageProps) => {
   return (
@@ -89,7 +94,14 @@ export const DashboardPage = ({
             onSearchChange={onSearchChange}
           />
         }
-        sidebar={<SidebarNavigation onNavigate={onNavigate} sidebar={sidebar} />}
+        sidebar={
+          <SidebarNavigation
+            onNavigate={onNavigate}
+            onToggleSidebarVariant={onToggleSidebarVariant}
+            sidebar={sidebar}
+            variant={sidebarVariant}
+          />
+        }
         main={
           <Box className="flex flex-col gap-10">
             <ProjectListPanel

@@ -4,6 +4,10 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import type {
+  SidebarNavigationState,
+  SidebarVariant,
+} from "@contracts/layout/sidebar";
+import type {
   DashboardContractError,
   DashboardViewModel,
   DashboardViewRequest,
@@ -44,24 +48,29 @@ const emptyViewModel: DashboardViewModel = {
 
 type BuildDashboardPageParams = {
   viewModel: DashboardViewModel;
+  sidebarState: SidebarNavigationState;
   searchQuery: string;
   isLoading: boolean;
   errorState?: DashboardContractError;
+  onToggleSidebarVariant: (variant: SidebarVariant) => void;
   onSearchChange: (query: string) => void;
   onClickSetting: (actionId: SettingActionId) => void;
 };
 
 const buildDashboardPageProps = ({
   viewModel,
+  sidebarState,
   searchQuery,
   isLoading,
   errorState,
+  onToggleSidebarVariant,
   onSearchChange,
   onClickSetting,
 }: BuildDashboardPageParams): DashboardPageProps => {
   return {
     header: viewModel.header,
     sidebar: viewModel.sidebar,
+    sidebarVariant: sidebarState.variant,
     projects: viewModel.projects,
     members: viewModel.members,
     budgetSummary: viewModel.budgetSummary,
@@ -70,13 +79,15 @@ const buildDashboardPageProps = ({
     searchQuery,
     isLoading,
     errorState,
+    onToggleSidebarVariant,
     onSearchChange,
     onClickSetting,
   };
 };
 
 export default function DashboardPageBridge() {
-  const { dashboardDataSource } = useAppContext();
+  const { dashboardDataSource, sidebarState, toggleSidebarVariant } =
+    useAppContext();
   const router = useRouter();
   const [viewModel, setViewModel] = useState<DashboardViewModel>(emptyViewModel);
   const [searchQuery, setSearchQuery] = useState("");
@@ -148,9 +159,11 @@ export default function DashboardPageBridge() {
     () =>
       buildDashboardPageProps({
         viewModel,
+        sidebarState,
         searchQuery,
         isLoading,
         errorState,
+        onToggleSidebarVariant: toggleSidebarVariant,
         onSearchChange: handleSearchChange,
         onClickSetting: handleClickSetting,
       }),
@@ -160,6 +173,8 @@ export default function DashboardPageBridge() {
       handleSearchChange,
       isLoading,
       searchQuery,
+      sidebarState,
+      toggleSidebarVariant,
       viewModel,
     ],
   );
