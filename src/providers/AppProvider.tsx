@@ -119,9 +119,8 @@ export const AppProvider = ({
         }
         if (saveError.code === "storage_unavailable") {
           console.warn("SidebarPreferenceErrorCode", saveError.code);
-          return currentState;
         }
-        return { variant: "expanded" };
+        return currentState;
       });
     },
     [sidebarPreferencesStore],

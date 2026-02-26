@@ -54,51 +54,55 @@ export const SidebarNavigation = ({
       >
         {sidebar.items.map((item) => {
           const isLink = Boolean(item.href) && !item.disabled;
-          const button = (
-            <ListItemButton
-              aria-current={item.active ? "page" : undefined}
-              aria-label={item.label}
-              component={isLink ? "a" : "button"}
-              disabled={item.disabled}
-              href={isLink ? item.href : undefined}
-              key={item.id}
-              onClick={
-                item.disabled ? undefined : () => onNavigate?.(item.id)
-              }
-              selected={item.active}
-              sx={{
-                borderRadius: 2,
-                gap: isRail ? 0 : 1.5,
-                justifyContent: isRail ? "center" : "flex-start",
-                minHeight: 44,
-                paddingX: isRail ? 1 : 1.5,
-                paddingY: 1,
-                "&.Mui-selected": {
-                  backgroundColor: theme.palette.action.selected,
-                },
-                "&:focus-visible": {
-                  outline: `2px solid ${theme.palette.primary.main}`,
-                  outlineOffset: 2,
-                },
-              }}
-            >
+          const listItemProps = {
+            "aria-current": item.active ? ("page" as const) : undefined,
+            "aria-label": item.label,
+            component: isLink ? ("a" as const) : ("button" as const),
+            disabled: item.disabled,
+            href: isLink ? item.href : undefined,
+            onClick: item.disabled ? undefined : () => onNavigate?.(item.id),
+            selected: item.active,
+            sx: {
+              borderRadius: 2,
+              gap: isRail ? 0 : 1.5,
+              justifyContent: isRail ? "center" : "flex-start",
+              minHeight: 44,
+              paddingX: isRail ? 1 : 1.5,
+              paddingY: 1,
+              "&.Mui-selected": {
+                backgroundColor: theme.palette.action.selected,
+              },
+              "&:focus-visible": {
+                outline: `2px solid ${theme.palette.primary.main}`,
+                outlineOffset: 2,
+              },
+            },
+          };
+          const listItemContent = (
+            <>
               <LcIcon iconKey={item.iconKey} size={isRail ? "lg" : "md"} />
               {isRail ? null : (
                 <Typography component="span" variant="body2" fontWeight={600}>
                   {item.label}
                 </Typography>
               )}
-            </ListItemButton>
+            </>
           );
 
           if (!isRail) {
-            return button;
+            return (
+              <ListItemButton key={item.id} {...listItemProps}>
+                {listItemContent}
+              </ListItemButton>
+            );
           }
 
           return (
             <Tooltip key={item.id} placement="right" title={item.label}>
               <Box component="span" sx={{ display: "inline-flex" }}>
-                {button}
+                <ListItemButton {...listItemProps}>
+                  {listItemContent}
+                </ListItemButton>
               </Box>
             </Tooltip>
           );
