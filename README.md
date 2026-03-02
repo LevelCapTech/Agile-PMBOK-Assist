@@ -68,8 +68,12 @@ Next.js アプリを最も簡単にデプロイする方法は、[Vercel Platfor
 
 ### モック用URL
 
+開発・検証用のモック環境はこちらです。
+
 https://levelcaptech.github.io/Agile-PMBOK-Assist/
 
 ### リリース先URL
+
+本番リリース環境はこちらです。
 
 https://app.googlehub.cloud
