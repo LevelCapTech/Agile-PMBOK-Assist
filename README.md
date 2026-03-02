@@ -63,3 +63,13 @@ Next.js アプリを最も簡単にデプロイする方法は、[Vercel Platfor
 
 手動実行する場合は、`deploy-gh-pages.yml` で定義されている GitHub Actions のワークフロー名「Deploy React App to GitHub Pages」（`mock/v1/web` 向けの名称）を選びます。
 必要であれば `mock_version` を指定して実行してください。
+
+## 公開URL
+
+### モック用URL
+
+https://levelcaptech.github.io/Agile-PMBOK-Assist/
+
+### リリース先URL
+
+https://app.googlehub.cloud
