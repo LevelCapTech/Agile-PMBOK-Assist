@@ -24,6 +24,7 @@ export async function reverseGeocodeAsync({
   ];
 }
 
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const NativeLocation = require('expo-location/build') as Record<string, unknown>;
 
 module.exports = {
