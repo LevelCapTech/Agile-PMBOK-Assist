@@ -47,7 +47,7 @@ jobs:
 
       - name: Restore Playwright browsers cache
         id: playwright-cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ${{ env.PLAYWRIGHT_BROWSERS_PATH }}
           key: playwright-${{ runner.os }}-uiux-storybook-browsers
@@ -94,7 +94,7 @@ jobs:
         if: env.RUN_CHROMATIC == 'true' && env.CHROMATIC_PROJECT_TOKEN != ''
         env:
           CHROMATIC_PROJECT_TOKEN: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
-        uses: chromaui/action@v1
+        uses: chromaui/action@v15
         with:
           projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
           exitOnceUploaded: true
