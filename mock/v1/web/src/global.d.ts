@@ -3,6 +3,7 @@ module 'virtual:load-fonts.jsx' {
 	export function LoadFonts(): null;
 }
 declare module 'react-router' {
+	// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 	interface AppLoadContext {
 		// add context properties here
 	}

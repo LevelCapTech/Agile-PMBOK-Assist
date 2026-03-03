@@ -229,7 +229,7 @@ app.all('/integrations/:path{.+}', async (c, next) => {
   return proxy(url, {
     method: c.req.method,
     body: c.req.raw.body ?? null,
-    // @ts-ignore - this key is accepted even if types not aware and is
+    // @ts-expect-error - this key is accepted even if types not aware and is
     // required for streaming integrations
     duplex: 'half',
     redirect: 'manual',
