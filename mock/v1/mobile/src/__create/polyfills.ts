@@ -1,3 +1,3 @@
 import updatedFetch from './fetch';
-// @ts-ignore
+// @ts-expect-error global.fetch override for polyfill
 global.fetch = updatedFetch;

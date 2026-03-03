@@ -63,7 +63,7 @@ function useOptionalRef<T>(ref?: Ref<T> | null): RefObject<T> {
 }
 
 const CreatePolymorphicComponent = forwardRef(
-  // @ts-ignore
+  // @ts-expect-error forwardRef does not support generic function components
   function CreatePolymorphicComponentRender<As extends ElementType = 'div'>(
     { as, children, renderId, onError, ...rest }: PolymorphicProps<As>,
     forwardedRef?: Ref<Element>
@@ -89,6 +89,7 @@ const CreatePolymorphicComponent = forwardRef(
 
     // If a grid placeholder is active, regenerate it on resize
     useEffect(() => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const el = ref && 'current' in (ref as any) ? (ref as any).current : null;
       if (!el) return;
       if (as !== 'img') {

@@ -29,6 +29,7 @@ function styleToBarColor(
   let resolved:
     | Exclude<StatusBarStyle, "auto" | "inverted">
     | "light"
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     | "dark" = style as any;
 
   if (style === "auto") resolved = actual === "light" ? "dark" : "light";
@@ -38,6 +39,7 @@ function styleToBarColor(
   return resolved === "light" ? "#FFFFFF" : "#000000";
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const StatusBar = React.forwardRef<any, StatusBarProps>(
   function StatusBar({ style = "auto", ...props }, ref) {
     const colorScheme = useColorScheme();
@@ -61,6 +63,7 @@ export const setStatusBarHidden = (
 export const setStatusBarBackgroundColor = (
   backgroundColor: string,
   animated?: boolean
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ) => ExpoSB.setStatusBarBackgroundColor(backgroundColor as any, animated);
 
 export const setStatusBarNetworkActivityIndicatorVisible = (visible: boolean) =>
