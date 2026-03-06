@@ -127,6 +127,7 @@ jobs:
           : > tmp/result.txt
           MAX_ERROR_LENGTH=500
           # Mermaid CLIの実行環境起因エラー（Puppeteer/ブラウザ起動失敗等）を判定するための正規表現パターン
+          # 各要素は正規表現として評価するため、必要に応じてメタ文字を使用/エスケープする
           # 出力メッセージの大文字小文字揺れを吸収するため、grepは -i を使用する
           MMD_CLI_EXEC_ERROR_PATTERNS=(
             'puppeteer'
@@ -153,7 +154,7 @@ jobs:
               fi
               if ! output=$(mmdc -p tmp/puppeteer-config.json -i "${mmd}" -o "${mmd}.svg" 2>&1); then
                 summary=$(printf "%s" "${output}" | tr '\n' ' ' | cut -c1-${MAX_ERROR_LENGTH})
-                if [ -n "${MMD_CLI_EXEC_ERROR_REGEX}" ] && printf "%s" "${output}" | grep -qiE "${MMD_CLI_EXEC_ERROR_REGEX}"; then
+                if printf "%s" "${output}" | grep -qiE "${MMD_CLI_EXEC_ERROR_REGEX}"; then
                   mmdc_exec_error=1
                   mmdc_exec_summary="${summary}"
                   echo "mmdcの実行に失敗しました: ${summary}" >&2
