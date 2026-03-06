@@ -97,7 +97,7 @@ jobs:
       - name: Validate Mermaid diagrams
         run: |
           : > tmp/result.txt
-          MAX_ERROR_LENGTH=200
+          MAX_ERROR_LENGTH=500
           cat <<'JSON' > tmp/puppeteer-config.json
           {
             "args": ["--no-sandbox", "--disable-setuid-sandbox"]
