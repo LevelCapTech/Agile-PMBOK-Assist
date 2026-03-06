@@ -105,7 +105,7 @@ jobs:
       - name: Validate Mermaid diagrams
         run: |
           echo "Mermaid図の検証を開始します"
-          echo "検証用の一時ファイルとPuppeteer設定を準備します"
+          echo "検証の準備を行います"
           : > tmp/result.txt
           MAX_ERROR_LENGTH=500
           # Puppeteerの設定を生成
@@ -119,7 +119,6 @@ jobs:
               if [ -z "${mmd}" ]; then
                 continue
               fi
-              echo "Mermaid図を検証します: ${mmd}"
               if ! output=$(mmdc -p tmp/puppeteer-config.json -i "${mmd}" -o "${mmd}.svg" 2>&1); then
                 summary=$(printf "%s" "${output}" | tr '\n' ' ' | cut -c1-${MAX_ERROR_LENGTH})
                 echo "${src}:${line}: Mermaid図の構文検証に失敗しました: ${summary}" >> tmp/result.txt
