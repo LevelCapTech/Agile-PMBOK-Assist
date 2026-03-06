@@ -45,6 +45,7 @@ jobs:
           const path = require('path')
 
           // Mermaid抽出ファイルと元Markdownの対応を「抽出ファイル:元ファイル:開始行」形式で記録
+          // 例: tmp/diagram-1.mmd:docs/example.md:42
           const mapPath = path.join('tmp', 'map.txt')
           fs.writeFileSync(mapPath, '')
 
