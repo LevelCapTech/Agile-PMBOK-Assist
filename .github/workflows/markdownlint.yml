@@ -1,0 +1,58 @@
+name: Markdown lint（reviewdog）
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths:
+      - "docs/**/*.md"
+      - ".github/**/*.md"
+  push:
+    paths:
+      - "docs/**/*.md"
+      - ".github/**/*.md"
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: markdownlint-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  markdownlint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+
+      - name: Install tools
+        run: npm install -g markdownlint-cli@0.48.0
+
+      - name: Install reviewdog
+        run: |
+          go install github.com/reviewdog/reviewdog/cmd/reviewdog@v0.21.0
+          echo "$HOME/go/bin" >> "$GITHUB_PATH"
+
+      - name: Markdown lint
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          set -euo pipefail
+          reporter="github-pr-review"
+          if [ "${EVENT_NAME}" != "pull_request" ]; then
+            reporter="github-check"
+          fi
+          markdownlint "docs/**/*.md" ".github/**/*.md" \
+            | reviewdog \
+              -f=markdownlint \
+              -name="Markdownチェック" \
+              -reporter="${reporter}" \
+              -level=warning

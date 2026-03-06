@@ -1,0 +1,124 @@
+name: Mermaid lint（reviewdog）
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths:
+      - "docs/**/*.md"
+      - ".github/**/*.md"
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: mermaid-lint-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  mermaid:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+
+      - name: Install tools
+        run: npm install -g @mermaid-js/mermaid-cli@11.12.0
+
+      - name: Install reviewdog
+        run: |
+          go install github.com/reviewdog/reviewdog/cmd/reviewdog@v0.21.0
+          echo "$HOME/go/bin" >> "$GITHUB_PATH"
+
+      - name: Extract Mermaid blocks
+        run: |
+          mkdir -p tmp
+          node <<'EOF'
+          const fs = require('fs')
+          const path = require('path')
+
+          const mapPath = path.join('tmp', 'map.txt')
+          fs.writeFileSync(mapPath, '')
+
+          let index = 0
+
+          function walk(dir) {
+            if (!fs.existsSync(dir)) return
+            fs.readdirSync(dir).forEach((entry) => {
+              const full = path.join(dir, entry)
+              const stat = fs.statSync(full)
+              if (stat.isDirectory()) {
+                walk(full)
+                return
+              }
+              if (full.endsWith('.md')) {
+                processFile(full)
+              }
+            })
+          }
+
+          function processFile(file) {
+            const lines = fs.readFileSync(file, 'utf8').split('\n')
+            let inside = false
+            let buffer = []
+            let startLine = 0
+
+            lines.forEach((line, idx) => {
+              const trimmed = line.trim()
+              if (!inside && trimmed.startsWith('```mermaid')) {
+                inside = true
+                buffer = []
+                startLine = idx + 1
+                return
+              }
+
+              if (inside && trimmed.startsWith('```')) {
+                inside = false
+                const name = `tmp/diagram-${++index}.mmd`
+                fs.writeFileSync(name, buffer.join('\n'))
+                fs.appendFileSync(mapPath, `${name}:${file}:${startLine}\n`)
+                return
+              }
+
+              if (inside) buffer.push(line)
+            })
+          }
+
+          walk('docs')
+          walk('.github')
+          EOF
+
+      - name: Validate Mermaid diagrams
+        run: |
+          : > result.txt
+          cat <<'JSON' > tmp/puppeteer-config.json
+          {
+            "args": ["--no-sandbox", "--disable-setuid-sandbox"]
+          }
+          JSON
+          if [ -s tmp/map.txt ]; then
+            while IFS=":" read -r mmd src line; do
+              if [ -z "${mmd}" ]; then
+                continue
+              fi
+              if ! mmdc -p tmp/puppeteer-config.json -i "${mmd}" -o "${mmd}.svg"; then
+                echo "${src}:${line}: Mermaid図の構文エラー" >> result.txt
+              fi
+            done < tmp/map.txt
+          fi
+
+      - name: Report via reviewdog
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cat result.txt | reviewdog \
+            -efm="%f:%l: %m" \
+            -name="Mermaid図チェック" \
+            -reporter=github-pr-review \
+            -level=error
