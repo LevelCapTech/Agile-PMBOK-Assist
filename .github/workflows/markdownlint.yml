@@ -52,7 +52,7 @@ jobs:
           # パイプラインを使用していないため pipefail は省略
           # markdownlint の終了コード取得のため -e を一時無効化
           set +e
-          markdownlint "docs/**/*.md" ".github/**/*.md" > markdownlint.txt 2>&1
+          markdownlint "docs/**/*.md" ".github/**/*.md" > markdownlint.txt
           exit_code=$?
           set -e
           # reviewdog の終了コード取得のため -e を一時無効化
@@ -109,7 +109,7 @@ jobs:
           # パイプラインを使用していないため pipefail は省略
           # markdownlint の終了コード取得のため -e を一時無効化
           set +e
-          markdownlint "docs/**/*.md" ".github/**/*.md" > markdownlint.txt 2>&1
+          markdownlint "docs/**/*.md" ".github/**/*.md" > markdownlint.txt
           exit_code=$?
           set -e
           # reviewdog の終了コード取得のため -e を一時無効化
