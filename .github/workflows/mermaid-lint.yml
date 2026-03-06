@@ -105,7 +105,7 @@ jobs:
       - name: Validate Mermaid diagrams
         run: |
           echo "Mermaid図の検証を開始します"
-          echo "検証の準備を行います"
+          echo "Puppeteer設定ファイルを生成します"
           : > tmp/result.txt
           MAX_ERROR_LENGTH=500
           # Puppeteerの設定を生成
@@ -125,6 +125,7 @@ jobs:
               fi
             done < tmp/map.txt
           else
+            # tmp/map.txt が空の場合はスキップ
             # Mermaidブロックが無い場合は正常扱い
             echo "Mermaidブロックが見つからなかったため検証をスキップします"
           fi
