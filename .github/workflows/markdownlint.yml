@@ -51,10 +51,12 @@ jobs:
         env:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          set -u
+          set -eu
           # パイプラインを使用していないため pipefail は省略
-          markdownlint "docs/**/*.md" ".github/**/*.md" > markdownlint.txt
+          set +e
+          markdownlint "docs/**/*.md" ".github/**/*.md" > markdownlint.txt 2>&1
           exit_code=$?
+          set -e
           set +e
           reviewdog < markdownlint.txt \
             -f=markdownlint \
