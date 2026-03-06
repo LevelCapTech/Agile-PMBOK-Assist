@@ -98,7 +98,7 @@ jobs:
 
           walk('docs')
           walk('.github')
-          console.log(`抽出したMermaid図: ${index}件`)
+          console.error(`抽出したMermaid図: ${index}件`)
           EOF
           echo "Mermaidブロック抽出が完了しました" >&2
 
