@@ -49,7 +49,7 @@ jobs:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -eu
-          # パイプ演算子を使用していないため pipefail は省略
+          # パイプ演算子（|）を使用していないため pipefail は省略
           exit_code=0
           markdownlint "docs/**/*.md" ".github/**/*.md" > markdownlint.txt || exit_code=$?
           reviewdog_exit=0
@@ -100,7 +100,7 @@ jobs:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -eu
-          # パイプ演算子を使用していないため pipefail は省略
+          # パイプ演算子（|）を使用していないため pipefail は省略
           exit_code=0
           markdownlint "docs/**/*.md" ".github/**/*.md" > markdownlint.txt || exit_code=$?
           reviewdog_exit=0
