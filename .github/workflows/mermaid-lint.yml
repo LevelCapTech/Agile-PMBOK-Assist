@@ -130,23 +130,19 @@ jobs:
           # 各要素は正規表現として評価するため、必要に応じてメタ文字を使用/エスケープする
           # 出力メッセージの大文字小文字揺れを吸収するため、grepは -i を使用する
           MMD_CLI_EXEC_ERROR_PATTERNS=(
-            'puppeteer'
-            'chrome'
-            'chromium'
+            # Puppeteer関連のエラー文言
+            'error.*puppeteer'
+            # 実行ファイル未検出（固定文言）
             "executable doesn't exist"
             # browser executable.*exist は実行ファイル探索時の存在エラー検知を意図
             'browser executable.*exist'
+            # 起動失敗の共通文言
             'failed to launch'
             # browsertype.launch のドットはリテラルとして扱う
             'browsertype\.launch'
           )
-          # 配列要素を | で連結して正規表現文字列を生成（例: puppeteer|chrome|...）
+          # 配列要素を | で連結して正規表現文字列を生成（例: error.*puppeteer|...）
           MMD_CLI_EXEC_ERROR_REGEX=$(IFS='|'; printf '%s' "${MMD_CLI_EXEC_ERROR_PATTERNS[*]}")
-          # 固定値だが将来の拡張に備えて空チェックを実施
-          if [ -z "${MMD_CLI_EXEC_ERROR_REGEX}" ]; then
-            echo "実行環境エラーパターンが空のため検証を中断します" >&2
-            exit 1
-          fi
           cat <<'JSON' > tmp/puppeteer-config.json
           {
             "args": ["--no-sandbox", "--disable-setuid-sandbox"]
