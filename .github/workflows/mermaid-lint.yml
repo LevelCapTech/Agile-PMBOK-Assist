@@ -38,7 +38,7 @@ jobs:
 
       - name: Extract Mermaid blocks
         run: |
-          echo "Mermaidブロック抽出を開始します"
+          echo "Mermaidブロック抽出を開始します" >&2
           mkdir -p tmp
           node <<'EOF'
           const fs = require('fs')
@@ -100,12 +100,12 @@ jobs:
           walk('.github')
           console.log(`抽出したMermaid図: ${index}件`)
           EOF
-          echo "Mermaidブロック抽出が完了しました"
+          echo "Mermaidブロック抽出が完了しました" >&2
 
       - name: Validate Mermaid diagrams
         run: |
-          echo "Mermaid図の検証を開始します"
-          echo "Puppeteer設定ファイルを生成します"
+          echo "Mermaid図の検証を開始します" >&2
+          echo "Puppeteer設定ファイルを生成します" >&2
           : > tmp/result.txt
           MAX_ERROR_LENGTH=500
           cat <<'JSON' > tmp/puppeteer-config.json
@@ -124,15 +124,15 @@ jobs:
               fi
             done < tmp/map.txt
           else
-            echo "Mermaidブロックが見つからなかったため検証をスキップします"
+            echo "Mermaidブロックが見つからなかったため検証をスキップします" >&2
           fi
-          echo "Mermaid図の検証が完了しました"
+          echo "Mermaid図の検証が完了しました" >&2
 
       - name: Report via reviewdog
         env:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "reviewdogで結果を通知します"
+          echo "reviewdogで結果を通知します" >&2
           reviewdog < tmp/result.txt \
             -efm="%f:%l: %m" \
             -name="Mermaid図チェック" \
