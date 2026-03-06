@@ -48,8 +48,7 @@ jobs:
         env:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          set -euo pipefail
-          set +e
+          set -uo pipefail
           markdownlint "docs/**/*.md" ".github/**/*.md" > markdownlint.txt
           exit_code=$?
           set -e
@@ -93,8 +92,7 @@ jobs:
         env:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          set -euo pipefail
-          set +e
+          set -uo pipefail
           markdownlint "docs/**/*.md" ".github/**/*.md" > markdownlint.txt
           exit_code=$?
           set -e
