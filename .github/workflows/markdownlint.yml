@@ -50,9 +50,9 @@ jobs:
           if [ "${EVENT_NAME}" != "pull_request" ]; then
             reporter="github-check"
           fi
-          markdownlint "docs/**/*.md" ".github/**/*.md" \
-            | reviewdog \
-              -f=markdownlint \
-              -name="Markdownチェック" \
-              -reporter="${reporter}" \
-              -level=warning
+          markdownlint "docs/**/*.md" ".github/**/*.md" > markdownlint.txt || true
+          reviewdog < markdownlint.txt \
+            -f=markdownlint \
+            -name="Markdownチェック" \
+            -reporter="${reporter}" \
+            -level=warning

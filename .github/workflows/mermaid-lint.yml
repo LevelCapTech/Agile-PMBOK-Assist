@@ -108,7 +108,7 @@ jobs:
                 continue
               fi
               if ! mmdc -p tmp/puppeteer-config.json -i "${mmd}" -o "${mmd}.svg"; then
-                echo "${src}:${line}: Mermaid図の構文エラー" >> tmp/result.txt
+                echo "${src}:${line}: Mermaid図の構文検証に失敗しました（詳細はCIログを参照）" >> tmp/result.txt
               fi
             done < tmp/map.txt
           fi
