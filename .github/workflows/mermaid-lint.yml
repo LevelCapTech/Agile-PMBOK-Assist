@@ -125,8 +125,8 @@ jobs:
           echo "Puppeteer設定ファイルを生成します" >&2
           : > tmp/result.txt
           MAX_ERROR_LENGTH=500
-          # Mermaid CLIの実行環境起因エラーを判定するためのパターン
-          MMD_CLI_EXEC_ERROR_PATTERNS='Puppeteer|Chrom(e|ium)|Executable doesn.t exist|browser executable.*exist|Failed to launch|browserType\.launch'
+          # Mermaid CLIの実行環境起因エラー（Puppeteer/ブラウザ起動失敗等）を判定するためのパターン
+          MMD_CLI_EXEC_ERROR_PATTERNS="puppeteer|chrome|chromium|executable doesn't exist|browser executable.*exist|failed to launch|browsertype\.launch"
           cat <<'JSON' > tmp/puppeteer-config.json
           {
             "args": ["--no-sandbox", "--disable-setuid-sandbox"]
