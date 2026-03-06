@@ -1,4 +1,4 @@
-name: Mermaid lint（reviewdog）
+name: Mermaid図チェック（reviewdog）
 
 on:
   pull_request:
