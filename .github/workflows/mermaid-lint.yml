@@ -32,20 +32,18 @@ jobs:
           node-version: "24"
 
       - name: Install tools
-        run: npm install -g @mermaid-js/mermaid-cli@11.12.0
-
-      - name: Install reviewdog
         run: |
-          go install github.com/reviewdog/reviewdog/cmd/reviewdog@v0.21.0
-          echo "$HOME/go/bin" >> "$GITHUB_PATH"
-
-      - name: Check Mermaid CLI availability
-        run: |
+          npm install -g @mermaid-js/mermaid-cli@11.12.0
           echo "mmdcコマンドの存在を確認します" >&2
           if ! command -v mmdc >/dev/null 2>&1; then
             echo "mmdcコマンドが見つからないためジョブを失敗扱いにします" >&2
             exit 1
           fi
+
+      - name: Install reviewdog
+        run: |
+          go install github.com/reviewdog/reviewdog/cmd/reviewdog@v0.21.0
+          echo "$HOME/go/bin" >> "$GITHUB_PATH"
 
       - name: Extract Mermaid blocks
         run: |
@@ -128,7 +126,7 @@ jobs:
           : > tmp/result.txt
           MAX_ERROR_LENGTH=500
           # Mermaid CLIの実行環境起因エラーを判定するためのパターン
-          MMD_CLI_EXEC_ERROR_PATTERNS='Puppeteer|Chrom(e|ium)|Executable.*exist|Failed to launch|browserType\.launch'
+          MMD_CLI_EXEC_ERROR_PATTERNS='Puppeteer|Chrom(e|ium)|Executable doesn.t exist|browser executable.*exist|Failed to launch|browserType\.launch'
           cat <<'JSON' > tmp/puppeteer-config.json
           {
             "args": ["--no-sandbox", "--disable-setuid-sandbox"]
@@ -147,6 +145,7 @@ jobs:
                   mmdc_exec_error=1
                   mmdc_exec_summary="${summary}"
                   echo "mmdcの実行に失敗しました: ${summary}" >&2
+                  # 実行環境エラー発生時は以降の検証を中断し、ジョブを失敗扱いにする
                   break
                 fi
                 echo "${src}:${line}: Mermaid図の構文検証に失敗しました: ${summary}" >> tmp/result.txt
