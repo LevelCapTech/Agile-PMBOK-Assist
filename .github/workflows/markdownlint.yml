@@ -39,6 +39,14 @@ jobs:
       - name: Install tools
         run: npm install -g markdownlint-cli@0.48.0
 
+      - name: Check Go availability
+        run: |
+          echo "goコマンドの存在を確認します" >&2
+          if ! command -v go >/dev/null 2>&1; then
+            echo "goコマンドが見つからないためジョブを失敗扱いにします" >&2
+            exit 1
+          fi
+
       - name: Install reviewdog
         run: |
           go install github.com/reviewdog/reviewdog/cmd/reviewdog@v0.21.0
@@ -92,6 +100,14 @@ jobs:
 
       - name: Install tools
         run: npm install -g markdownlint-cli@0.48.0
+
+      - name: Check Go availability
+        run: |
+          echo "goコマンドの存在を確認します" >&2
+          if ! command -v go >/dev/null 2>&1; then
+            echo "goコマンドが見つからないためジョブを失敗扱いにします" >&2
+            exit 1
+          fi
 
       - name: Install reviewdog
         run: |

@@ -41,6 +41,14 @@ jobs:
             exit 1
           fi
 
+      - name: Check Go availability
+        run: |
+          echo "goコマンドの存在を確認します" >&2
+          if ! command -v go >/dev/null 2>&1; then
+            echo "goコマンドが見つからないためジョブを失敗扱いにします" >&2
+            exit 1
+          fi
+
       - name: Install reviewdog
         run: |
           go install github.com/reviewdog/reviewdog/cmd/reviewdog@v0.21.0
