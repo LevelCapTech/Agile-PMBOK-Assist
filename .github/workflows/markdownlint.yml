@@ -51,13 +51,20 @@ jobs:
           set -u
           markdownlint "docs/**/*.md" ".github/**/*.md" > markdownlint.txt
           exit_code=$?
-          set -e
+          set +e
           reviewdog < markdownlint.txt \
             -f=markdownlint \
             -name="Markdownチェック" \
             -reporter="github-pr-review" \
             -level=warning
+          reviewdog_exit=$?
+          set -e
           # markdownlint: 1=lint違反, 2以上=実行エラー
+          if [ "$reviewdog_exit" -ne 0 ]; then
+            echo "reviewdog failed with exit code ${reviewdog_exit}"
+            exit "$reviewdog_exit"
+          fi
+          # exit_code=1 は reviewdog で通知済みのため成功扱い
           if [ "$exit_code" -gt 1 ]; then
             echo "markdownlint failed with exit code ${exit_code}"
             exit "$exit_code"
@@ -95,13 +102,20 @@ jobs:
           set -u
           markdownlint "docs/**/*.md" ".github/**/*.md" > markdownlint.txt
           exit_code=$?
-          set -e
+          set +e
           reviewdog < markdownlint.txt \
             -f=markdownlint \
             -name="Markdownチェック" \
             -reporter="github-check" \
             -level=warning
+          reviewdog_exit=$?
+          set -e
           # markdownlint: 1=lint違反, 2以上=実行エラー
+          if [ "$reviewdog_exit" -ne 0 ]; then
+            echo "reviewdog failed with exit code ${reviewdog_exit}"
+            exit "$reviewdog_exit"
+          fi
+          # exit_code=1 は reviewdog で通知済みのため成功扱い
           if [ "$exit_code" -gt 1 ]; then
             echo "markdownlint failed with exit code ${exit_code}"
             exit "$exit_code"
