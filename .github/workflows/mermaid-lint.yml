@@ -33,6 +33,7 @@ jobs:
 
       - name: Install tools
         run: |
+          set -e
           npm install -g @mermaid-js/mermaid-cli@11.12.0
           echo "mmdcコマンドの存在を確認します" >&2
           if ! command -v mmdc >/dev/null 2>&1; then
@@ -125,7 +126,7 @@ jobs:
           echo "Puppeteer設定ファイルを生成します" >&2
           : > tmp/result.txt
           MAX_ERROR_LENGTH=500
-          # Mermaid CLIの実行環境起因エラー（Puppeteer/ブラウザ起動失敗等）を判定するためのパターン
+          # Mermaid CLIの実行環境起因エラー（Puppeteer/ブラウザ起動失敗等）を判定するための正規表現パターン
           # 出力メッセージの大文字小文字揺れを吸収するため、grepは -i を使用する
           MMD_CLI_EXEC_ERROR_PATTERNS=(
             'puppeteer'
@@ -152,7 +153,7 @@ jobs:
               fi
               if ! output=$(mmdc -p tmp/puppeteer-config.json -i "${mmd}" -o "${mmd}.svg" 2>&1); then
                 summary=$(printf "%s" "${output}" | tr '\n' ' ' | cut -c1-${MAX_ERROR_LENGTH})
-                if printf "%s" "${output}" | grep -qiE "${MMD_CLI_EXEC_ERROR_REGEX}"; then
+                if [ -n "${MMD_CLI_EXEC_ERROR_REGEX}" ] && printf "%s" "${output}" | grep -qiE "${MMD_CLI_EXEC_ERROR_REGEX}"; then
                   mmdc_exec_error=1
                   mmdc_exec_summary="${summary}"
                   echo "mmdcの実行に失敗しました: ${summary}" >&2
