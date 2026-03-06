@@ -64,12 +64,12 @@ jobs:
           # markdownlint: 1=lint違反, 2以上=実行エラー
           # reviewdog: 0=成功（PRコメント/チェックの投稿が成功）
           if [ "$reviewdog_exit" -ne 0 ]; then
-            echo "reviewdogが失敗しました: exit code ${reviewdog_exit}"
+            echo "reviewdogが失敗しました: exit code ${reviewdog_exit}" >&2
             exit "$reviewdog_exit"
           fi
           # exit_code=1 は reviewdog で通知済みのため成功扱い
           if [ "$exit_code" -gt 1 ]; then
-            echo "markdownlintが失敗しました: exit code ${exit_code}"
+            echo "markdownlintが失敗しました: exit code ${exit_code}" >&2
             exit "$exit_code"
           fi
 
@@ -118,11 +118,11 @@ jobs:
           # markdownlint: 1=lint違反, 2以上=実行エラー
           # reviewdog: 0=成功（PRコメント/チェックの投稿が成功）
           if [ "$reviewdog_exit" -ne 0 ]; then
-            echo "reviewdogが失敗しました: exit code ${reviewdog_exit}"
+            echo "reviewdogが失敗しました: exit code ${reviewdog_exit}" >&2
             exit "$reviewdog_exit"
           fi
           # exit_code=1 は reviewdog で通知済みのため成功扱い
           if [ "$exit_code" -gt 1 ]; then
-            echo "markdownlintが失敗しました: exit code ${exit_code}"
+            echo "markdownlintが失敗しました: exit code ${exit_code}" >&2
             exit "$exit_code"
           fi
