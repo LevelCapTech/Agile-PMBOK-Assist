@@ -107,8 +107,9 @@ jobs:
               if [ -z "${mmd}" ]; then
                 continue
               fi
-              if ! mmdc -p tmp/puppeteer-config.json -i "${mmd}" -o "${mmd}.svg"; then
-                echo "${src}:${line}: Mermaid図の構文検証に失敗しました（詳細はCIログを参照）" >> tmp/result.txt
+              if ! output=$(mmdc -p tmp/puppeteer-config.json -i "${mmd}" -o "${mmd}.svg" 2>&1); then
+                summary=$(printf "%s" "${output}" | tr '\n' ' ' | cut -c1-200)
+                echo "${src}:${line}: Mermaid図の構文検証に失敗しました: ${summary}" >> tmp/result.txt
               fi
             done < tmp/map.txt
           fi
