@@ -130,15 +130,15 @@ jobs:
           # 各要素は正規表現として評価するため、必要に応じてメタ文字を使用/エスケープする
           # 出力メッセージの大文字小文字揺れを吸収するため、grepは -i を使用する
           MMD_CLI_EXEC_ERROR_PATTERNS=(
-            # Puppeteer関連のエラー文言
+            # Puppeteer関連のエラー文言（例: "Error: Puppeteer failed to connect"）
             'error.*puppeteer'
-            # 実行ファイル未検出（固定文言）
+            # 実行ファイル未検出（例: "Executable doesn't exist at /path/to/chrome"）
             "executable doesn't exist"
-            # browser executable.*exist は実行ファイル探索時の存在エラー検知を意図
+            # browser executable.*exist は実行ファイル探索時の存在エラー検知を意図（例: "browser executable doesn't exist"）
             'browser executable.*exist'
-            # 起動失敗の共通文言
+            # 起動失敗の共通文言（例: "Failed to launch the browser process!"）
             'failed to launch'
-            # browsertype.launch のドットはリテラルとして扱う
+            # browsertype.launch のドットはリテラルとして扱う（例: "browserType.launch: Executable doesn't exist ..."）
             'browsertype\.launch'
           )
           # 配列要素を | で連結して正規表現文字列を生成（例: error.*puppeteer|...）
@@ -161,7 +161,7 @@ jobs:
                   mmdc_exec_error=1
                   mmdc_exec_summary="${summary}"
                   echo "mmdcの実行に失敗しました: ${summary}" >&2
-                  # 実行環境エラー発生時は以降の検証を中断し、ジョブを失敗扱いにする
+                  # 実行環境エラーは全図に影響するため、以降の検証を中断してジョブを失敗扱いにする
                   break
                 fi
                 echo "${src}:${line}: Mermaid図の構文検証に失敗しました: ${summary}" >> tmp/result.txt
