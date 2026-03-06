@@ -128,14 +128,15 @@ jobs:
           # Mermaid CLIの実行環境起因エラー（Puppeteer/ブラウザ起動失敗等）を判定するためのパターン
           # 出力メッセージの大文字小文字揺れを吸収するため、grepは -i を使用する
           MMD_CLI_EXEC_ERROR_PATTERNS=(
-            "puppeteer"
-            "chrome"
-            "chromium"
+            'puppeteer'
+            'chrome'
+            'chromium'
             "executable doesn't exist"
-            "browser executable.*exist"
-            "failed to launch"
-            "browsertype\\.launch"
+            'browser executable.*exist'
+            'failed to launch'
+            'browsertype\.launch'
           )
+          # 配列要素を | で連結して正規表現文字列を生成（例: puppeteer|chrome|...）
           MMD_CLI_EXEC_ERROR_REGEX=$(IFS='|'; printf '%s' "${MMD_CLI_EXEC_ERROR_PATTERNS[*]}")
           cat <<'JSON' > tmp/puppeteer-config.json
           {
