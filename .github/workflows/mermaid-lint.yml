@@ -97,6 +97,7 @@ jobs:
       - name: Validate Mermaid diagrams
         run: |
           : > tmp/result.txt
+          MAX_ERROR_LENGTH=200
           cat <<'JSON' > tmp/puppeteer-config.json
           {
             "args": ["--no-sandbox", "--disable-setuid-sandbox"]
@@ -108,7 +109,7 @@ jobs:
                 continue
               fi
               if ! output=$(mmdc -p tmp/puppeteer-config.json -i "${mmd}" -o "${mmd}.svg" 2>&1); then
-                summary=$(printf "%s" "${output}" | tr '\n' ' ' | cut -c1-200)
+                summary=$(printf "%s" "${output}" | tr '\n' ' ' | cut -c1-${MAX_ERROR_LENGTH})
                 echo "${src}:${line}: Mermaid図の構文検証に失敗しました: ${summary}" >> tmp/result.txt
               fi
             done < tmp/map.txt
