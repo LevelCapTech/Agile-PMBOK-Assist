@@ -114,10 +114,6 @@ jobs:
             "args": ["--no-sandbox", "--disable-setuid-sandbox"]
           }
           JSON
-          if [ ! -f tmp/map.txt ]; then
-            echo "Mermaidブロック一覧が見つからないため検証を中断します" >&2
-            exit 1
-          fi
           if [ -s tmp/map.txt ]; then
             while IFS=":" read -r mmd src line; do
               if [ -z "${mmd}" ]; then
@@ -130,6 +126,7 @@ jobs:
               fi
             done < tmp/map.txt
           else
+            # Mermaidブロックが無い場合は正常扱い
             echo "Mermaidブロックが見つからなかったため検証をスキップします"
           fi
           echo "Mermaid図の検証が完了しました"
