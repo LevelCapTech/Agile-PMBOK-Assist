@@ -39,6 +39,14 @@ jobs:
           go install github.com/reviewdog/reviewdog/cmd/reviewdog@v0.21.0
           echo "$HOME/go/bin" >> "$GITHUB_PATH"
 
+      - name: Check Mermaid CLI availability
+        run: |
+          echo "mmdcコマンドの存在を確認します" >&2
+          if ! command -v mmdc >/dev/null 2>&1; then
+            echo "mmdcコマンドが見つからないためジョブを失敗扱いにします" >&2
+            exit 1
+          fi
+
       - name: Extract Mermaid blocks
         run: |
           echo "Mermaidブロック抽出を開始します" >&2
@@ -116,39 +124,36 @@ jobs:
       - name: Validate Mermaid diagrams
         run: |
           echo "Mermaid図の検証を開始します" >&2
-          echo "mmdcコマンドの存在を確認します" >&2
-          if ! command -v mmdc >/dev/null 2>&1; then
-            echo "mmdcコマンドが見つからないためジョブを失敗扱いにします" >&2
-            exit 1
-          fi
           echo "Puppeteer設定ファイルを生成します" >&2
           : > tmp/result.txt
           MAX_ERROR_LENGTH=500
+          # Mermaid CLIの実行環境起因エラーを判定するためのパターン
+          MMD_CLI_EXEC_ERROR_PATTERNS='Puppeteer|Chrom(e|ium)|Executable.*exist|Failed to launch|browserType\.launch'
           cat <<'JSON' > tmp/puppeteer-config.json
           {
             "args": ["--no-sandbox", "--disable-setuid-sandbox"]
           }
           JSON
           if [ -s tmp/map.txt ]; then
-            exec_error=0
-            exec_summary=""
+            mmdc_exec_error=0
+            mmdc_exec_summary=""
             while IFS=":" read -r mmd src line; do
               if [ -z "${mmd}" ]; then
                 continue
               fi
               if ! output=$(mmdc -p tmp/puppeteer-config.json -i "${mmd}" -o "${mmd}.svg" 2>&1); then
                 summary=$(printf "%s" "${output}" | tr '\n' ' ' | cut -c1-${MAX_ERROR_LENGTH})
-                if printf "%s" "${output}" | grep -qiE "Puppeteer|Chrom(e|ium)|Executable.*exist|Failed to launch|browserType\\.launch"; then
-                  exec_error=1
-                  exec_summary="${summary}"
+                if printf "%s" "${output}" | grep -qiE "${MMD_CLI_EXEC_ERROR_PATTERNS}"; then
+                  mmdc_exec_error=1
+                  mmdc_exec_summary="${summary}"
                   echo "mmdcの実行に失敗しました: ${summary}" >&2
                   break
                 fi
                 echo "${src}:${line}: Mermaid図の構文検証に失敗しました: ${summary}" >> tmp/result.txt
               fi
             done < tmp/map.txt
-            if [ "${exec_error}" -ne 0 ]; then
-              echo "Mermaid CLIの実行エラーのためジョブを失敗扱いにします: ${exec_summary}" >&2
+            if [ "${mmdc_exec_error}" -ne 0 ]; then
+              echo "Mermaid CLIの実行エラーのためジョブを失敗扱いにします: ${mmdc_exec_summary}" >&2
               exit 1
             fi
           else
