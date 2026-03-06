@@ -95,6 +95,13 @@ jobs:
 
               if (inside) buffer.push(line)
             })
+
+            // ファイル末尾まで到達しても終了フェンスが無い場合（閉じ忘れ）もブロックを検証対象に含める
+            if (inside) {
+              const name = `tmp/diagram-${++index}.mmd`
+              fs.writeFileSync(name, buffer.join('\n'))
+              fs.appendFileSync(mapPath, `${name}:${file}:${startLine}\n`)
+            }
           }
 
           walk('docs')
