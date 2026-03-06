@@ -38,16 +38,20 @@ jobs:
 
       - name: Extract Mermaid blocks
         run: |
+          echo "Mermaidブロック抽出を開始します"
           mkdir -p tmp
           node <<'EOF'
           const fs = require('fs')
           const path = require('path')
 
+          // Mermaidブロックの対応表
           const mapPath = path.join('tmp', 'map.txt')
           fs.writeFileSync(mapPath, '')
 
+          // Mermaidブロックの件数
           let index = 0
 
+          // 指定ディレクトリ以下のMarkdownを探索
           function walk(dir) {
             if (!fs.existsSync(dir)) return
             fs.readdirSync(dir).forEach((entry) => {
@@ -71,6 +75,7 @@ jobs:
 
             lines.forEach((line, idx) => {
               const trimmed = line.trim()
+              // Mermaidブロックの開始
               if (!inside && trimmed.startsWith('```mermaid')) {
                 inside = true
                 buffer = []
@@ -78,6 +83,7 @@ jobs:
                 return
               }
 
+              // Mermaidブロックの終了
               if (inside && trimmed.startsWith('```')) {
                 inside = false
                 const name = `tmp/diagram-${++index}.mmd`
@@ -92,12 +98,16 @@ jobs:
 
           walk('docs')
           walk('.github')
+          console.log(`抽出したMermaid図: ${index}件`)
           EOF
+          echo "Mermaidブロック抽出が完了しました"
 
       - name: Validate Mermaid diagrams
         run: |
+          echo "Mermaid図の検証を開始します"
           : > tmp/result.txt
           MAX_ERROR_LENGTH=500
+          # Puppeteerの設定を生成
           cat <<'JSON' > tmp/puppeteer-config.json
           {
             "args": ["--no-sandbox", "--disable-setuid-sandbox"]
@@ -108,17 +118,22 @@ jobs:
               if [ -z "${mmd}" ]; then
                 continue
               fi
+              echo "Mermaid図を検証します: ${mmd}"
               if ! output=$(mmdc -p tmp/puppeteer-config.json -i "${mmd}" -o "${mmd}.svg" 2>&1); then
                 summary=$(printf "%s" "${output}" | tr '\n' ' ' | cut -c1-${MAX_ERROR_LENGTH})
                 echo "${src}:${line}: Mermaid図の構文検証に失敗しました: ${summary}" >> tmp/result.txt
               fi
             done < tmp/map.txt
+          else
+            echo "Mermaidブロックが見つからなかったため検証をスキップします"
           fi
+          echo "Mermaid図の検証が完了しました"
 
       - name: Report via reviewdog
         env:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          echo "reviewdogで結果を通知します"
           reviewdog < tmp/result.txt \
             -efm="%f:%l: %m" \
             -name="Mermaid図チェック" \

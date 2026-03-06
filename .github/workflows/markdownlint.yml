@@ -50,23 +50,26 @@ jobs:
         run: |
           set -eu
           # 複数コマンドをパイプで繋いでいないため pipefail は省略
+          echo "markdownlintを実行します"
           exit_code=0
           markdownlint "docs/**/*.md" ".github/**/*.md" > markdownlint.txt || exit_code=$?
           reviewdog_exit=0
+          echo "reviewdogで結果を通知します"
           reviewdog < markdownlint.txt \
             -f=markdownlint \
             -name="Markdownチェック" \
             -reporter="github-pr-review" \
             -level=warning || reviewdog_exit=$?
+          echo "reviewdogの通知処理が完了しました"
           # markdownlint: 1=lint違反, 2以上=実行エラー
           # reviewdog: 0=成功（PRコメント/チェックの投稿が成功）
           if [ "$reviewdog_exit" -ne 0 ]; then
-            echo "reviewdog failed with exit code ${reviewdog_exit}"
+            echo "reviewdogが失敗しました: exit code ${reviewdog_exit}"
             exit "$reviewdog_exit"
           fi
           # exit_code=1 は reviewdog で通知済みのため成功扱い
           if [ "$exit_code" -gt 1 ]; then
-            echo "markdownlint failed with exit code ${exit_code}"
+            echo "markdownlintが失敗しました: exit code ${exit_code}"
             exit "$exit_code"
           fi
 
@@ -101,22 +104,25 @@ jobs:
         run: |
           set -eu
           # 複数コマンドをパイプで繋いでいないため pipefail は省略
+          echo "markdownlintを実行します"
           exit_code=0
           markdownlint "docs/**/*.md" ".github/**/*.md" > markdownlint.txt || exit_code=$?
           reviewdog_exit=0
+          echo "reviewdogで結果を通知します"
           reviewdog < markdownlint.txt \
             -f=markdownlint \
             -name="Markdownチェック" \
             -reporter="github-check" \
             -level=warning || reviewdog_exit=$?
+          echo "reviewdogの通知処理が完了しました"
           # markdownlint: 1=lint違反, 2以上=実行エラー
           # reviewdog: 0=成功（PRコメント/チェックの投稿が成功）
           if [ "$reviewdog_exit" -ne 0 ]; then
-            echo "reviewdog failed with exit code ${reviewdog_exit}"
+            echo "reviewdogが失敗しました: exit code ${reviewdog_exit}"
             exit "$reviewdog_exit"
           fi
           # exit_code=1 は reviewdog で通知済みのため成功扱い
           if [ "$exit_code" -gt 1 ]; then
-            echo "markdownlint failed with exit code ${exit_code}"
+            echo "markdownlintが失敗しました: exit code ${exit_code}"
             exit "$exit_code"
           fi
