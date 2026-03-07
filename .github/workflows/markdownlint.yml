@@ -39,9 +39,11 @@ jobs:
       - name: Install tools
         run: npm install -g markdownlint-cli@0.48.0
 
+      - name: Log goコマンド確認開始
+        run: echo "goコマンドの存在を確認します" >&2
+
       - name: Check Go availability
         run: |
-          echo "goコマンドの存在を確認します" >&2
           if ! command -v go >/dev/null 2>&1; then
             echo "goコマンドが見つからないためジョブを失敗扱いにします" >&2
             exit 1
@@ -52,23 +54,23 @@ jobs:
           go install github.com/reviewdog/reviewdog/cmd/reviewdog@v0.21.0
           echo "$HOME/go/bin" >> "$GITHUB_PATH"
 
+      - name: Log markdownlint開始
+        run: echo "markdownlintとreviewdogを実行します" >&2
+
       - name: Markdown lint
         env:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -eu
           # 複数コマンドをパイプで繋いでいないため pipefail は省略
-          echo "markdownlintを実行します" >&2
           exit_code=0
           markdownlint "docs/**/*.md" ".github/**/*.md" > markdownlint.txt || exit_code=$?
           reviewdog_exit=0
-          echo "reviewdogで結果を通知します" >&2
           reviewdog < markdownlint.txt \
             -f=markdownlint \
             -name="Markdownチェック" \
             -reporter="github-pr-review" \
             -level=warning || reviewdog_exit=$?
-          echo "reviewdogの通知処理が完了しました" >&2
           # markdownlint: 1=lint違反, 2以上=実行エラー
           # reviewdog: 0=成功（PRコメント/チェックの投稿が成功）
           if [ "$reviewdog_exit" -ne 0 ]; then
@@ -80,6 +82,9 @@ jobs:
             echo "markdownlintが失敗しました: exit code ${exit_code}" >&2
             exit "$exit_code"
           fi
+
+      - name: Log markdownlint完了
+        run: echo "markdownlintとreviewdogの処理が完了しました" >&2
 
   markdownlint-push:
     if: github.event_name == 'push'
@@ -101,9 +106,11 @@ jobs:
       - name: Install tools
         run: npm install -g markdownlint-cli@0.48.0
 
+      - name: Log goコマンド確認開始
+        run: echo "goコマンドの存在を確認します" >&2
+
       - name: Check Go availability
         run: |
-          echo "goコマンドの存在を確認します" >&2
           if ! command -v go >/dev/null 2>&1; then
             echo "goコマンドが見つからないためジョブを失敗扱いにします" >&2
             exit 1
@@ -114,23 +121,23 @@ jobs:
           go install github.com/reviewdog/reviewdog/cmd/reviewdog@v0.21.0
           echo "$HOME/go/bin" >> "$GITHUB_PATH"
 
+      - name: Log markdownlint開始
+        run: echo "markdownlintとreviewdogを実行します" >&2
+
       - name: Markdown lint
         env:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -eu
           # 複数コマンドをパイプで繋いでいないため pipefail は省略
-          echo "markdownlintを実行します" >&2
           exit_code=0
           markdownlint "docs/**/*.md" ".github/**/*.md" > markdownlint.txt || exit_code=$?
           reviewdog_exit=0
-          echo "reviewdogで結果を通知します" >&2
           reviewdog < markdownlint.txt \
             -f=markdownlint \
             -name="Markdownチェック" \
             -reporter="github-check" \
             -level=warning || reviewdog_exit=$?
-          echo "reviewdogの通知処理が完了しました" >&2
           # markdownlint: 1=lint違反, 2以上=実行エラー
           # reviewdog: 0=成功（PRコメント/チェックの投稿が成功）
           if [ "$reviewdog_exit" -ne 0 ]; then
@@ -142,3 +149,6 @@ jobs:
             echo "markdownlintが失敗しました: exit code ${exit_code}" >&2
             exit "$exit_code"
           fi
+
+      - name: Log markdownlint完了
+        run: echo "markdownlintとreviewdogの処理が完了しました" >&2

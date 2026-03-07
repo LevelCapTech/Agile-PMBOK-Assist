@@ -31,19 +31,29 @@ jobs:
         with:
           node-version: "24"
 
-      - name: Install tools
+      - name: Log Mermaid CLIインストール開始
+        run: echo "Mermaid CLIをインストールします" >&2
+
+      - name: Install Mermaid CLI
         run: |
           set -e
           npm install -g @mermaid-js/mermaid-cli@11.12.0
-          echo "mmdcコマンドの存在を確認します" >&2
+
+      - name: Log mmdcコマンド確認開始
+        run: echo "mmdcコマンドの存在を確認します" >&2
+
+      - name: Check mmdc availability
+        run: |
           if ! command -v mmdc >/dev/null 2>&1; then
             echo "mmdcコマンドが見つからないためジョブを失敗扱いにします" >&2
             exit 1
           fi
 
+      - name: Log goコマンド確認開始
+        run: echo "goコマンドの存在を確認します" >&2
+
       - name: Check Go availability
         run: |
-          echo "goコマンドの存在を確認します" >&2
           if ! command -v go >/dev/null 2>&1; then
             echo "goコマンドが見つからないためジョブを失敗扱いにします" >&2
             exit 1
@@ -54,9 +64,11 @@ jobs:
           go install github.com/reviewdog/reviewdog/cmd/reviewdog@v0.21.0
           echo "$HOME/go/bin" >> "$GITHUB_PATH"
 
+      - name: Log Mermaidブロック抽出開始
+        run: echo "Mermaidブロック抽出を開始します" >&2
+
       - name: Extract Mermaid blocks
         run: |
-          echo "Mermaidブロック抽出を開始します" >&2
           mkdir -p tmp
           node <<'EOF'
           const fs = require('fs')
@@ -126,12 +138,18 @@ jobs:
           walk('.github')
           console.error(`抽出したMermaid図: ${index}件`)
           EOF
-          echo "Mermaidブロック抽出が完了しました" >&2
+
+      - name: Log Mermaidブロック抽出完了
+        run: echo "Mermaidブロック抽出が完了しました" >&2
+
+      - name: Log Mermaid図検証開始
+        run: echo "Mermaid図の検証を開始します" >&2
+
+      - name: Log Puppeteer設定生成開始
+        run: echo "Puppeteer設定ファイルを生成します" >&2
 
       - name: Validate Mermaid diagrams
         run: |
-          echo "Mermaid図の検証を開始します" >&2
-          echo "Puppeteer設定ファイルを生成します" >&2
           : > tmp/result.txt
           MAX_ERROR_LENGTH=500
           # Mermaid CLIの実行環境起因エラー（Puppeteer/ブラウザ起動失敗等）を判定するための正規表現パターン
@@ -182,15 +200,22 @@ jobs:
           else
             echo "Mermaidブロックが見つからなかったため検証をスキップします" >&2
           fi
-          echo "Mermaid図の検証が完了しました" >&2
+
+      - name: Log Mermaid図検証完了
+        run: echo "Mermaid図の検証が完了しました" >&2
+
+      - name: Log reviewdog通知開始
+        run: echo "reviewdogで結果を通知します" >&2
 
       - name: Report via reviewdog
         env:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "reviewdogで結果を通知します" >&2
           reviewdog < tmp/result.txt \
             -efm="%f:%l: %m" \
             -name="Mermaid図チェック" \
             -reporter=github-pr-review \
             -level=error
+
+      - name: Log reviewdog通知完了
+        run: echo "reviewdogの通知処理が完了しました" >&2
