@@ -39,6 +39,9 @@ jobs:
           set -e
           npm install -g @mermaid-js/mermaid-cli@11.12.0
 
+      - name: Log Mermaid CLIインストール完了
+        run: echo "Mermaid CLIのインストールが完了しました" >&2
+
       - name: Log mmdcコマンド確認開始
         run: echo "mmdcコマンドの存在を確認します" >&2
 
@@ -144,9 +147,6 @@ jobs:
 
       - name: Log Mermaid図検証開始
         run: echo "Mermaid図の検証を開始します" >&2
-
-      - name: Log Puppeteer設定生成開始
-        run: echo "Puppeteer設定ファイルを生成します" >&2
 
       - name: Validate Mermaid diagrams
         run: |
