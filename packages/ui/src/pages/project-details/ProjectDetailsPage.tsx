@@ -131,45 +131,11 @@ const ProjectLoadingState = () => {
   );
 };
 
-export const ProjectDetailsPage = ({
-  data,
-  error,
-  isLoading,
-  onRetry,
-  onBack,
-  loginHref,
-}: ProjectDetailsPageProps) => {
-  const defaultExpandedId = useMemo(() => data?.plan[0]?.id ?? null, [data]);
-  const [expandedSectionId, setExpandedSectionId] = useState<
-    string | null | undefined
-  >(undefined);
-  const resolvedExpandedSectionId =
-    expandedSectionId === undefined ? defaultExpandedId : expandedSectionId;
-
-  if (isLoading) {
-    return <ProjectLoadingState />;
-  }
-
-  if (error) {
-    return (
-      <ProjectErrorState
-        error={error}
-        onBack={onBack}
-        onRetry={onRetry}
-        loginHref={loginHref}
-      />
-    );
-  }
-
-  if (!data) {
-    return (
-      <Box sx={{ px: 3, py: 6 }}>
-        <Typography variant="body1" color="text.secondary">
-          表示するデータがありません。
-        </Typography>
-      </Box>
-    );
-  }
+const ProjectDetailsContent = ({ data }: { data: ProjectDetailsPageData }) => {
+  const initialExpandedId = useMemo(() => data.plan[0]?.id ?? null, [data.plan]);
+  const [expandedSectionId, setExpandedSectionId] = useState<string | null>(
+    initialExpandedId,
+  );
 
   return (
     <Box sx={{ px: { xs: 3, md: 6 }, py: 4, backgroundColor: "background.default" }}>
@@ -288,13 +254,10 @@ export const ProjectDetailsPage = ({
                     data.plan.map((section) => (
                       <Accordion
                         key={section.id}
-                        expanded={resolvedExpandedSectionId === section.id}
+                        expanded={expandedSectionId === section.id}
                         onChange={() =>
                           setExpandedSectionId((current) =>
-                            (current === undefined ? defaultExpandedId : current) ===
-                            section.id
-                              ? null
-                              : section.id,
+                            current === section.id ? null : section.id,
                           )
                         }
                         elevation={0}
@@ -395,4 +358,40 @@ export const ProjectDetailsPage = ({
       </Stack>
     </Box>
   );
+};
+
+export const ProjectDetailsPage = ({
+  data,
+  error,
+  isLoading,
+  onRetry,
+  onBack,
+  loginHref,
+}: ProjectDetailsPageProps) => {
+  if (isLoading) {
+    return <ProjectLoadingState />;
+  }
+
+  if (error) {
+    return (
+      <ProjectErrorState
+        error={error}
+        onBack={onBack}
+        onRetry={onRetry}
+        loginHref={loginHref}
+      />
+    );
+  }
+
+  if (!data) {
+    return (
+      <Box sx={{ px: 3, py: 6 }}>
+        <Typography variant="body1" color="text.secondary">
+          表示するデータがありません。
+        </Typography>
+      </Box>
+    );
+  }
+
+  return <ProjectDetailsContent key={data.header.id} data={data} />;
 };
