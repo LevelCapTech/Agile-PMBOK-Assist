@@ -4,6 +4,7 @@ import type {
   DashboardDataSource,
   DashboardViewModel,
 } from "@contracts/pages/dashboard";
+import { ProjectDetailsDataSourceMock } from "@plugins/projectDetails/projectDetailsDataSourceMock";
 
 const dashboardViewModel: DashboardViewModel = {
   header: {
@@ -238,6 +239,7 @@ const dashboardDataSource: DashboardDataSource = {
 
 const clientDeps: AppBaseDeps = {
   dashboardDataSource,
+  projectDetailsDataSource: ProjectDetailsDataSourceMock,
 };
 
 export const createClientDeps = (): AppBaseDeps => {
