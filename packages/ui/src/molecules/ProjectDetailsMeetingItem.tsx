@@ -2,6 +2,7 @@
 
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
+import { useTheme } from "@mui/material/styles";
 import { Clock } from "lucide-react";
 
 import type { DayOfWeek, ProjectDetailsPageData } from "@contracts/pages/project-details";
@@ -19,9 +20,11 @@ export const ProjectDetailsMeetingItem = ({
 }: {
   meeting: ProjectDetailsPageData["meetings"][number];
 }) => {
+  const theme = useTheme();
+
   return (
     <Stack direction="row" spacing={1.5} alignItems="flex-start">
-      <Clock size={16} color="#2563EB" />
+      <Clock size={16} color={theme.palette.primary.main} />
       <Stack spacing={0.5}>
         <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
           {meeting.name}

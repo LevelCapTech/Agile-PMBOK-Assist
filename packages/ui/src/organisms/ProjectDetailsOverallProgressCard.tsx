@@ -5,6 +5,7 @@ import CardContent from "@mui/material/CardContent";
 import Divider from "@mui/material/Divider";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
+import { alpha, useTheme } from "@mui/material/styles";
 
 import type { ProjectDetailsPageData } from "@contracts/pages/project-details";
 
@@ -13,6 +14,7 @@ export const ProjectDetailsOverallProgressCard = ({
 }: {
   overallProgress: ProjectDetailsPageData["overallProgress"];
 }) => {
+  const theme = useTheme();
   const total =
     overallProgress.completedCount +
     overallProgress.inProgressCount +
@@ -22,8 +24,8 @@ export const ProjectDetailsOverallProgressCard = ({
     <Card
       variant="outlined"
       sx={{
-        borderColor: "rgba(37, 99, 235, 0.4)",
-        backgroundColor: "rgba(37, 99, 235, 0.04)",
+        borderColor: alpha(theme.palette.primary.main, 0.4),
+        backgroundColor: alpha(theme.palette.primary.main, 0.04),
       }}
     >
       <CardContent>
@@ -37,7 +39,7 @@ export const ProjectDetailsOverallProgressCard = ({
                 完了したフェーズ
               </Typography>
               <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                {overallProgress.completedCount}/{total || 0}
+                {overallProgress.completedCount}/{total}
               </Typography>
             </Stack>
             <Stack direction="row" justifyContent="space-between" spacing={2}>

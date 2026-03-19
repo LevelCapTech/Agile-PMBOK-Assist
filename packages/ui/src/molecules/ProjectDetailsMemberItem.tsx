@@ -11,8 +11,6 @@ export const ProjectDetailsMemberItem = ({
 }: {
   member: ProjectDetailsPageData["members"][number];
 }) => {
-  const roleLabel = member.role.trim() === "" ? "メンバー" : member.role;
-
   return (
     <Stack direction="row" spacing={2} alignItems="center">
       <Avatar src={member.avatarUrl ?? undefined} sx={{ width: 40, height: 40 }}>
@@ -23,7 +21,7 @@ export const ProjectDetailsMemberItem = ({
           {member.name}
         </Typography>
         <Typography variant="caption" color="text.secondary">
-          {roleLabel}
+          {member.role}
         </Typography>
       </Stack>
     </Stack>

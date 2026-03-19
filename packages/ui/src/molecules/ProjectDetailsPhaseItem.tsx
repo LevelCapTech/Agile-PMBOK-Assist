@@ -4,6 +4,7 @@ import Box from "@mui/material/Box";
 import LinearProgress from "@mui/material/LinearProgress";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
+import { alpha, useTheme } from "@mui/material/styles";
 import { AlertCircle, CheckCircle2, Circle, GripVertical } from "lucide-react";
 
 import type { PhaseStatus, ProjectDetailsPageData } from "@contracts/pages/project-details";
@@ -14,32 +15,32 @@ const phaseStatusLabel: Record<PhaseStatus, string> = {
   NOT_STARTED: "未着手",
 };
 
-const phaseStatusTone: Record<
-  PhaseStatus,
-  { color: string; backgroundColor: string; icon: typeof CheckCircle2 }
-> = {
-  DONE: {
-    color: "#16A34A",
-    backgroundColor: "rgba(22, 163, 74, 0.12)",
-    icon: CheckCircle2,
-  },
-  IN_PROGRESS: {
-    color: "#2563EB",
-    backgroundColor: "rgba(37, 99, 235, 0.12)",
-    icon: AlertCircle,
-  },
-  NOT_STARTED: {
-    color: "#94A3B8",
-    backgroundColor: "rgba(148, 163, 184, 0.16)",
-    icon: Circle,
-  },
-};
-
 export const ProjectDetailsPhaseItem = ({
   phase,
 }: {
   phase: ProjectDetailsPageData["phases"][number];
 }) => {
+  const theme = useTheme();
+  const phaseStatusTone: Record<
+    PhaseStatus,
+    { color: string; backgroundColor: string; icon: typeof CheckCircle2 }
+  > = {
+    DONE: {
+      color: theme.palette.success.main,
+      backgroundColor: alpha(theme.palette.success.main, 0.12),
+      icon: CheckCircle2,
+    },
+    IN_PROGRESS: {
+      color: theme.palette.primary.main,
+      backgroundColor: alpha(theme.palette.primary.main, 0.12),
+      icon: AlertCircle,
+    },
+    NOT_STARTED: {
+      color: theme.palette.text.disabled,
+      backgroundColor: alpha(theme.palette.text.disabled, 0.16),
+      icon: Circle,
+    },
+  };
   const statusTone = phaseStatusTone[phase.status];
   const StatusIcon = statusTone.icon;
 
@@ -55,7 +56,7 @@ export const ProjectDetailsPhaseItem = ({
     >
       <Stack spacing={1.5}>
         <Stack direction="row" alignItems="center" spacing={1.5}>
-          <GripVertical size={16} color="#94A3B8" />
+          <GripVertical size={16} color={theme.palette.text.disabled} />
           <StatusIcon size={18} color={statusTone.color} />
           <Stack spacing={0.5} flex={1}>
             <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
@@ -70,12 +71,12 @@ export const ProjectDetailsPhaseItem = ({
                 fontSize: 12,
                 fontWeight: 600,
                 color: statusTone.color,
-                backgroundColor: statusTone.backgroundColor,
-              }}
-            >
-              {phaseStatusLabel[phase.status]}
-            </Box>
-          </Stack>
+            backgroundColor: statusTone.backgroundColor,
+          }}
+        >
+          {phaseStatusLabel[phase.status]}
+        </Box>
+      </Stack>
           <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
             {phase.progress}%
           </Typography>
@@ -86,10 +87,10 @@ export const ProjectDetailsPhaseItem = ({
           sx={{
             height: 6,
             borderRadius: 999,
-            backgroundColor: "rgba(37, 99, 235, 0.12)",
+            backgroundColor: alpha(theme.palette.primary.main, 0.12),
             "& .MuiLinearProgress-bar": {
               borderRadius: 999,
-              backgroundColor: "#2563EB",
+              backgroundColor: theme.palette.primary.main,
             },
           }}
         />

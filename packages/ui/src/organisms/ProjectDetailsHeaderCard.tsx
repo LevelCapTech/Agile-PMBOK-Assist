@@ -5,6 +5,7 @@ import Button from "@mui/material/Button";
 import Chip from "@mui/material/Chip";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
+import { alpha, useTheme } from "@mui/material/styles";
 import { ArrowLeft, Calendar, Users } from "lucide-react";
 
 import type { ProjectDetailsPageData } from "@contracts/pages/project-details";
@@ -20,6 +21,8 @@ export const ProjectDetailsHeaderCard = ({
   memberCount: number;
   onBack?: () => void;
 }) => {
+  const theme = useTheme();
+
   return (
     <Stack spacing={2.5}>
       <Button
@@ -49,8 +52,8 @@ export const ProjectDetailsHeaderCard = ({
               variant="outlined"
               sx={{
                 fontWeight: 600,
-                borderColor: "rgba(37, 99, 235, 0.4)",
-                backgroundColor: "rgba(37, 99, 235, 0.08)",
+                borderColor: alpha(theme.palette.primary.main, 0.4),
+                backgroundColor: alpha(theme.palette.primary.main, 0.08),
               }}
             />
           </Stack>
