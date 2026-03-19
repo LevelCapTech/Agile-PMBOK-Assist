@@ -1,10 +1,17 @@
 "use client";
 
 import Typography from "@mui/material/Typography";
+import type { TypographyProps } from "@mui/material/Typography";
 
-export const ProjectDetailsSectionTitle = ({ title }: { title: string }) => {
+export const ProjectDetailsSectionTitle = ({
+  title,
+  component = "h2",
+}: {
+  title: string;
+  component?: TypographyProps["component"];
+}) => {
   return (
-    <Typography component="h2" variant="h6" sx={{ fontWeight: 600 }}>
+    <Typography component={component} variant="h6" sx={{ fontWeight: 600 }}>
       {title}
     </Typography>
   );
