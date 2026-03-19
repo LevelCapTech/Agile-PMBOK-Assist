@@ -24,8 +24,8 @@ const ProjectDetailsPlanSectionBody = ({
   onPrint,
 }: {
   plan: ProjectDetailsPageData["plan"];
-  onEdit: () => void;
-  onPrint: () => void;
+  onEdit?: () => void;
+  onPrint?: () => void;
 }) => {
   const [expandedSectionId, setExpandedSectionId] = useState<string | null>(
     plan[0]?.id ?? null,
@@ -116,8 +116,8 @@ const ProjectDetailsPlanSectionBody = ({
 export const ProjectDetailsPlanSection = ({
   plan,
   resetKey,
-  onEdit = () => {},
-  onPrint = () => {},
+  onEdit,
+  onPrint,
 }: {
   plan: ProjectDetailsPageData["plan"];
   resetKey: string;

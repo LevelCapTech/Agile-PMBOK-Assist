@@ -15,7 +15,7 @@ import { ProjectDetailsPhaseItem } from "../molecules/ProjectDetailsPhaseItem";
 
 export const ProjectDetailsPhaseSection = ({
   phases,
-  onAddPhase = () => {},
+  onAddPhase,
 }: {
   phases: ProjectDetailsPageData["phases"];
   onAddPhase?: () => void;

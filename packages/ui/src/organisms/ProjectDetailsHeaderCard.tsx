@@ -14,7 +14,7 @@ export const ProjectDetailsHeaderCard = ({
   header,
   overallProgress,
   memberCount,
-  onBack = () => {},
+  onBack,
 }: {
   header: ProjectDetailsPageData["header"];
   overallProgress: ProjectDetailsPageData["overallProgress"];
@@ -30,6 +30,7 @@ export const ProjectDetailsHeaderCard = ({
         color="inherit"
         startIcon={<ArrowLeft size={16} />}
         onClick={onBack}
+        disabled={!onBack}
         sx={{ alignSelf: "flex-start", color: "text.secondary" }}
       >
         プロジェクト一覧に戻る

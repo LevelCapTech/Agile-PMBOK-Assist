@@ -16,7 +16,7 @@ import { ProjectDetailsMeetingItem } from "../molecules/ProjectDetailsMeetingIte
 
 export const ProjectDetailsMeetingsSection = ({
   meetings,
-  onAddMeeting = () => {},
+  onAddMeeting,
 }: {
   meetings: ProjectDetailsPageData["meetings"];
   onAddMeeting?: () => void;

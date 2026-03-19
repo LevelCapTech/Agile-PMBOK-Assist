@@ -16,7 +16,7 @@ import { ProjectDetailsMemberItem } from "../molecules/ProjectDetailsMemberItem"
 
 export const ProjectDetailsMembersSection = ({
   members,
-  onAddMember = () => {},
+  onAddMember,
 }: {
   members: ProjectDetailsPageData["members"];
   onAddMember?: () => void;
