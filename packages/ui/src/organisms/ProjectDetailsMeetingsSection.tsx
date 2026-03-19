@@ -16,8 +16,10 @@ import { ProjectDetailsMeetingItem } from "../molecules/ProjectDetailsMeetingIte
 
 export const ProjectDetailsMeetingsSection = ({
   meetings,
+  onAddMeeting = () => {},
 }: {
   meetings: ProjectDetailsPageData["meetings"];
+  onAddMeeting?: () => void;
 }) => {
   return (
     <Card variant="outlined">
@@ -29,6 +31,7 @@ export const ProjectDetailsMeetingsSection = ({
               variant="contained"
               size="small"
               startIcon={<Plus size={14} />}
+              onClick={onAddMeeting}
               sx={{ borderRadius: 999 }}
             >
               会議体追加

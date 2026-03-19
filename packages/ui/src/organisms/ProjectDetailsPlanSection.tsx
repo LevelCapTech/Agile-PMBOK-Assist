@@ -20,8 +20,12 @@ import { ProjectDetailsPlanItem } from "../molecules/ProjectDetailsPlanItem";
 
 const ProjectDetailsPlanSectionBody = ({
   plan,
+  onEdit,
+  onPrint,
 }: {
   plan: ProjectDetailsPageData["plan"];
+  onEdit: () => void;
+  onPrint: () => void;
 }) => {
   const [expandedSectionId, setExpandedSectionId] = useState<string | null>(
     plan[0]?.id ?? null,
@@ -38,6 +42,7 @@ const ProjectDetailsPlanSectionBody = ({
                 variant="outlined"
                 size="small"
                 startIcon={<Printer size={14} />}
+                onClick={onPrint}
                 sx={{ borderRadius: 999 }}
               >
                 印刷
@@ -46,6 +51,7 @@ const ProjectDetailsPlanSectionBody = ({
                 variant="contained"
                 size="small"
                 startIcon={<Edit size={14} />}
+                onClick={onEdit}
                 sx={{ borderRadius: 999 }}
               >
                 編集
@@ -110,9 +116,20 @@ const ProjectDetailsPlanSectionBody = ({
 export const ProjectDetailsPlanSection = ({
   plan,
   resetKey,
+  onEdit = () => {},
+  onPrint = () => {},
 }: {
   plan: ProjectDetailsPageData["plan"];
   resetKey: string;
+  onEdit?: () => void;
+  onPrint?: () => void;
 }) => {
-  return <ProjectDetailsPlanSectionBody key={resetKey} plan={plan} />;
+  return (
+    <ProjectDetailsPlanSectionBody
+      key={resetKey}
+      plan={plan}
+      onEdit={onEdit}
+      onPrint={onPrint}
+    />
+  );
 };

@@ -14,7 +14,7 @@ export const ProjectDetailsHeaderCard = ({
   header,
   overallProgress,
   memberCount,
-  onBack,
+  onBack = () => {},
 }: {
   header: ProjectDetailsPageData["header"];
   overallProgress: ProjectDetailsPageData["overallProgress"];

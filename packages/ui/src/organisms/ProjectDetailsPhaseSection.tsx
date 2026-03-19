@@ -15,8 +15,10 @@ import { ProjectDetailsPhaseItem } from "../molecules/ProjectDetailsPhaseItem";
 
 export const ProjectDetailsPhaseSection = ({
   phases,
+  onAddPhase = () => {},
 }: {
   phases: ProjectDetailsPageData["phases"];
+  onAddPhase?: () => void;
 }) => {
   return (
     <Card variant="outlined">
@@ -28,6 +30,7 @@ export const ProjectDetailsPhaseSection = ({
               variant="contained"
               size="small"
               startIcon={<Plus size={14} />}
+              onClick={onAddPhase}
               sx={{ borderRadius: 999 }}
             >
               フェーズ追加

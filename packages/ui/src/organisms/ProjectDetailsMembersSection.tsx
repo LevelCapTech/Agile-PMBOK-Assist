@@ -16,8 +16,10 @@ import { ProjectDetailsMemberItem } from "../molecules/ProjectDetailsMemberItem"
 
 export const ProjectDetailsMembersSection = ({
   members,
+  onAddMember = () => {},
 }: {
   members: ProjectDetailsPageData["members"];
+  onAddMember?: () => void;
 }) => {
   return (
     <Card variant="outlined">
@@ -29,6 +31,7 @@ export const ProjectDetailsMembersSection = ({
               variant="contained"
               size="small"
               startIcon={<Plus size={14} />}
+              onClick={onAddMember}
               sx={{ borderRadius: 999 }}
             >
               メンバー追加
