@@ -20,7 +20,7 @@ export const ProjectDetailsMembersSection = ({
     <Card variant="outlined">
       <CardContent>
         <Stack spacing={2}>
-          <ProjectDetailsSectionTitle title="プロジェクトメンバー" />
+          <ProjectDetailsSectionTitle title="プロジェクトメンバー" component="h2" />
           {members.length === 0 ? (
             <ProjectDetailsEmptyText text="メンバーがいません" />
           ) : (

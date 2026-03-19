@@ -28,7 +28,7 @@ export const ProjectDetailsPlanSection = ({
     <Card variant="outlined">
       <CardContent>
         <Stack spacing={2}>
-          <ProjectDetailsSectionTitle title="プロジェクト計画" />
+          <ProjectDetailsSectionTitle title="プロジェクト計画" component="h2" />
           {plan.length === 0 ? (
             <ProjectDetailsEmptyText text="計画情報がありません" />
           ) : (

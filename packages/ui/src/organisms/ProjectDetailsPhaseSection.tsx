@@ -19,7 +19,7 @@ export const ProjectDetailsPhaseSection = ({
     <Card variant="outlined">
       <CardContent>
         <Stack spacing={2}>
-          <ProjectDetailsSectionTitle title="フェーズ毎の進捗" />
+          <ProjectDetailsSectionTitle title="フェーズ毎の進捗" component="h2" />
           {phases.length === 0 ? (
             <ProjectDetailsEmptyText text="フェーズがありません" />
           ) : (

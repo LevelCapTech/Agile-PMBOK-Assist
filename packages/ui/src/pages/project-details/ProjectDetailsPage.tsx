@@ -27,7 +27,7 @@ export type ProjectDetailsPageProps = {
 };
 
 const ProjectDetailsContent = ({ data }: { data: ProjectDetailsPageData }) => {
-  const planKey = `${data.header.id}-${
+  const planSectionKey = `${data.header.id}-${
     data.plan.map((section) => section.id).join("-") || "empty"
   }`;
 
@@ -42,7 +42,7 @@ const ProjectDetailsContent = ({ data }: { data: ProjectDetailsPageData }) => {
       primary={
         <>
           <ProjectDetailsPhaseSection phases={data.phases} />
-          <ProjectDetailsPlanSection key={planKey} plan={data.plan} />
+          <ProjectDetailsPlanSection key={planSectionKey} plan={data.plan} />
         </>
       }
       secondary={
