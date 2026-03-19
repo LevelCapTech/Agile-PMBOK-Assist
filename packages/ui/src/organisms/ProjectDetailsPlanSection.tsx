@@ -9,6 +9,7 @@ import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
+import { alpha, useTheme } from "@mui/material/styles";
 import { ChevronDown, Edit, Printer } from "lucide-react";
 import { useState } from "react";
 
@@ -27,6 +28,7 @@ const ProjectDetailsPlanSectionBody = ({
   onEdit?: () => void;
   onPrint?: () => void;
 }) => {
+  const theme = useTheme();
   const [expandedSectionId, setExpandedSectionId] = useState<string | null>(
     plan[0]?.id ?? null,
   );
@@ -85,7 +87,7 @@ const ProjectDetailsPlanSectionBody = ({
                   sx={{
                     px: 2,
                     py: 1,
-                    backgroundColor: "rgba(15, 23, 42, 0.02)",
+                    backgroundColor: alpha(theme.palette.text.primary, 0.02),
                     "& .MuiAccordionSummary-content": { alignItems: "center" },
                   }}
                 >

@@ -71,12 +71,12 @@ export const ProjectDetailsPhaseItem = ({
                 fontSize: 12,
                 fontWeight: 600,
                 color: statusTone.color,
-            backgroundColor: statusTone.backgroundColor,
-          }}
-        >
-          {phaseStatusLabel[phase.status]}
-        </Box>
-      </Stack>
+                backgroundColor: statusTone.backgroundColor,
+              }}
+            >
+              {phaseStatusLabel[phase.status]}
+            </Box>
+          </Stack>
           <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
             {phase.progress}%
           </Typography>
