@@ -11,7 +11,7 @@ export const ProjectDetailsSectionTitle = ({
   component?: TypographyProps["component"];
 }) => {
   return (
-    <Typography component={component} variant="h6" sx={{ fontWeight: 600 }}>
+    <Typography component={component} variant="h6">
       {title}
     </Typography>
   );

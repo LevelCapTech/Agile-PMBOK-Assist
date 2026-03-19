@@ -27,10 +27,6 @@ export type ProjectDetailsPageProps = {
 };
 
 const ProjectDetailsContent = ({ data }: { data: ProjectDetailsPageData }) => {
-  const planSectionKey = `${data.header.id}-${
-    data.plan.map((section) => section.id).join("-") || "empty"
-  }`;
-
   return (
     <ProjectDetailsLayoutTemplate
       header={
@@ -42,7 +38,7 @@ const ProjectDetailsContent = ({ data }: { data: ProjectDetailsPageData }) => {
       primary={
         <>
           <ProjectDetailsPhaseSection phases={data.phases} />
-          <ProjectDetailsPlanSection key={planSectionKey} plan={data.plan} />
+          <ProjectDetailsPlanSection plan={data.plan} />
         </>
       }
       secondary={
