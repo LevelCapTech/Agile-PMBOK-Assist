@@ -7,7 +7,7 @@ import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 
 import type { ProjectDetailsPageData } from "@contracts/pages/project-details";
 
@@ -15,19 +15,14 @@ import { ProjectDetailsEmptyText } from "../atoms/ProjectDetailsEmptyText";
 import { ProjectDetailsSectionTitle } from "../atoms/ProjectDetailsSectionTitle";
 import { ProjectDetailsPlanItem } from "../molecules/ProjectDetailsPlanItem";
 
-export const ProjectDetailsPlanSection = ({
+const ProjectDetailsPlanSectionBody = ({
   plan,
 }: {
   plan: ProjectDetailsPageData["plan"];
 }) => {
-  const initialExpandedId = useMemo(() => plan[0]?.id ?? null, [plan]);
   const [expandedSectionId, setExpandedSectionId] = useState<string | null>(
-    initialExpandedId,
+    plan[0]?.id ?? null,
   );
-
-  useEffect(() => {
-    setExpandedSectionId(initialExpandedId);
-  }, [initialExpandedId]);
 
   return (
     <Card variant="outlined">
@@ -75,4 +70,14 @@ export const ProjectDetailsPlanSection = ({
       </CardContent>
     </Card>
   );
+};
+
+export const ProjectDetailsPlanSection = ({
+  plan,
+  resetKey,
+}: {
+  plan: ProjectDetailsPageData["plan"];
+  resetKey: string;
+}) => {
+  return <ProjectDetailsPlanSectionBody key={resetKey} plan={plan} />;
 };
