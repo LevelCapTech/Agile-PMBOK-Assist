@@ -21,6 +21,16 @@ const SidebarStateTester = ({ variant }: { variant: SidebarVariant }) => {
   );
 };
 
+const ProjectDetailsDepsTester = () => {
+  const { projectDetailsDataSource } = useAppContext();
+
+  return (
+    <span data-testid="project-details-datasource">
+      {typeof projectDetailsDataSource.getProjectDetails}
+    </span>
+  );
+};
+
 describe("AppProvider sidebar state", () => {
   beforeEach(() => {
     localStorage.clear();
@@ -102,5 +112,17 @@ describe("AppProvider sidebar state", () => {
 
     setItemSpy.mockRestore();
     warnSpy.mockRestore();
+  });
+
+  it("provides project details data source", () => {
+    render(
+      <AppProvider enableAppRouterCache={false}>
+        <ProjectDetailsDepsTester />
+      </AppProvider>,
+    );
+
+    expect(
+      screen.getByTestId("project-details-datasource"),
+    ).toHaveTextContent("function");
   });
 });

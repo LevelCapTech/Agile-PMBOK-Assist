@@ -5,9 +5,11 @@ import type { ReactNode } from "react";
 
 import type { SidebarNavigationState, SidebarVariant } from "@contracts/layout/sidebar";
 import type { DashboardDataSource } from "@contracts/pages/dashboard";
+import type { ProjectDetailsDataSource } from "@contracts/pages/project-details";
 
 export type AppBaseDeps = {
   dashboardDataSource: DashboardDataSource;
+  projectDetailsDataSource: ProjectDetailsDataSource;
 };
 
 export type AppDeps = AppBaseDeps & {
