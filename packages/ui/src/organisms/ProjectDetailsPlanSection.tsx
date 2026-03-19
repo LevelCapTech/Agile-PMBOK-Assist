@@ -7,7 +7,7 @@ import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 
 import type { ProjectDetailsPageData } from "@contracts/pages/project-details";
 
@@ -20,14 +20,9 @@ export const ProjectDetailsPlanSection = ({
 }: {
   plan: ProjectDetailsPageData["plan"];
 }) => {
-  const initialExpandedId = useMemo(() => plan[0]?.id ?? null, [plan]);
   const [expandedSectionId, setExpandedSectionId] = useState<string | null>(
-    initialExpandedId,
+    plan[0]?.id ?? null,
   );
-
-  useEffect(() => {
-    setExpandedSectionId(initialExpandedId);
-  }, [initialExpandedId]);
 
   return (
     <Card variant="outlined">

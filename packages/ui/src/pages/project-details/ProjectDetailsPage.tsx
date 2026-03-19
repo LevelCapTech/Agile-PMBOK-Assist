@@ -38,7 +38,7 @@ const ProjectDetailsContent = ({ data }: { data: ProjectDetailsPageData }) => {
       primary={
         <>
           <ProjectDetailsPhaseSection phases={data.phases} />
-          <ProjectDetailsPlanSection plan={data.plan} />
+          <ProjectDetailsPlanSection key={data.header.id} plan={data.plan} />
         </>
       }
       secondary={
