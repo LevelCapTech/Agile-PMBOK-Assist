@@ -1,7 +1,7 @@
 import { CssBaseline } from "@mui/material";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type { ReactNode } from "react";
 
 import type { ProjectDetailsPageData } from "@contracts/pages/project-details";
@@ -58,9 +58,10 @@ const buildSampleData = (): ProjectDetailsPageData => ({
 
 describe("ProjectDetailsPage", () => {
   it("renders header and plan sections", () => {
+    const handleBack = vi.fn();
     render(
       <TestProvider>
-        <ProjectDetailsPage data={buildSampleData()} />
+        <ProjectDetailsPage data={buildSampleData()} onBack={handleBack} />
       </TestProvider>,
     );
 
@@ -69,9 +70,13 @@ describe("ProjectDetailsPage", () => {
     ).toBeInTheDocument();
     expect(screen.getByText("PRJ-2024-001")).toBeInTheDocument();
     expect(screen.getByText("開始日: 2024年1月15日")).toBeInTheDocument();
+    expect(screen.getByText(/名のメンバー/)).toBeInTheDocument();
     expect(screen.getByText("プロジェクトフェーズ")).toBeInTheDocument();
     expect(screen.getByText("週次定例ミーティング")).toBeInTheDocument();
     expect(screen.getByText("ABC株式会社")).toBeVisible();
+
+    fireEvent.click(screen.getByRole("button", { name: "プロジェクト一覧に戻る" }));
+    expect(handleBack).toHaveBeenCalledTimes(1);
 
     const accordionButton = screen.getByRole("button", { name: /1\. 基本情報/ });
     expect(accordionButton).toHaveAttribute("aria-expanded", "true");
