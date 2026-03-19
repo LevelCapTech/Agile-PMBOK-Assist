@@ -25,14 +25,29 @@ export type ProjectDetailsPageProps = {
   onRetry?: () => void;
   onBack?: () => void;
   loginHref?: string;
+  onAddPhase?: () => void;
+  onAddMember?: () => void;
+  onAddMeeting?: () => void;
+  onEditPlan?: () => void;
+  onPrintPlan?: () => void;
 };
 
 const ProjectDetailsContent = ({
   data,
   onBack,
+  onAddPhase,
+  onAddMember,
+  onAddMeeting,
+  onEditPlan,
+  onPrintPlan,
 }: {
   data: ProjectDetailsPageData;
   onBack?: () => void;
+  onAddPhase?: () => void;
+  onAddMember?: () => void;
+  onAddMeeting?: () => void;
+  onEditPlan?: () => void;
+  onPrintPlan?: () => void;
 }) => {
   return (
     <ProjectDetailsLayoutTemplate
@@ -46,17 +61,30 @@ const ProjectDetailsContent = ({
       }
       primary={
         <>
-          <ProjectDetailsPhaseSection phases={data.phases} />
+          <ProjectDetailsPhaseSection phases={data.phases} onAddPhase={onAddPhase} />
         </>
       }
       secondary={
         <>
-          <ProjectDetailsMembersSection members={data.members} />
-          <ProjectDetailsMeetingsSection meetings={data.meetings} />
+          <ProjectDetailsMembersSection
+            members={data.members}
+            onAddMember={onAddMember}
+          />
+          <ProjectDetailsMeetingsSection
+            meetings={data.meetings}
+            onAddMeeting={onAddMeeting}
+          />
           <ProjectDetailsOverallProgressCard overallProgress={data.overallProgress} />
         </>
       }
-      footer={<ProjectDetailsPlanSection plan={data.plan} resetKey={data.header.id} />}
+      footer={
+        <ProjectDetailsPlanSection
+          plan={data.plan}
+          resetKey={data.header.id}
+          onEdit={onEditPlan}
+          onPrint={onPrintPlan}
+        />
+      }
     />
   );
 };
@@ -68,6 +96,11 @@ export const ProjectDetailsPage = ({
   onRetry,
   onBack,
   loginHref,
+  onAddPhase,
+  onAddMember,
+  onAddMeeting,
+  onEditPlan,
+  onPrintPlan,
 }: ProjectDetailsPageProps) => {
   if (isLoading) {
     return <ProjectDetailsLoadingState />;
@@ -94,5 +127,16 @@ export const ProjectDetailsPage = ({
     );
   }
 
-  return <ProjectDetailsContent key={data.header.id} data={data} onBack={onBack} />;
+  return (
+    <ProjectDetailsContent
+      key={data.header.id}
+      data={data}
+      onBack={onBack}
+      onAddPhase={onAddPhase}
+      onAddMember={onAddMember}
+      onAddMeeting={onAddMeeting}
+      onEditPlan={onEditPlan}
+      onPrintPlan={onPrintPlan}
+    />
+  );
 };
