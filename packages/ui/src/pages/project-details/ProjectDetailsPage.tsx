@@ -13,6 +13,7 @@ import { ProjectDetailsHeaderCard } from "../../organisms/ProjectDetailsHeaderCa
 import { ProjectDetailsLoadingState } from "../../organisms/ProjectDetailsLoadingState";
 import { ProjectDetailsMeetingsSection } from "../../organisms/ProjectDetailsMeetingsSection";
 import { ProjectDetailsMembersSection } from "../../organisms/ProjectDetailsMembersSection";
+import { ProjectDetailsOverallProgressCard } from "../../organisms/ProjectDetailsOverallProgressCard";
 import { ProjectDetailsPhaseSection } from "../../organisms/ProjectDetailsPhaseSection";
 import { ProjectDetailsPlanSection } from "../../organisms/ProjectDetailsPlanSection";
 import { ProjectDetailsLayoutTemplate } from "../../templates/ProjectDetailsLayoutTemplate";
@@ -26,27 +27,36 @@ export type ProjectDetailsPageProps = {
   loginHref?: string;
 };
 
-const ProjectDetailsContent = ({ data }: { data: ProjectDetailsPageData }) => {
+const ProjectDetailsContent = ({
+  data,
+  onBack,
+}: {
+  data: ProjectDetailsPageData;
+  onBack?: () => void;
+}) => {
   return (
     <ProjectDetailsLayoutTemplate
       header={
         <ProjectDetailsHeaderCard
           header={data.header}
           overallProgress={data.overallProgress}
+          memberCount={data.members.length}
+          onBack={onBack}
         />
       }
       primary={
         <>
           <ProjectDetailsPhaseSection phases={data.phases} />
-          <ProjectDetailsPlanSection plan={data.plan} resetKey={data.header.id} />
         </>
       }
       secondary={
         <>
           <ProjectDetailsMembersSection members={data.members} />
           <ProjectDetailsMeetingsSection meetings={data.meetings} />
+          <ProjectDetailsOverallProgressCard overallProgress={data.overallProgress} />
         </>
       }
+      footer={<ProjectDetailsPlanSection plan={data.plan} resetKey={data.header.id} />}
     />
   );
 };
@@ -84,5 +94,5 @@ export const ProjectDetailsPage = ({
     );
   }
 
-  return <ProjectDetailsContent key={data.header.id} data={data} />;
+  return <ProjectDetailsContent key={data.header.id} data={data} onBack={onBack} />;
 };

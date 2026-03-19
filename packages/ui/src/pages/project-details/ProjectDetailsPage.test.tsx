@@ -69,11 +69,11 @@ describe("ProjectDetailsPage", () => {
     ).toBeInTheDocument();
     expect(screen.getByText("PRJ-2024-001")).toBeInTheDocument();
     expect(screen.getByText("開始日: 2024年1月15日")).toBeInTheDocument();
-    expect(screen.getByText("フェーズ毎の進捗")).toBeInTheDocument();
+    expect(screen.getByText("プロジェクトフェーズ")).toBeInTheDocument();
     expect(screen.getByText("週次定例ミーティング")).toBeInTheDocument();
     expect(screen.getByText("ABC株式会社")).toBeVisible();
 
-    const accordionButton = screen.getByRole("button", { name: /基本情報/ });
+    const accordionButton = screen.getByRole("button", { name: /1\. 基本情報/ });
     expect(accordionButton).toHaveAttribute("aria-expanded", "true");
     fireEvent.click(accordionButton);
     expect(accordionButton).toHaveAttribute("aria-expanded", "false");

@@ -12,10 +12,12 @@ export const ProjectDetailsPlanItem = ({
 }) => {
   return (
     <Box>
-      <Typography variant="caption" color="text.secondary">
+      <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
         {label}
       </Typography>
-      <Typography variant="body2">{value}</Typography>
+      <Typography variant="body2" sx={{ mt: 0.5 }}>
+        {value}
+      </Typography>
     </Box>
   );
 };
