@@ -94,7 +94,7 @@ jobs:
         if: env.RUN_CHROMATIC == 'true' && env.CHROMATIC_PROJECT_TOKEN != ''
         env:
           CHROMATIC_PROJECT_TOKEN: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
-        uses: chromaui/action@v15
+        uses: chromaui/action@v16
         with:
           projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
           exitOnceUploaded: true
